@@ -1,0 +1,15 @@
+[project]
+name = "phasely"
+version = "0.1.0"
+description = "Cycle-aware fitness and nutrition platform"
+authors = [
+    {name = "Patrycja Szpakowska"}
+]
+requires-python = ">=3.12"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

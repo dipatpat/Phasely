@@ -1,0 +1,46 @@
+# Claude
+CLAUDE.md
+
+# Environment variables — never commit secrets
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Poetry
+# poetry.lock IS committed — it guarantees identical installs for everyone
+# dist is not
+dist/
+*.egg-info/
+
+# pytest
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Alembic — commit migration scripts, not the cache
+alembic/__pycache__/
+
+# macOS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+*.log

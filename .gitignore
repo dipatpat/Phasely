@@ -1,6 +1,3 @@
-# Claude
-CLAUDE.md
-
 # Environment variables — never commit secrets
 .env
 .env.local

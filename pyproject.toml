@@ -30,10 +30,12 @@ dev = [
     "factory-boy>=3.3.0",
     "ruff>=0.9.0",
     "pre-commit>=4.0.0",
+    "pytest-github-actions-annotate-failures>=0.4.0",
 ]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+addopts = "--junitxml=test-results.xml -v"
 
 [tool.ruff]
 line-length = 88

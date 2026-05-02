@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: phasely
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: phasely
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: .
+    command: uv run celery -A app.celery worker --loglevel=info
+    environment:
+      UV_PROJECT_ENVIRONMENT: /venv
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - .env.docker
+
+volumes:
+  postgres_data:

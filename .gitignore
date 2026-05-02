@@ -4,6 +4,7 @@ CLAUDE.md
 # Environment variables — never commit secrets
 .env
 .env.local
+.env.docker
 
 # Python
 __pycache__/

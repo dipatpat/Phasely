@@ -1,4 +1,3 @@
-import enum
 from decimal import Decimal
 
 from sqlalchemy import Column, Enum, ForeignKey, Integer, Numeric, String, Table, Text
@@ -6,6 +5,7 @@ from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.base import Base, TimestampMixin, UUIDMixin
+from app.core.enums import MealType
 
 recipe_dietary_tag = Table(
     "recipe_dietary_tag",
@@ -18,13 +18,6 @@ recipe_dietary_tag = Table(
         primary_key=True,
     ),
 )
-
-
-class MealType(enum.Enum):
-    breakfast = "breakfast"
-    lunch = "lunch"
-    dinner = "dinner"
-    snack = "snack"
 
 
 class DietaryTag(UUIDMixin, Base):

@@ -5,6 +5,7 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 import app.client.models  # noqa: F401
+import app.recipe.models  # noqa: F401
 import app.trainer.models  # noqa: F401
 
 # Model imports — Alembic must import every model module to detect tables.

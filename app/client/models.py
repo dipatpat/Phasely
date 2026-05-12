@@ -1,11 +1,37 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import (
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    Numeric,
+    String,
+    Table,
+)
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.base import Base, TimestampMixin, UUIDMixin
+
+client_profile_dietary_tag = Table(
+    "client_profile_dietary_tag",
+    Base.metadata,
+    Column(
+        "client_profile_id",
+        UUID(as_uuid=True),
+        ForeignKey("client_profile.id"),
+        primary_key=True,
+    ),
+    Column(
+        "dietary_tag_id",
+        UUID(as_uuid=True),
+        ForeignKey("dietary_tag.id"),
+        primary_key=True,
+    ),
+)
 
 
 class ClientProfile(UUIDMixin, TimestampMixin, Base):
@@ -28,6 +54,9 @@ class ClientProfile(UUIDMixin, TimestampMixin, Base):
     period_length_days: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
     last_period_start: Mapped[date | None] = mapped_column(Date, nullable=True)
 
+    dietary_tags: Mapped[list["DietaryTag"]] = relationship(  # noqa: F821
+        secondary=client_profile_dietary_tag
+    )
     user: Mapped["User"] = relationship(  # noqa: F821
         back_populates="client_profile"
     )

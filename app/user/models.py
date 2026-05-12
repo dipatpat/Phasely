@@ -1,15 +1,10 @@
-import enum
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, Enum, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.base import Base, TimestampMixin, UUIDMixin
-
-
-class UserRole(enum.Enum):
-    trainer = "trainer"
-    client = "client"
+from app.core.enums import UserRole
 
 
 class User(UUIDMixin, TimestampMixin, Base):

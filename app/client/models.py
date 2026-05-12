@@ -1,7 +1,7 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import DateTime, ForeignKey, Numeric, String
+from sqlalchemy import Date, DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -24,6 +24,9 @@ class ClientProfile(UUIDMixin, TimestampMixin, Base):
     onboarded_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    cycle_length_days: Mapped[int] = mapped_column(Integer, default=28, nullable=False)
+    period_length_days: Mapped[int] = mapped_column(Integer, default=5, nullable=False)
+    last_period_start: Mapped[date | None] = mapped_column(Date, nullable=True)
 
     user: Mapped["User"] = relationship(  # noqa: F821
         back_populates="client_profile"

@@ -3,10 +3,21 @@ from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import app.client.models
+import app.exercise.models
+import app.log.models
+import app.plan.models
+import app.recipe.models
+import app.session.models
+import app.trainer.models
+import app.user.models
+from app.auth.router import router as auth_router
 from app.core.config import settings
 from app.core.database import get_db
 
 app = FastAPI()
+
+app.include_router(auth_router)
 
 
 @app.get("/health")

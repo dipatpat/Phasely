@@ -3,10 +3,10 @@ import uuid
 import redis.asyncio as aioredis
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.security import TokenExpiredError, TokenInvalidError, decode_access_token
+from app.auth.service import get_user_by_id
 from app.core.database import get_db
 from app.core.redis import get_redis
 from app.user.models import User
@@ -43,10 +43,7 @@ async def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
         ) from e
-    result = await db.execute(
-        select(User).where(User.id == user_uuid, User.is_active.is_(True))
-    )
-    user = result.scalar_one_or_none()
+    user = await get_user_by_id(db, user_uuid)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

@@ -1,13 +1,22 @@
+import time
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from redis.asyncio import Redis
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user, oauth2_scheme
 from app.auth.schemas import Token, UserPublic, UserRegister
-from app.auth.security import create_access_token, hash_password, verify_password
+from app.auth.security import (
+    create_access_token,
+    decode_access_token,
+    hash_password,
+    verify_password,
+)
 from app.core.database import get_db
+from app.core.redis import get_redis
 from app.user.models import User
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -58,3 +67,12 @@ async def login_user(
 @router.get("/me", response_model=UserPublic)
 async def get_user(current_user: User = Depends(get_current_user)) -> UserPublic:
     return current_user
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout_user(
+    token: str = Depends(oauth2_scheme), redis: Redis = Depends(get_redis)
+) -> None:
+    expiration_time = decode_access_token(token).get("exp")
+    remaining_time = expiration_time - int(time.time())
+    await redis.set(f"blacklist:{token}", "0", ex=remaining_time)

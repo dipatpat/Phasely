@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.security import TokenExpiredError, TokenInvalidError, decode_access_token
 from app.auth.service import get_user_by_id
 from app.core.database import get_db
+from app.core.enums import UserRole
 from app.core.redis import get_redis
 from app.user.models import User
 
@@ -50,3 +51,21 @@ async def get_current_user(
             detail="Invalid credentials",
         )
     return user
+
+
+async def require_trainer(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != UserRole.trainer:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action.",
+        )
+    return current_user
+
+
+async def require_client(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != UserRole.client:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to perform this action.",
+        )
+    return current_user

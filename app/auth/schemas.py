@@ -16,6 +16,8 @@ class TokenData(BaseModel):
 
 class UserPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+    first_name: str
+    last_name: str
     email: str
     role: UserRole
     id: uuid.UUID
@@ -23,6 +25,8 @@ class UserPublic(BaseModel):
 
 
 class UserRegister(BaseModel):
+    first_name: str | None = None
+    last_name: str | None = None
     email: EmailStr
     password: str = Field(min_length=8)
     role: UserRole

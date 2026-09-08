@@ -33,7 +33,9 @@ async def register_user(data: UserRegister, db: AsyncSession = Depends(get_db)):
         )
     hashed_password = hash_password(data.password)
     try:
-        new_user = await create_user(db, data.email, hashed_password, data.role)
+        new_user = await create_user(
+            db, data.first_name, data.last_name, data.email, hashed_password, data.role
+        )
     except EmailAlreadyExistsError as e:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,

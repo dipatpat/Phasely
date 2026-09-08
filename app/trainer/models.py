@@ -1,6 +1,6 @@
-from datetime import time
+from datetime import date, time
 
-from sqlalchemy import Boolean, ForeignKey, Integer, String, Text, Time
+from sqlalchemy import Boolean, Date, ForeignKey, String, Text, Time
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -33,7 +33,7 @@ class TrainerAvailability(UUIDMixin, Base):
     trainer_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("trainer_profile.id"), nullable=False
     )
-    day_of_week: Mapped[int] = mapped_column(Integer, nullable=False)
+    slot_date: Mapped[date] = mapped_column(Date, nullable=False)
     slot_start: Mapped[time] = mapped_column(Time, nullable=False)
     slot_end: Mapped[time] = mapped_column(Time, nullable=False)
     timezone: Mapped[str] = mapped_column(String(64), nullable=False)

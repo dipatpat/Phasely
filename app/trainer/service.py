@@ -1,9 +1,10 @@
 import uuid
-from datetime import time
+from datetime import date, time
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.trainer.models import TrainerAvailability, TrainerProfile
 
@@ -17,6 +18,17 @@ async def get_trainer_profile_by_user_id(
 ) -> TrainerProfile | None:
     result = await db.execute(
         select(TrainerProfile).where(TrainerProfile.user_id == user_id)
+    )
+    return result.scalar_one_or_none()
+
+
+async def get_trainer_profile_by_id(
+    db: AsyncSession, trainer_profile_id: uuid.UUID
+) -> TrainerProfile | None:
+    result = await db.execute(
+        select(TrainerProfile)
+        .options(selectinload(TrainerProfile.user))
+        .where(TrainerProfile.id == trainer_profile_id)
     )
     return result.scalar_one_or_none()
 
@@ -58,13 +70,13 @@ async def update_trainer_profile(
 async def create_availability_slot(
     db: AsyncSession,
     trainer_id: uuid.UUID,
-    day_of_week: int,
+    slot_date: date,
     slot_start: time,
     slot_end: time,
 ) -> TrainerAvailability:
     new_slot = TrainerAvailability(
         trainer_id=trainer_id,
-        day_of_week=day_of_week,
+        slot_date=slot_date,
         slot_start=slot_start,
         slot_end=slot_end,
         timezone="Europe/Warsaw",
@@ -100,13 +112,13 @@ async def get_availability_slot(
 async def update_availability_slot(
     db: AsyncSession,
     slot: TrainerAvailability,
-    day_of_week: int | None = None,
+    slot_date: date | None = None,
     slot_start: time | None = None,
     slot_end: time | None = None,
     is_active: bool | None = None,
 ) -> TrainerAvailability:
-    if day_of_week is not None:
-        slot.day_of_week = day_of_week
+    if slot_date is not None:
+        slot.slot_date = slot_date
     if slot_start is not None:
         slot.slot_start = slot_start
     if slot_end is not None:

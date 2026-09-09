@@ -17,6 +17,7 @@ from app.trainer.service import (
     TrainerProfileAlreadyExistsError,
     create_availability_slot,
     create_trainer_profile,
+    delete_availability_slot,
     get_availability_slot,
     get_trainer_profile_by_id,
     get_trainer_profile_by_user_id,
@@ -174,3 +175,27 @@ async def handle_get_trainer_profile_by_id(
             status_code=status.HTTP_404_NOT_FOUND, detail="Trainer not found"
         )
     return trainer_profile
+
+
+@router.delete(
+    "/availability/{slot_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def handle_delete_availability_slot(
+    slot_id: uuid.UUID,
+    user: User = Depends(require_trainer),
+    db: AsyncSession = Depends(get_db),
+):
+    trainer_profile = await get_trainer_profile_by_user_id(db, user.id)
+    if not trainer_profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Trainer profile not found",
+        )
+    availability_slot = await get_availability_slot(db, slot_id, trainer_profile.id)
+    if not availability_slot:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Availability slot not found",
+        )
+    await delete_availability_slot(db, availability_slot)

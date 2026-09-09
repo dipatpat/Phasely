@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import NullPool
 
 from app.auth.security import create_access_token, hash_password
+from app.core.base import Base
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.enums import UserRole
@@ -73,3 +74,11 @@ async def create_test_user(db: AsyncSession, role: UserRole, email: str) -> User
 def auth_headers(user: User) -> dict:
     token = create_access_token({"sub": str(user.id)})
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def cleanup_database():
+    yield
+    async with test_engine.begin() as conn:
+        for table in reversed(Base.metadata.sorted_tables):
+            await conn.execute(table.delete())

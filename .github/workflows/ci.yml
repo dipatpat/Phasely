@@ -44,6 +44,18 @@ jobs:
 
       - name: Install dependencies
         run: uv sync
+      
+      - name: Create test database
+        run: PGPASSWORD=admin psql -h localhost -U phasely -d phasely -c "CREATE DATABASE phasely_test;"
+
+      - name: Run migrations on test database
+        run: uv run alembic upgrade head
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}_test
+
+      - name: Run tests
+        run: uv run pytest
+
 
       - name: Run tests
         run: uv run pytest

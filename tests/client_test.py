@@ -72,15 +72,17 @@ async def test_create_client_profile_twice_conflicts(client, db):
 
 
 async def test_trainer_cannot_view_another_trainers_client(client, db):
-    trainer1, _ = await _create_test_trainer_profile(db, "trainer1@trainer.com")
-    trainer2, _ = await _create_test_trainer_profile(db, "trainer2@trainer.com")
-    headers_1 = auth_headers(trainer1)
-    headers_2 = auth_headers(trainer2)
+    trainer1_user, trainer1_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    trainer2_user, _ = await _create_test_trainer_profile(db, "trainer2@trainer.com")
+    headers_1 = auth_headers(trainer1_user)
+    headers_2 = auth_headers(trainer2_user)
 
     client_user = await create_test_user(db, UserRole.client, "client1@client.com")
     create_response = await client.post(
         "/client/create",
-        json={"trainer_id": str(trainer1.id)},
+        json={"trainer_id": str(trainer1_profile.id)},
         headers=auth_headers(client_user),
     )
     client_profile_id = create_response.json()["id"]
@@ -121,8 +123,8 @@ async def test_get_my_clients_only_shows_own_clients(client, db):
     response = await client.get("/trainer/my_clients", headers=headers_1)
     assert response.status_code == 200
     emails = [email["email"] for email in response.json()]
-    assert "client1@client.com" in emails
-    assert "client3@client.com" not in emails
+    assert "client1@example.com" in emails
+    assert "client2@example.com" not in emails
 
 
 async def test_get_my_trainer_returns_assigned_trainer(client, db):

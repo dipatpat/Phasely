@@ -23,7 +23,9 @@ async def get_client_profile_by_user_id(
     db: AsyncSession, user_id: uuid.UUID
 ) -> ClientProfile | None:
     result = await db.execute(
-        select(ClientProfile).where(ClientProfile.user_id == user_id)
+        select(ClientProfile)
+        .options(selectinload(ClientProfile.user))
+        .where(ClientProfile.user_id == user_id)
     )
     return result.scalar_one_or_none()
 
@@ -90,7 +92,9 @@ async def get_client_profile_by_id(
     db: AsyncSession, client_profile_id: uuid.UUID, trainer_id: uuid.UUID
 ) -> ClientProfile | None:
     result = await db.execute(
-        select(ClientProfile).where(
+        select(ClientProfile)
+        .options(selectinload(ClientProfile.user))
+        .where(
             ClientProfile.id == client_profile_id,
             ClientProfile.trainer_id == trainer_id,
         )

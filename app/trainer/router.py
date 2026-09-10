@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_trainer
+from app.client.schemas import ClientProfilePublic
+from app.client.service import list_clients_by_trainer_id
 from app.core.database import get_db
 from app.trainer.schemas import (
     TrainerAvailabilityCreate,
@@ -21,6 +23,7 @@ from app.trainer.service import (
     get_availability_slot,
     get_trainer_profile_by_id,
     get_trainer_profile_by_user_id,
+    list_all_trainer_profiles,
     list_availability_slots,
     update_availability_slot,
     update_trainer_profile,
@@ -161,6 +164,27 @@ async def handle_get_availability_slots(
         )
     availability_slots = await list_availability_slots(db, trainer_profile.id)
     return availability_slots
+
+
+@router.get("/browse_trainers", response_model=list[TrainerProfilePublic])
+async def handle_list_trainers(
+    user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    trainers = await list_all_trainer_profiles(db)
+    return trainers
+
+
+@router.get("/my_clients", response_model=list[ClientProfilePublic])
+async def handle_get_clients(
+    user: User = Depends(require_trainer), db: AsyncSession = Depends(get_db)
+):
+    trainer_profile = await get_trainer_profile_by_user_id(db, user.id)
+    if not trainer_profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Trainer profile not found"
+        )
+    results = await list_clients_by_trainer_id(db, trainer_profile.id)
+    return results
 
 
 @router.get("/{trainer_id}", response_model=TrainerProfilePublic)

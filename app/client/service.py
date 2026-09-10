@@ -5,6 +5,7 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.client.models import ClientProfile
 from app.trainer.service import get_trainer_profile_by_id
@@ -101,6 +102,9 @@ async def list_clients_by_trainer_id(
     db: AsyncSession, trainer_id: uuid.UUID
 ) -> list[ClientProfile]:
     result = await db.execute(
-        select(ClientProfile).where(ClientProfile.trainer_id == trainer_id)
+        select(ClientProfile)
+        .options(selectinload(ClientProfile.user))
+        .where(ClientProfile.trainer_id == trainer_id)
     )
+
     return list(result.scalars().all())

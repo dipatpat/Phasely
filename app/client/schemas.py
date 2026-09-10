@@ -25,8 +25,9 @@ class ClientProfileUpdate(BaseModel):
 class ClientProfilePublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: uuid.UUID
-    user_id: uuid.UUID
-    trainer_id: uuid.UUID
+    first_name: str | None
+    last_name: str | None
+    email: str | None
     body_fat_percentage: Decimal | None
     fitness_goal: str | None
     onboarded_at: datetime | None

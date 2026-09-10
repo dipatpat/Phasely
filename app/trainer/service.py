@@ -133,3 +133,8 @@ async def update_availability_slot(
 async def delete_availability_slot(db: AsyncSession, slot: TrainerAvailability) -> None:
     await db.delete(slot)
     await db.commit()
+
+
+async def list_all_trainer_profiles(db: AsyncSession) -> list[TrainerProfile]:
+    result = await db.execute(select(TrainerProfile))
+    return list(result.scalars().all())

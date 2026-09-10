@@ -63,3 +63,15 @@ class ClientProfile(UUIDMixin, TimestampMixin, Base):
     trainer: Mapped["TrainerProfile"] = relationship(  # noqa: F821
         back_populates="client_profiles"
     )
+
+    @property
+    def first_name(self) -> str | None:
+        return self.user.first_name if self.user else None
+
+    @property
+    def last_name(self) -> str | None:
+        return self.user.last_name if self.user else None
+
+    @property
+    def email(self) -> str | None:
+        return self.user.email if self.user else None

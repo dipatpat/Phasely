@@ -13,15 +13,6 @@ class TrainerProfileAlreadyExistsError(Exception):
     pass
 
 
-async def get_trainer_profile_by_user_id(
-    db: AsyncSession, user_id: uuid.UUID
-) -> TrainerProfile | None:
-    result = await db.execute(
-        select(TrainerProfile).where(TrainerProfile.user_id == user_id)
-    )
-    return result.scalar_one_or_none()
-
-
 async def get_trainer_profile_by_id(
     db: AsyncSession, trainer_profile_id: uuid.UUID
 ) -> TrainerProfile | None:
@@ -136,5 +127,18 @@ async def delete_availability_slot(db: AsyncSession, slot: TrainerAvailability) 
 
 
 async def list_all_trainer_profiles(db: AsyncSession) -> list[TrainerProfile]:
-    result = await db.execute(select(TrainerProfile))
+    result = await db.execute(
+        select(TrainerProfile).options(selectinload(TrainerProfile.user))
+    )
     return list(result.scalars().all())
+
+
+async def get_trainer_profile_by_user_id(
+    db: AsyncSession, user_id: uuid.UUID
+) -> TrainerProfile | None:
+    result = await db.execute(
+        select(TrainerProfile)
+        .options(selectinload(TrainerProfile.user))
+        .where(TrainerProfile.user_id == user_id)
+    )
+    return result.scalar_one_or_none()

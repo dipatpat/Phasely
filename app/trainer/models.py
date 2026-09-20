@@ -40,3 +40,15 @@ class TrainerAvailability(UUIDMixin, Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
     trainer: Mapped["TrainerProfile"] = relationship(back_populates="availability")
+
+    @property
+    def first_name(self) -> str | None:
+        return self.user.first_name if self.user else None
+
+    @property
+    def last_name(self) -> str | None:
+        return self.user.last_name if self.user else None
+
+    @property
+    def email(self) -> str | None:
+        return self.user.email if self.user else None

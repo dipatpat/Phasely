@@ -28,7 +28,7 @@ class Session(UUIDMixin, TimestampMixin, Base):
     scheduled_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
-    duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
     status: Mapped[SessionStatus] = mapped_column(
         Enum(SessionStatus), nullable=False, default=SessionStatus.pending
     )

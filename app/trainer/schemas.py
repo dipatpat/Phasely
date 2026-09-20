@@ -17,6 +17,9 @@ class TrainerProfileUpdate(BaseModel):
 class TrainerProfilePublic(BaseModel):
     id: uuid.UUID
     user_id: uuid.UUID
+    first_name: str | None
+    last_name: str | None
+    email: str | None
     bio: str | None = None
     specialization: str | None = None
     created_at: datetime

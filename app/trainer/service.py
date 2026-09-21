@@ -36,7 +36,7 @@ async def create_trainer_profile(
     try:
         db.add(new_profile)
         await db.commit()
-        await db.refresh(new_profile, attribute_names=["user"])
+        await db.refresh(new_profile)
         return new_profile
     except IntegrityError as e:
         await db.rollback()

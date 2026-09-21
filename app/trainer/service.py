@@ -36,8 +36,8 @@ async def create_trainer_profile(
     try:
         db.add(new_profile)
         await db.commit()
-        await db.refresh(new_profile)
-        return await get_trainer_profile_by_id(db, new_profile.id)
+        await db.refresh(new_profile, attribute_names=["user"])
+        return new_profile
     except IntegrityError as e:
         await db.rollback()
         raise TrainerProfileAlreadyExistsError("Trainer profile already exists") from e

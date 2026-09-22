@@ -13,6 +13,7 @@ import app.user.models
 from app.auth.router import router as auth_router
 from app.client.router import router as client_router
 from app.core.database import get_db
+from app.session.router import router as session_router
 from app.trainer.router import router as trainer_router
 
 app = FastAPI()
@@ -20,6 +21,7 @@ app = FastAPI()
 app.include_router(auth_router)
 app.include_router(trainer_router)
 app.include_router(client_router)
+app.include_router(session_router)
 
 
 @app.get("/health")

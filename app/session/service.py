@@ -101,6 +101,7 @@ async def is_slot_available(
     scheduled_at = datetime.combine(slot_date, slot_start)
     availability = await db.execute(
         select(TrainerAvailability).where(
+            TrainerAvailability.trainer_id == trainer_id,
             TrainerAvailability.slot_date == slot_date,
             TrainerAvailability.slot_start == slot_start,
             TrainerAvailability.is_active.is_(True),

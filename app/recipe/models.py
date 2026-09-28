@@ -46,19 +46,40 @@ class Recipe(UUIDMixin, TimestampMixin, Base):
     dietary_tags: Mapped[list["DietaryTag"]] = relationship(
         secondary=recipe_dietary_tag, back_populates="recipes"
     )
-    ingredients: Mapped[list["Ingredient"]] = relationship(
+    ingredients: Mapped[list["RecipeIngredient"]] = relationship(
         back_populates="recipe", cascade="all, delete-orphan"
     )
 
 
 class Ingredient(UUIDMixin, Base):
+    """Shared ingredient library, reused across recipes (like DietaryTag)."""
+
     __tablename__ = "ingredient"
+
+    name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+
+    recipe_ingredients: Mapped[list["RecipeIngredient"]] = relationship(
+        back_populates="ingredient"
+    )
+
+
+class RecipeIngredient(UUIDMixin, Base):
+    """Association class: a recipe's use of an ingredient, at a given quantity/unit."""
+
+    __tablename__ = "recipe_ingredient"
 
     recipe_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("recipe.id"), nullable=False
     )
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    ingredient_id: Mapped[UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ingredient.id"), nullable=False
+    )
     quantity: Mapped[Decimal] = mapped_column(Numeric(8, 2), nullable=False)
     unit: Mapped[str] = mapped_column(String(50), nullable=False)
 
     recipe: Mapped["Recipe"] = relationship(back_populates="ingredients")
+    ingredient: Mapped["Ingredient"] = relationship(back_populates="recipe_ingredients")
+
+    @property
+    def name(self) -> str:
+        return self.ingredient.name

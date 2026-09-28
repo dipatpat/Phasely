@@ -81,9 +81,7 @@ async def create_recipe(
     new_recipe.dietary_tags = await _check_dietary_tags(db, names=dietary_tag_names)
     db.add(new_recipe)
     await db.commit()
-    await db.refresh(new_recipe)
-
-    return new_recipe
+    return await get_recipe_by_id(db, new_recipe.id)
 
 
 async def list_recipes(db: AsyncSession) -> list[Recipe]:
@@ -146,8 +144,7 @@ async def update_recipe(
     if dietary_tag_names is not None:
         recipe.dietary_tags = await _check_dietary_tags(db, names=dietary_tag_names)
     await db.commit()
-    await db.refresh(recipe)
-    return recipe
+    return await get_recipe_by_id(db, recipe.id)
 
 
 async def delete_recipe(db: AsyncSession, recipe_id: uuid.UUID) -> None:

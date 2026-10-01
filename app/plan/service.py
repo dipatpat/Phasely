@@ -5,6 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.exercise.service import get_exercise_by_id
 from app.plan.models import (
     NutritionPlan,
     NutritionPlanRecipe,
@@ -16,6 +17,7 @@ from app.plan.schemas import (
     TrainingPlanExerciseCreate,
 )
 from app.recipe.models import Recipe, RecipeIngredient
+from app.recipe.service import get_recipe_by_id
 
 
 class PlanNotFoundError(Exception):
@@ -43,6 +45,9 @@ async def create_nutrition_plan(
 ) -> NutritionPlan:
     assigned_recipes = []
     for recipe in recipes:
+        recipe_exists = await get_recipe_by_id(db, recipe.recipe_id)
+        if not recipe_exists:
+            raise ItemNotFoundError("Recipe not found")
         assigned_recipes.append(
             NutritionPlanRecipe(
                 recipe_id=recipe.recipe_id,
@@ -105,6 +110,9 @@ async def update_nutrition_plan(
     if recipes is not None:
         new_recipes = []
         for recipe in recipes:
+            recipe_exists = await get_recipe_by_id(db, recipe.recipe_id)
+            if not recipe_exists:
+                raise ItemNotFoundError("Recipe not found")
             new_recipes.append(
                 NutritionPlanRecipe(
                     recipe_id=recipe.recipe_id,
@@ -152,6 +160,9 @@ async def create_training_plan(
 ) -> TrainingPlan:
     assigned_exercises = []
     for exercise in exercises:
+        exercise_exists = await get_exercise_by_id(db, exercise.exercise_id)
+        if not exercise_exists:
+            raise ItemNotFoundError("Exercise not found")
         assigned_exercises.append(
             TrainingPlanExercise(
                 exercise_id=exercise.exercise_id,
@@ -236,6 +247,9 @@ async def update_exercise_plan(
     if exercises is not None:
         new_exercises = []
         for exercise in exercises:
+            exercise_exists = await get_exercise_by_id(db, exercise.exercise_id)
+            if not exercise_exists:
+                raise ItemNotFoundError("Exercise not found")
             new_exercises.append(
                 TrainingPlanExercise(
                     exercise_id=exercise.exercise_id,

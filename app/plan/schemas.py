@@ -9,15 +9,15 @@ from app.exercise.schemas import ExercisePublic
 from app.recipe.schemas import RecipePublic
 
 
-class NutritionPlanRecipeCreate(BaseModel):
-    recipe_id: uuid.UUID
+class NutritionPlanRecipePublic(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    recipe: RecipePublic
     meal_type: MealType
     cycle_phase: CyclePhase
 
 
-class NutritionPlanRecipePublic(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-    recipe: RecipePublic
+class NutritionPlanRecipeCreate(BaseModel):
+    recipe_id: uuid.UUID
     meal_type: MealType
     cycle_phase: CyclePhase
 

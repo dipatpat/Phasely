@@ -14,6 +14,7 @@ from app.auth.router import router as auth_router
 from app.client.router import router as client_router
 from app.core.database import get_db
 from app.exercise.router import router as exercise_router
+from app.log.router import router as log_router
 from app.plan.router import router as plan_router
 from app.recipe.router import router as recipe_router
 from app.session.router import router as session_router
@@ -28,6 +29,7 @@ app.include_router(session_router)
 app.include_router(exercise_router)
 app.include_router(recipe_router)
 app.include_router(plan_router)
+app.include_router(log_router)
 
 
 @app.get("/health")

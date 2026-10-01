@@ -269,3 +269,40 @@ async def update_exercise_plan(
     except IntegrityError as e:
         raise DuplicateAssignmentError("The plan already exists") from e
     return await get_training_plan_by_id(db, plan_id)
+
+
+async def get_active_nutrition_plan_by_client_id(
+    db: AsyncSession, client_id: uuid.UUID
+) -> NutritionPlan | None:
+    result = await db.execute(
+        select(NutritionPlan)
+        .options(
+            selectinload(NutritionPlan.recipes).selectinload(
+                NutritionPlanRecipe.recipe
+            ),
+            selectinload(NutritionPlan.recipes)
+            .selectinload(NutritionPlanRecipe.recipe)
+            .selectinload(Recipe.ingredients)
+            .selectinload(RecipeIngredient.ingredient),
+            selectinload(NutritionPlan.recipes)
+            .selectinload(NutritionPlanRecipe.recipe)
+            .selectinload(Recipe.dietary_tags),
+        )
+        .where(NutritionPlan.client_id == client_id, NutritionPlan.is_active.is_(True))
+    )
+    return result.scalar_one_or_none()
+
+
+async def get_active_training_plan_by_client_id(
+    db: AsyncSession, client_id: uuid.UUID
+) -> TrainingPlan | None:
+    result = await db.execute(
+        select(TrainingPlan)
+        .options(
+            selectinload(TrainingPlan.exercises).selectinload(
+                TrainingPlanExercise.exercise
+            )
+        )
+        .where(TrainingPlan.client_id == client_id, TrainingPlan.is_active.is_(True))
+    )
+    return result.scalar_one_or_none()

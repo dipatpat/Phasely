@@ -22,6 +22,32 @@ async def _create_test_client(client, trainer_profile_id, email, db):
     return client_user
 
 
+async def _create_test_recipe(client, trainer_headers, name="Chicken Salad"):
+    response = await client.post(
+        "/recipe/create",
+        json={
+            "name": name,
+            "meal_type": "lunch",
+            "protein": "30.00",
+            "carbs": "10.00",
+            "fat": "8.00",
+            "calories": 350,
+            "serving_size": "1 bowl",
+            "ingredients": [{"name": "chicken", "quantity": "200.00", "unit": "g"}],
+            "dietary_tag_names": [],
+        },
+        headers=trainer_headers,
+    )
+    return response.json()
+
+
+async def _create_test_exercise(client, trainer_headers, name="Squat"):
+    response = await client.post(
+        "/exercise/create", json={"name": name}, headers=trainer_headers
+    )
+    return response.json()
+
+
 async def test_create_daily_log_as_client_succeeds(client, db):
     trainer_user, trainer_profile = await _create_test_trainer_profile(
         db, "trainer1@trainer.com"
@@ -109,3 +135,133 @@ async def test_create_daily_log_different_dates_both_succeed(client, db):
     )
     assert first.status_code == 201
     assert second.status_code == 201
+
+
+async def test_create_meal_log_as_client_succeeds(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    trainer_headers = auth_headers(trainer_user)
+    client_user = await _create_test_client(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    recipe = await _create_test_recipe(client, trainer_headers)
+    headers = auth_headers(client_user)
+
+    response = await client.post(
+        "/log/meal/create",
+        json={
+            "recipe_id": recipe["id"],
+            "meal_type": "lunch",
+            "consumed_at": "2026-10-01T12:30:00",
+            "portion_quantity": "1.5",
+            "portion_unit": "bowl",
+        },
+        headers=headers,
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert data["recipe"]["name"] == "Chicken Salad"
+    assert data["portion_unit"] == "bowl"
+
+
+async def test_create_meal_log_as_trainer_forbidden(client, db):
+    trainer_user, _ = await _create_test_trainer_profile(db, "trainer1@trainer.com")
+    headers = auth_headers(trainer_user)
+
+    response = await client.post(
+        "/log/meal/create",
+        json={
+            "recipe_id": "00000000-0000-0000-0000-000000000000",
+            "meal_type": "lunch",
+            "consumed_at": "2026-10-01T12:30:00",
+            "portion_quantity": "1.5",
+            "portion_unit": "bowl",
+        },
+        headers=headers,
+    )
+    assert response.status_code == 403
+
+
+async def test_create_meal_log_invalid_recipe_not_found(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    client_user = await _create_test_client(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    headers = auth_headers(client_user)
+
+    response = await client.post(
+        "/log/meal/create",
+        json={
+            "recipe_id": "00000000-0000-0000-0000-000000000000",
+            "meal_type": "lunch",
+            "consumed_at": "2026-10-01T12:30:00",
+            "portion_quantity": "1.5",
+            "portion_unit": "bowl",
+        },
+        headers=headers,
+    )
+    assert response.status_code == 404
+
+
+async def test_create_exercise_log_as_client_succeeds(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    trainer_headers = auth_headers(trainer_user)
+    client_user = await _create_test_client(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    exercise = await _create_test_exercise(client, trainer_headers)
+    headers = auth_headers(client_user)
+
+    response = await client.post(
+        "/log/exercise/create",
+        json={
+            "exercise_id": exercise["id"],
+            "completed_at": "2026-10-01T18:00:00",
+            "notes": "Felt strong today",
+        },
+        headers=headers,
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert data["exercise"]["name"] == "Squat"
+    assert data["notes"] == "Felt strong today"
+
+
+async def test_create_exercise_log_as_trainer_forbidden(client, db):
+    trainer_user, _ = await _create_test_trainer_profile(db, "trainer1@trainer.com")
+    headers = auth_headers(trainer_user)
+
+    response = await client.post(
+        "/log/exercise/create",
+        json={
+            "exercise_id": "00000000-0000-0000-0000-000000000000",
+            "completed_at": "2026-10-01T18:00:00",
+        },
+        headers=headers,
+    )
+    assert response.status_code == 403
+
+
+async def test_create_exercise_log_invalid_exercise_not_found(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    client_user = await _create_test_client(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    headers = auth_headers(client_user)
+
+    response = await client.post(
+        "/log/exercise/create",
+        json={
+            "exercise_id": "00000000-0000-0000-0000-000000000000",
+            "completed_at": "2026-10-01T18:00:00",
+        },
+        headers=headers,
+    )
+    assert response.status_code == 404

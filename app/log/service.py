@@ -6,8 +6,10 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.enums import CyclePhase
-from app.log.models import DailyLog
+from app.core.enums import CyclePhase, MealType
+from app.exercise.service import ExerciseNotFound, get_exercise_by_id
+from app.log.models import DailyLog, ExerciseLog, MealLog
+from app.recipe.service import RecipeNotFoundError, get_recipe_by_id
 
 
 class DailyLogAlreadyExistsError(Exception):
@@ -55,3 +57,52 @@ async def trigger_recommendation(
 async def get_daily_log_by_id(db: AsyncSession, log_id: uuid.UUID) -> DailyLog | None:
     result = await db.execute(select(DailyLog).where(DailyLog.id == log_id))
     return result.scalar_one_or_none()
+
+
+async def create_meal_log(
+    db: AsyncSession,
+    client_id: uuid.UUID,
+    recipe_id: uuid.UUID,
+    meal_type: MealType,
+    consumed_at: datetime.datetime,
+    portion_quantity: Decimal,
+    portion_unit: str,
+) -> MealLog:
+    recipe = await get_recipe_by_id(db, recipe_id)
+    if recipe is None:
+        raise RecipeNotFoundError("Recipe not found")
+    new_log = MealLog(
+        client_id=client_id,
+        recipe_id=recipe_id,
+        meal_type=meal_type,
+        consumed_at=consumed_at,
+        portion_quantity=portion_quantity,
+        portion_unit=portion_unit,
+    )
+    db.add(new_log)
+    await db.commit()
+    await db.refresh(new_log)
+    return new_log
+
+
+async def create_exercise_log(
+    db: AsyncSession,
+    client_id: uuid.UUID,
+    exercise_id: uuid.UUID,
+    completed_at: datetime.datetime,
+    notes: str | None = None,
+) -> ExerciseLog:
+    exercise = await get_exercise_by_id(db, exercise_id)
+    if exercise is None:
+        raise ExerciseNotFound("Exercise not found")
+
+    new_log = ExerciseLog(
+        client_id=client_id,
+        exercise_id=exercise_id,
+        completed_at=completed_at,
+        notes=notes,
+    )
+    db.add(new_log)
+    await db.commit()
+    await db.refresh(new_log)
+    return new_log

@@ -5,10 +5,12 @@ from decimal import Decimal
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.enums import CyclePhase, MealType
 from app.exercise.service import ExerciseNotFound, get_exercise_by_id
 from app.log.models import DailyLog, ExerciseLog, MealLog
+from app.recipe.models import Recipe, RecipeIngredient
 from app.recipe.service import RecipeNotFoundError, get_recipe_by_id
 
 
@@ -81,8 +83,32 @@ async def create_meal_log(
     )
     db.add(new_log)
     await db.commit()
-    await db.refresh(new_log)
-    return new_log
+    return await get_meal_log_by_id(db, new_log.id)
+
+
+async def get_meal_log_by_id(db: AsyncSession, log_id: uuid.UUID) -> MealLog | None:
+    result = await db.execute(
+        select(MealLog)
+        .options(
+            selectinload(MealLog.recipe)
+            .selectinload(Recipe.ingredients)
+            .selectinload(RecipeIngredient.ingredient),
+            selectinload(MealLog.recipe).selectinload(Recipe.dietary_tags),
+        )
+        .where(MealLog.id == log_id)
+    )
+    return result.scalar_one_or_none()
+
+
+async def get_exercise_log_by_id(
+    db: AsyncSession, log_id: uuid.UUID
+) -> ExerciseLog | None:
+    result = await db.execute(
+        select(ExerciseLog)
+        .options(selectinload(ExerciseLog.exercise))
+        .where(ExerciseLog.id == log_id)
+    )
+    return result.scalar_one_or_none()
 
 
 async def create_exercise_log(
@@ -104,5 +130,5 @@ async def create_exercise_log(
     )
     db.add(new_log)
     await db.commit()
-    await db.refresh(new_log)
-    return new_log
+
+    return await get_exercise_log_by_id(db, new_log.id)

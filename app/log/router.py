@@ -15,6 +15,7 @@ from app.log.schemas import (
 )
 from app.log.service import (
     DailyLogAlreadyExistsError,
+    InsufficientCycleDataError,
     create_daily_log,
     create_exercise_log,
     create_meal_log,
@@ -43,6 +44,7 @@ async def handle_create_daily_log(
             db,
             client_profile.id,
             data.log_date,
+            data.period_started_today,
             data.cycle_phase,
             data.hours_of_sleep,
             data.energy_level,
@@ -51,6 +53,12 @@ async def handle_create_daily_log(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Already logged for this date"
         ) from e
+    except InsufficientCycleDataError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not enough cycle data to calculate phase",
+        ) from e
+
     return new_log
 
 

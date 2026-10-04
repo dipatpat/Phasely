@@ -16,6 +16,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.client.models import ClientProfile
 from app.core.base import Base, TimestampMixin, UUIDMixin
 from app.core.enums import CyclePhase, MealType
 
@@ -74,3 +75,20 @@ class ExerciseLog(UUIDMixin, Base):
 
     client: Mapped["ClientProfile"] = relationship()  # noqa: F821
     exercise: Mapped["Exercise"] = relationship()  # noqa: F821
+
+
+class PeriodLog(UUIDMixin, Base):
+    __tablename__ = "period_log"
+
+    client_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("client_profile.id"), nullable=False
+    )
+    period_start_date: Mapped[date] = mapped_column(Date, nullable=False)
+
+    client: Mapped["ClientProfile"] = relationship()  # noqa: F821
+
+    __table_args__ = (
+        UniqueConstraint(
+            "client_id", "period_start_date", name="uq_period_log_client_date"
+        ),
+    )

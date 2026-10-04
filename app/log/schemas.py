@@ -11,7 +11,8 @@ from app.recipe.schemas import RecipePublic
 
 class DailyLogCreate(BaseModel):
     log_date: date
-    cycle_phase: CyclePhase
+    period_started_today: bool = False
+    cycle_phase: CyclePhase | None = None
     hours_of_sleep: Decimal | None = None
     energy_level: int | None = None
 

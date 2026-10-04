@@ -112,3 +112,14 @@ async def list_clients_by_trainer_id(
     )
 
     return list(result.scalars().all())
+
+
+async def get_client_profile_by_profile_id(
+    db: AsyncSession, client_profile_id: uuid.UUID
+) -> ClientProfile | None:
+    result = await db.execute(
+        select(ClientProfile)
+        .options(selectinload(ClientProfile.user))
+        .where(ClientProfile.id == client_profile_id)
+    )
+    return result.scalar_one_or_none()

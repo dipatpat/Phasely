@@ -19,7 +19,7 @@ from app.plan.schemas import (
 )
 from app.recipe.models import Recipe, RecipeIngredient
 from app.recipe.service import get_recipe_by_id
-from app.recommendation.service import invalidate_recommendations_cache
+from app.recommendation.cache import invalidate_recommendations_cache
 
 
 class PlanNotFoundError(Exception):

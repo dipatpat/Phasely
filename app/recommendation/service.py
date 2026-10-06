@@ -1,7 +1,6 @@
 import uuid
 from datetime import date
 
-import redis.asyncio as aioredis
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -117,10 +116,3 @@ async def get_exercise_recommendations(
             if exercise.difficulty_level in allowed_difficulty
         ]
     return [assignment.exercise for assignment in allowed_exercises]
-
-
-async def invalidate_recommendations_cache(
-    redis: aioredis.Redis, client_id: uuid.UUID
-) -> None:
-    cache_key = f"recommendations:{client_id}:{date.today()}"
-    await redis.delete(cache_key)

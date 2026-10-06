@@ -93,6 +93,7 @@ class TrainingPlanExercise(Base):
     cycle_phase: Mapped[CyclePhase] = mapped_column(
         Enum(CyclePhase), primary_key=True, nullable=False
     )
+    # ISO 8601 convention: 1 = Monday, ..., 7 = Sunday (matches date.isoweekday())
     day_of_week: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     sets: Mapped[int | None] = mapped_column(Integer, nullable=True)
     reps: Mapped[int | None] = mapped_column(Integer, nullable=True)

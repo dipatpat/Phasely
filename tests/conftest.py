@@ -39,6 +39,13 @@ class FakeRedis:
     async def set(self, key: str, value: str, ex: int | None = None) -> None:
         self._store[key] = value
 
+    async def get(self, key: str) -> str | None:
+        return self._store.get(key)
+
+    async def delete(self, *keys: str) -> None:
+        for key in keys:
+            self._store.pop(key, None)
+
 
 @pytest_asyncio.fixture
 async def client() -> AsyncClient:

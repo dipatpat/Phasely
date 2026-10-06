@@ -60,3 +60,9 @@ class ExerciseLogPublic(BaseModel):
     exercise: ExercisePublic
     completed_at: datetime
     notes: str | None
+
+
+class DailyLogWithRecommendations(BaseModel):
+    daily_log: DailyLogPublic
+    recommended_recipes: list[RecipePublic]
+    recommended_exercises: list[ExercisePublic]

@@ -1,5 +1,6 @@
 import uuid
 
+import redis.asyncio as aioredis
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -7,6 +8,7 @@ from app.auth.dependencies import get_current_user, require_client, require_trai
 from app.client.service import get_client_profile_by_id, get_client_profile_by_user_id
 from app.core.database import get_db
 from app.core.enums import UserRole
+from app.core.redis import get_redis
 from app.plan.schemas import (
     NutritionPlanCreate,
     NutritionPlanPublic,
@@ -87,6 +89,7 @@ async def handle_update_nutrition_plan(
     data: NutritionPlanUpdate,
     user: User = Depends(require_trainer),
     db: AsyncSession = Depends(get_db),
+    redis: aioredis.Redis = Depends(get_redis),
 ):
     trainer_profile = await get_trainer_profile_by_user_id(db, user.id)
     if trainer_profile is None:
@@ -104,7 +107,7 @@ async def handle_update_nutrition_plan(
         )
     try:
         updated_plan = await update_nutrition_plan(
-            db, plan_id, data.is_active, data.title, data.recipes
+            db, redis, plan_id, data.is_active, data.title, data.recipes
         )
     except DuplicateAssignmentError as e:
         raise HTTPException(
@@ -129,6 +132,7 @@ async def handle_remove_recipe_from_plan(
     recipes: list[NutritionPlanRecipeCreate],
     user: User = Depends(require_trainer),
     db: AsyncSession = Depends(get_db),
+    redis: aioredis.Redis = Depends(get_redis),
 ):
     trainer_profile = await get_trainer_profile_by_user_id(db, user.id)
     if trainer_profile is None:
@@ -145,7 +149,7 @@ async def handle_remove_recipe_from_plan(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not your plan"
         )
     try:
-        updated_plan = await update_delete_recipe_from_plan(db, plan_id, recipes)
+        updated_plan = await update_delete_recipe_from_plan(db, redis, plan_id, recipes)
     except ItemNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -273,6 +277,7 @@ async def handle_update_training_plan(
     data: TrainingPlanUpdate,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_trainer),
+    redis: aioredis.Redis = Depends(get_redis),
 ):
     trainer_profile = await get_trainer_profile_by_user_id(db, user.id)
     if trainer_profile is None:
@@ -290,7 +295,7 @@ async def handle_update_training_plan(
         )
     try:
         updated_plan = await update_exercise_plan(
-            db, plan_id, data.is_active, data.title, data.exercises
+            db, redis, plan_id, data.is_active, data.title, data.exercises
         )
     except DuplicateAssignmentError as e:
         raise HTTPException(
@@ -315,6 +320,7 @@ async def handle_remove_exercise_from_plan(
     exercises: list[TrainingPlanExerciseCreate],
     user: User = Depends(require_trainer),
     db: AsyncSession = Depends(get_db),
+    redis: aioredis.Redis = Depends(get_redis),
 ):
     trainer_profile = await get_trainer_profile_by_user_id(db, user.id)
     if trainer_profile is None:
@@ -331,7 +337,9 @@ async def handle_remove_exercise_from_plan(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not your plan"
         )
     try:
-        updated_plan = await update_delete_exercise_from_plan(db, plan_id, exercises)
+        updated_plan = await update_delete_exercise_from_plan(
+            db, redis, plan_id, exercises
+        )
     except ItemNotFoundError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -1,7 +1,9 @@
 import datetime
+import json
 import uuid
 from decimal import Decimal
 
+import redis.asyncio as aioredis
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,15 +11,19 @@ from sqlalchemy.orm import selectinload
 
 from app.client.service import get_client_profile_by_profile_id
 from app.core.enums import CyclePhase, MealType
+from app.exercise.schemas import ExercisePublic
 from app.exercise.service import ExerciseNotFound, get_exercise_by_id
 from app.log.models import DailyLog, ExerciseLog, MealLog
 from app.recipe.models import Recipe, RecipeIngredient
+from app.recipe.schemas import RecipePublic
 from app.recipe.service import RecipeNotFoundError, get_recipe_by_id
 from app.recommendation.service import (
     calculate_cycle_length,
     calculate_cycle_phase,
     create_period_log,
+    get_exercise_recommendations,
     get_period_start_dates,
+    get_recipe_recommendations,
 )
 
 
@@ -37,7 +43,8 @@ async def create_daily_log(
     cycle_phase: CyclePhase | None,
     hours_of_sleep: Decimal | None,
     energy_level: int | None,
-) -> DailyLog:
+    redis: aioredis.Redis,
+) -> tuple[DailyLog, list[RecipePublic], list[ExercisePublic]]:
     if period_started_today:
         await create_period_log(db, client_id, log_date)
 
@@ -83,24 +90,64 @@ async def create_daily_log(
     except IntegrityError as e:
         await db.rollback()
         raise DailyLogAlreadyExistsError("Daily log already exists") from e
-    await trigger_recommendation(
-        client_id, log_date, cycle_phase, hours_of_sleep, energy_level
+    recipes, exercises = await trigger_recommendation(
+        db, redis, client_id, log_date, cycle_phase, energy_level
     )
-    return new_log
+    return new_log, recipes, exercises
 
 
 async def trigger_recommendation(
+    db: AsyncSession,
+    redis: aioredis.Redis,
     client_id: uuid.UUID,
     log_date: datetime.date,
     cycle_phase: CyclePhase,
-    hours_of_sleep: Decimal | None,
     energy_level: int | None,
-):
-    pass
+) -> tuple[list[RecipePublic], list[ExercisePublic]]:
+    cache_key = f"recommendations:{client_id}:{log_date}"
+    cached_data = await redis.get(cache_key)
+    if cached_data:
+        cached_data = json.loads(cached_data)
+        recipes = [
+            RecipePublic.model_validate(recipe) for recipe in cached_data["recipes"]
+        ]
+        exercises = [
+            ExercisePublic.model_validate(exercise)
+            for exercise in cached_data["exercises"]
+        ]
+        return recipes, exercises
+    day_of_week = log_date.isoweekday()
+    recipes_from_db = await get_recipe_recommendations(db, client_id, cycle_phase)
+    exercises_from_db = await get_exercise_recommendations(
+        db, client_id, cycle_phase, day_of_week, energy_level
+    )
+    recipes = [RecipePublic.model_validate(recipe) for recipe in recipes_from_db]
+    exercises = [
+        ExercisePublic.model_validate(exercise) for exercise in exercises_from_db
+    ]
+    cache_payload = json.dumps(
+        {
+            "recipes": [recipe.model_dump(mode="json") for recipe in recipes],
+            "exercises": [exercise.model_dump(mode="json") for exercise in exercises],
+        }
+    )
+    await redis.set(cache_key, cache_payload, ex=86400)
+    return recipes, exercises
 
 
 async def get_daily_log_by_id(db: AsyncSession, log_id: uuid.UUID) -> DailyLog | None:
     result = await db.execute(select(DailyLog).where(DailyLog.id == log_id))
+    return result.scalar_one_or_none()
+
+
+async def get_daily_log_by_client_and_date(
+    db: AsyncSession, client_id: uuid.UUID, log_date: datetime.date
+) -> DailyLog | None:
+    result = await db.execute(
+        select(DailyLog).where(
+            DailyLog.client_id == client_id, DailyLog.log_date == log_date
+        )
+    )
     return result.scalar_one_or_none()
 
 

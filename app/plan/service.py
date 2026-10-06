@@ -1,5 +1,6 @@
 import uuid
 
+import redis.asyncio as aioredis
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +19,7 @@ from app.plan.schemas import (
 )
 from app.recipe.models import Recipe, RecipeIngredient
 from app.recipe.service import get_recipe_by_id
+from app.recommendation.service import invalidate_recommendations_cache
 
 
 class PlanNotFoundError(Exception):
@@ -95,6 +97,7 @@ async def get_nutrition_plan_by_id(
 
 async def update_nutrition_plan(
     db: AsyncSession,
+    redis: aioredis.Redis | None,
     plan_id: uuid.UUID,
     is_active: bool | None = None,
     title: str | None = None,
@@ -125,11 +128,15 @@ async def update_nutrition_plan(
         await db.commit()
     except IntegrityError as e:
         raise DuplicateAssignmentError("The plan already exists") from e
+    await invalidate_recommendations_cache(redis, plan.client_id)
     return await get_nutrition_plan_by_id(db, plan_id)
 
 
 async def update_delete_recipe_from_plan(
-    db: AsyncSession, plan_id: uuid.UUID, recipes: list[NutritionPlanRecipeCreate]
+    db: AsyncSession,
+    redis: aioredis.Redis | None,
+    plan_id: uuid.UUID,
+    recipes: list[NutritionPlanRecipeCreate],
 ) -> NutritionPlan:
     plan = await get_nutrition_plan_by_id(db, plan_id)
     if not plan:
@@ -148,6 +155,7 @@ async def update_delete_recipe_from_plan(
             raise ItemNotFoundError("Recipe not found in the plan")
         plan.recipes.remove(to_remove)
     await db.commit()
+    await invalidate_recommendations_cache(redis, plan.client_id) if redis else None
     return plan
 
 
@@ -208,7 +216,10 @@ async def get_training_plan_by_id(
 
 
 async def update_delete_exercise_from_plan(
-    db: AsyncSession, plan_id: uuid.UUID, exercises: list[TrainingPlanExerciseCreate]
+    db: AsyncSession,
+    redis: aioredis.Redis | None,
+    plan_id: uuid.UUID,
+    exercises: list[TrainingPlanExerciseCreate],
 ) -> TrainingPlan:
     plan = await get_training_plan_by_id(db, plan_id)
     if not plan:
@@ -227,11 +238,14 @@ async def update_delete_exercise_from_plan(
             raise ItemNotFoundError("Exercise not found in the plan")
         plan.exercises.remove(to_remove)
     await db.commit()
+    if redis:
+        await invalidate_recommendations_cache(redis, plan.client_id)
     return plan
 
 
 async def update_exercise_plan(
     db: AsyncSession,
+    redis: aioredis.Redis | None,
     plan_id: uuid.UUID,
     is_active: bool | None = None,
     title: str | None = None,
@@ -268,6 +282,7 @@ async def update_exercise_plan(
         await db.commit()
     except IntegrityError as e:
         raise DuplicateAssignmentError("The plan already exists") from e
+    await invalidate_recommendations_cache(redis, plan.client_id) if redis else None
     return await get_training_plan_by_id(db, plan_id)
 
 

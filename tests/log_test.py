@@ -1,3 +1,5 @@
+from datetime import date
+
 from app.core.enums import UserRole
 from app.trainer.service import create_trainer_profile
 from tests.conftest import auth_headers, create_test_user
@@ -532,9 +534,13 @@ async def test_recommendations_cache_invalidated_after_plan_change(client, db):
     )
     plan_id = created_plan.json()["id"]
 
+    # Uses the real current date, not a hardcoded one, since GET /log/daily/today
+    # looks up today's log via date.today() - a fixed date would only match
+    # by coincidence on the day this test happened to run.
+    today_str = date.today().isoformat()
     first_response = await client.post(
         "/log/daily/create",
-        json={"log_date": "2026-10-05", "cycle_phase": "luteal"},
+        json={"log_date": today_str, "cycle_phase": "luteal"},
         headers=headers,
     )
     assert {

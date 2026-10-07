@@ -17,7 +17,7 @@ services:
 
   celery:
     build: .
-    command: uv run celery -A app.celery worker --loglevel=info
+    command: uv run celery -A app.celery:celery_app worker --loglevel=info
     environment:
       UV_PROJECT_ENVIRONMENT: /venv
     volumes:

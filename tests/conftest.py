@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.pool import NullPool
 
 from app.auth.security import create_access_token, hash_password
+from app.celery import celery_app
 from app.core.base import Base
 from app.core.config import settings
 from app.core.database import get_db
@@ -11,6 +12,8 @@ from app.core.enums import UserRole
 from app.core.redis import get_redis
 from app.main import app
 from app.user.models import User
+
+celery_app.conf.update(task_always_eager=True, task_eager_propagates=True)
 
 TEST_DATABASE_URL = settings.DATABASE_URL + "_test"
 
@@ -48,11 +51,14 @@ class FakeRedis:
 
 
 @pytest_asyncio.fixture
-async def client() -> AsyncClient:
-    fake_redis = FakeRedis()
+async def redis_client() -> FakeRedis:
+    return FakeRedis()
 
+
+@pytest_asyncio.fixture
+async def client(redis_client: FakeRedis) -> AsyncClient:
     async def override_get_redis():
-        return fake_redis
+        return redis_client
 
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_redis] = override_get_redis

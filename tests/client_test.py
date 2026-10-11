@@ -1,5 +1,7 @@
 import uuid
 
+import pytest
+
 from app.core.enums import UserRole
 from app.trainer.service import create_trainer_profile
 from tests.conftest import auth_headers, create_test_user
@@ -34,6 +36,30 @@ async def test_create_client_profile_success(client, db):
     data = response.json()
     assert data["fitness_goal"] == "Get stronger"
     assert data["email"] == "client1@client.com"
+
+
+@pytest.mark.parametrize(
+    "cycle_fields",
+    [
+        {"cycle_length_days": 0},
+        {"cycle_length_days": 60},
+        {"period_length_days": 0},
+        {"period_length_days": 15},
+    ],
+)
+async def test_create_client_profile_with_out_of_range_cycle_data_fails(
+    client, db, cycle_fields
+):
+    _, trainer_profile = await _create_test_trainer_profile(db, "trainer1@trainer.com")
+    client_user = await create_test_user(db, UserRole.client, "client1@client.com")
+    headers = auth_headers(client_user)
+
+    response = await client.post(
+        "/client/create",
+        json={"trainer_id": str(trainer_profile.id), **cycle_fields},
+        headers=headers,
+    )
+    assert response.status_code == 422
 
 
 async def test_create_client_profile_as_trainer_forbidden(client, db):

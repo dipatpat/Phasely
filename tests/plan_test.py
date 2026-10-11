@@ -1,3 +1,5 @@
+import pytest
+
 from app.core.enums import UserRole
 from app.trainer.service import create_trainer_profile
 from tests.conftest import auth_headers, create_test_user
@@ -413,6 +415,78 @@ async def test_create_training_plan_as_trainer_succeeds(client, db):
     assert data["title"] == "Strength Plan"
     assert len(data["exercises"]) == 1
     assert data["exercises"][0]["exercise"]["name"] == "Squat"
+
+
+@pytest.mark.parametrize(
+    "invalid_fields",
+    [
+        {"day_of_week": 0},
+        {"day_of_week": 8},
+        {"sets": 0},
+        {"reps": -5},
+        {"duration_seconds": 0},
+        {"weight_kg": "-10"},
+        {"rest_seconds": -1},
+    ],
+)
+async def test_create_training_plan_with_out_of_range_values_fails(
+    client, db, invalid_fields
+):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    trainer_headers = auth_headers(trainer_user)
+    _, client_profile = await _create_test_client_profile(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    exercise = await _create_test_exercise(client, trainer_headers)
+
+    response = await client.post(
+        "/plan/training/create",
+        json={
+            "client_id": client_profile["id"],
+            "title": "Strength Plan",
+            "exercises": [
+                {
+                    "exercise_id": exercise["id"],
+                    "cycle_phase": "follicular",
+                    "day_of_week": 1,
+                    **invalid_fields,
+                }
+            ],
+        },
+        headers=trainer_headers,
+    )
+    assert response.status_code == 422
+
+
+async def test_create_training_plan_with_unknown_difficulty_fails(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    trainer_headers = auth_headers(trainer_user)
+    _, client_profile = await _create_test_client_profile(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    exercise = await _create_test_exercise(client, trainer_headers)
+
+    response = await client.post(
+        "/plan/training/create",
+        json={
+            "client_id": client_profile["id"],
+            "title": "Strength Plan",
+            "exercises": [
+                {
+                    "exercise_id": exercise["id"],
+                    "cycle_phase": "follicular",
+                    "day_of_week": 1,
+                    "difficulty_level": "moderate",
+                }
+            ],
+        },
+        headers=trainer_headers,
+    )
+    assert response.status_code == 422
 
 
 async def test_get_my_training_plan_success(client, db):

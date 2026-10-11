@@ -3,11 +3,26 @@ import json
 import uuid
 from datetime import date
 
+from sqlalchemy.pool import NullPool
+
 from app.core.enums import UserRole
+from app.report import tasks
 from app.report.service import generate_weekly_report_data
 from app.report.tasks import generate_weekly_report
 from app.trainer.service import create_trainer_profile
 from tests.conftest import FakeRedis, TestSessionLocal, auth_headers, create_test_user
+
+EMPTY_SUMMARY = {
+    "days_logged": 0,
+    "average_hours_of_sleep": None,
+    "average_energy_level": None,
+    "total_calories": 0,
+    "total_protein": 0,
+    "total_carbs": 0,
+    "total_fat": 0,
+    "total_meals_logged": 0,
+    "total_exercises_completed": 0,
+}
 
 
 async def _create_test_trainer_profile(db, email: str):
@@ -95,6 +110,17 @@ async def test_generate_weekly_report_data_builds_per_day_breakdown(client, db):
         headers=headers,
     )
     await client.post(
+        "/log/meal/create",
+        json={
+            "recipe_id": recipe["id"],
+            "meal_type": "dinner",
+            "consumed_at": "2026-09-07T19:00:00",
+            "portion_quantity": "2",
+            "portion_unit": "bowl",
+        },
+        headers=headers,
+    )
+    await client.post(
         "/log/exercise/create",
         json={"exercise_id": exercise["id"], "completed_at": "2026-09-07T18:00:00"},
         headers=headers,
@@ -113,7 +139,11 @@ async def test_generate_weekly_report_data_builds_per_day_breakdown(client, db):
     assert monday["cycle_phase"] == "luteal"
     assert monday["energy_level"] == 6
     assert monday["hours_of_sleep"] == 7.5
-    assert monday["calories_consumed"] == 400
+    assert monday["calories_consumed"] == 1200
+    assert monday["protein"] == 90.0
+    assert monday["carbs"] == 30.0
+    assert monday["fat"] == 24.0
+    assert monday["meals_logged"] == 2
     assert monday["exercises_completed"] == 1
 
     tuesday = report["daily_breakdown"][1]
@@ -121,7 +151,39 @@ async def test_generate_weekly_report_data_builds_per_day_breakdown(client, db):
     assert tuesday["cycle_phase"] is None
     assert tuesday["energy_level"] is None
     assert tuesday["calories_consumed"] == 0
+    assert tuesday["protein"] == 0
+    assert tuesday["meals_logged"] == 0
     assert tuesday["exercises_completed"] == 0
+
+    summary = report["summary"]
+    assert summary["days_logged"] == 1
+    assert summary["average_hours_of_sleep"] == 7.5
+    assert summary["average_energy_level"] == 6
+    assert summary["total_calories"] == 1200
+    assert summary["total_protein"] == 90.0
+    assert summary["total_meals_logged"] == 2
+    assert summary["total_exercises_completed"] == 1
+
+
+async def test_generate_weekly_report_data_empty_week_has_no_averages(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    client_user = await _create_test_client(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    headers = auth_headers(client_user)
+    client_profile_id = await _get_own_client_profile_id(client, headers)
+
+    report = await generate_weekly_report_data(
+        db, uuid.UUID(client_profile_id), date(2026, 9, 7)
+    )
+
+    summary = report["summary"]
+    assert summary["days_logged"] == 0
+    assert summary["average_hours_of_sleep"] is None
+    assert summary["average_energy_level"] is None
+    assert summary["total_calories"] == 0
 
 
 async def test_generate_weekly_report_task_caches_result(mocker, client, db):
@@ -141,8 +203,8 @@ async def test_generate_weekly_report_task_caches_result(mocker, client, db):
     )
 
     fake_redis = FakeRedis()
-    mocker.patch("app.report.tasks.AsyncSessionLocal", TestSessionLocal)
-    mocker.patch("app.report.tasks.get_redis", return_value=fake_redis)
+    mocker.patch("app.report.tasks.TaskSessionLocal", TestSessionLocal)
+    mocker.patch("app.report.tasks.create_redis_client", return_value=fake_redis)
 
     result = await asyncio.to_thread(
         generate_weekly_report, client_profile_id, "2026-09-07"
@@ -280,6 +342,7 @@ async def test_get_weekly_report_cache_hit_returns_report(client, redis_client, 
     cached_report = {
         "week_start": "2026-09-07",
         "week_end": "2026-09-13",
+        "summary": EMPTY_SUMMARY,
         "daily_breakdown": [],
     }
     cache_key = f"weekly_report:{client_profile_id}:2026-09-07"
@@ -307,6 +370,7 @@ async def test_get_weekly_report_as_trainer_for_own_client(client, redis_client,
     cached_report = {
         "week_start": "2026-09-07",
         "week_end": "2026-09-13",
+        "summary": EMPTY_SUMMARY,
         "daily_breakdown": [],
     }
     cache_key = f"weekly_report:{client_profile_id}:2026-09-07"
@@ -331,3 +395,32 @@ async def test_get_weekly_report_as_trainer_without_client_id_fails(client, db):
     )
 
     assert response.status_code == 422
+
+
+def test_task_engine_does_not_pool_connections():
+    assert isinstance(tasks.task_engine.pool, NullPool)
+
+
+async def test_generate_weekly_report_task_runs_repeatedly(mocker, client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    client_user = await _create_test_client(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    client_profile_id = await _get_own_client_profile_id(
+        client, auth_headers(client_user)
+    )
+    fake_redis = FakeRedis()
+    mocker.patch("app.report.tasks.TaskSessionLocal", TestSessionLocal)
+    mocker.patch("app.report.tasks.create_redis_client", return_value=fake_redis)
+
+    first = await asyncio.to_thread(
+        generate_weekly_report, client_profile_id, "2026-09-07"
+    )
+    second = await asyncio.to_thread(
+        generate_weekly_report, client_profile_id, "2026-09-14"
+    )
+
+    assert first["week_start"] == "2026-09-07"
+    assert second["week_start"] == "2026-09-14"

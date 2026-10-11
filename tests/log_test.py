@@ -1,5 +1,7 @@
 from datetime import date
 
+import pytest
+
 from app.core.enums import UserRole
 from app.trainer.service import create_trainer_profile
 from tests.conftest import auth_headers, create_test_user
@@ -70,6 +72,32 @@ async def test_create_daily_log_as_client_succeeds(client, db):
     data = response.json()["daily_log"]
     assert data["cycle_phase"] == "luteal"
     assert data["energy_level"] == 6
+
+
+@pytest.mark.parametrize(
+    "invalid_fields",
+    [
+        {"energy_level": 11},
+        {"energy_level": -1},
+        {"hours_of_sleep": "25"},
+        {"hours_of_sleep": "-1"},
+    ],
+)
+async def test_create_daily_log_with_out_of_range_values_fails(
+    client, db, invalid_fields
+):
+    _, trainer_profile = await _create_test_trainer_profile(db, "trainer1@trainer.com")
+    client_user = await _create_test_client(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    headers = auth_headers(client_user)
+
+    response = await client.post(
+        "/log/daily/create",
+        json={"log_date": "2026-10-01", "cycle_phase": "luteal", **invalid_fields},
+        headers=headers,
+    )
+    assert response.status_code == 422
 
 
 async def test_create_daily_log_as_trainer_forbidden(client, db):

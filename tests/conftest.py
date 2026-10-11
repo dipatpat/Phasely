@@ -49,6 +49,9 @@ class FakeRedis:
         for key in keys:
             self._store.pop(key, None)
 
+    async def aclose(self) -> None:
+        pass
+
 
 @pytest_asyncio.fixture
 async def redis_client() -> FakeRedis:

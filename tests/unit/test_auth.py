@@ -1,3 +1,9 @@
+import uuid
+from datetime import timedelta
+
+from app.auth.security import create_access_token
+
+
 async def test_register_user_success(client):
     response = await client.post(
         "/auth/register",
@@ -124,4 +130,24 @@ async def test_logout_blacklists_token(client):
     assert logout.status_code == 204
 
     response = await client.get("/auth/me", headers=headers)
+    assert response.status_code == 401
+
+
+async def test_logout_with_expired_token_returns_401(client):
+    expired_token = create_access_token(
+        {"sub": str(uuid.uuid4())}, expires_delta=timedelta(minutes=-1)
+    )
+    headers = {"Authorization": f"Bearer {expired_token}"}
+
+    response = await client.post("/auth/logout", headers=headers)
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Token has expired"
+
+
+async def test_logout_with_invalid_token_returns_401(client):
+    headers = {"Authorization": "Bearer not-a-real-token"}
+
+    response = await client.post("/auth/logout", headers=headers)
+
     assert response.status_code == 401

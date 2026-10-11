@@ -1,4 +1,12 @@
+import uuid
+from datetime import datetime
+
+import pytest
+from sqlalchemy.exc import IntegrityError
+
+from app.core.config import APP_TZ
 from app.core.enums import UserRole
+from app.session.models import Session
 from app.trainer.service import create_trainer_profile
 from tests.conftest import auth_headers, create_test_user
 
@@ -425,3 +433,100 @@ async def test_available_slots_excludes_booked_slot(client, db):
     slots = response.json()
     assert len(slots) == 1
     assert slots[0]["slot_start"] == "11:00:00"
+
+
+async def test_book_session_after_cancellation_succeeds(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    trainer_headers = auth_headers(trainer_user)
+    await _create_availability_slot(
+        client, trainer_headers, "2026-10-01", "09:00:00", "10:00:00"
+    )
+    first_user, _ = await _create_test_client_profile(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    second_user, _ = await _create_test_client_profile(
+        client, trainer_profile.id, "client2@client.com", db
+    )
+    first_headers = auth_headers(first_user)
+    session = await _book_session(client, first_headers)
+    await client.patch(
+        "/session/cancel",
+        params={"session_id": session["id"]},
+        json={},
+        headers=first_headers,
+    )
+
+    response = await client.post(
+        "/session/book-client",
+        json={"scheduled_at": "2026-10-01T09:00:00"},
+        headers=auth_headers(second_user),
+    )
+    assert response.status_code == 201
+
+
+async def test_double_booking_rejected_by_database(client, db):
+    _, trainer_profile = await _create_test_trainer_profile(db, "trainer1@trainer.com")
+    _, first_profile = await _create_test_client_profile(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    _, second_profile = await _create_test_client_profile(
+        client, trainer_profile.id, "client2@client.com", db
+    )
+    scheduled_at = datetime(2026, 10, 1, 9, 0)
+
+    db.add(
+        Session(
+            trainer_id=trainer_profile.id,
+            client_id=uuid.UUID(first_profile["id"]),
+            scheduled_at=scheduled_at,
+        )
+    )
+    await db.commit()
+    db.add(
+        Session(
+            trainer_id=trainer_profile.id,
+            client_id=uuid.UUID(second_profile["id"]),
+            scheduled_at=scheduled_at,
+        )
+    )
+    with pytest.raises(IntegrityError):
+        await db.commit()
+    await db.rollback()
+
+
+async def test_book_session_stores_slot_time_in_app_timezone(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    await _create_availability_slot(
+        client, auth_headers(trainer_user), "2026-10-01", "09:00:00", "10:00:00"
+    )
+    client_user, _ = await _create_test_client_profile(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+
+    session = await _book_session(client, auth_headers(client_user))
+
+    scheduled_at = datetime.fromisoformat(session["scheduled_at"])
+    assert scheduled_at == datetime(2026, 10, 1, 9, 0, tzinfo=APP_TZ)
+
+
+async def test_book_session_with_utc_time_matches_local_slot(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    await _create_availability_slot(
+        client, auth_headers(trainer_user), "2026-10-01", "09:00:00", "10:00:00"
+    )
+    client_user, _ = await _create_test_client_profile(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+
+    response = await client.post(
+        "/session/book-client",
+        json={"scheduled_at": "2026-10-01T07:00:00Z"},
+        headers=auth_headers(client_user),
+    )
+    assert response.status_code == 201

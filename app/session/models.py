@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Text
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -37,3 +37,13 @@ class Session(UUIDMixin, TimestampMixin, Base):
 
     trainer: Mapped["TrainerProfile"] = relationship()  # noqa: F821
     client: Mapped["ClientProfile"] = relationship()  # noqa: F821
+
+    __table_args__ = (
+        Index(
+            "ix_session_trainer_scheduled_active",
+            "trainer_id",
+            "scheduled_at",
+            unique=True,
+            postgresql_where="status != 'cancelled'",
+        ),
+    )

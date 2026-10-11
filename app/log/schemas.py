@@ -2,7 +2,7 @@ import uuid
 from datetime import date, datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.enums import CyclePhase, MealType
 from app.exercise.schemas import ExercisePublic
@@ -13,8 +13,8 @@ class DailyLogCreate(BaseModel):
     log_date: date
     period_started_today: bool = False
     cycle_phase: CyclePhase | None = None
-    hours_of_sleep: Decimal | None = None
-    energy_level: int | None = None
+    hours_of_sleep: Decimal | None = Field(default=None, ge=0, le=24)
+    energy_level: int | None = Field(default=None, ge=0, le=10)
 
 
 class DailyLogPublic(BaseModel):

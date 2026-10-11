@@ -1,3 +1,5 @@
+from zoneinfo import ZoneInfo
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,6 +10,9 @@ class Settings(BaseSettings):
     REDIS_URL: str
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    APP_TIMEZONE: str = "Europe/Warsaw"
 
 
 settings = Settings()
+
+APP_TZ = ZoneInfo(settings.APP_TIMEZONE)

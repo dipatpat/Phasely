@@ -12,12 +12,29 @@ class DailyBreakdownEntry(BaseModel):
     energy_level: int | None
     hours_of_sleep: float | None
     calories_consumed: int
+    protein: float
+    carbs: float
+    fat: float
+    meals_logged: int
     exercises_completed: int
+
+
+class WeeklySummary(BaseModel):
+    days_logged: int
+    average_hours_of_sleep: float | None
+    average_energy_level: float | None
+    total_calories: int
+    total_protein: float
+    total_carbs: float
+    total_fat: float
+    total_meals_logged: int
+    total_exercises_completed: int
 
 
 class WeeklyReportPublic(BaseModel):
     week_start: date
     week_end: date
+    summary: WeeklySummary
     daily_breakdown: list[DailyBreakdownEntry]
 
 

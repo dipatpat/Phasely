@@ -3,25 +3,40 @@ from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-from app.core.enums import CyclePhase
+from app.core.enums import CyclePhase, DifficultyLevel
 from app.exercise.models import Exercise
 from app.log.models import PeriodLog
-from app.plan.service import (
-    get_active_nutrition_plan_by_client_id,
-    get_active_training_plan_by_client_id,
+from app.plan.models import (
+    NutritionPlan,
+    NutritionPlanRecipe,
+    TrainingPlan,
+    TrainingPlanExercise,
 )
-from app.recipe.models import Recipe
+from app.recipe.models import Recipe, RecipeIngredient
 
 LUTEAL_LENGTH_DAYS = 14
 OVULATION_WINDOW_DAYS = 3
 ENERGY_INTENSITY_RULES = [
-    {"min_energy": 0, "max_energy": 3, "allowed_difficulty": ["easy"]},
-    {"min_energy": 4, "max_energy": 7, "allowed_difficulty": ["easy", "medium"]},
+    {
+        "min_energy": 0,
+        "max_energy": 3,
+        "allowed_difficulty": [DifficultyLevel.easy],
+    },
+    {
+        "min_energy": 4,
+        "max_energy": 7,
+        "allowed_difficulty": [DifficultyLevel.easy, DifficultyLevel.medium],
+    },
     {
         "min_energy": 8,
         "max_energy": 10,
-        "allowed_difficulty": ["easy", "medium", "hard"],
+        "allowed_difficulty": [
+            DifficultyLevel.easy,
+            DifficultyLevel.medium,
+            DifficultyLevel.hard,
+        ],
     },
 ]
 
@@ -73,17 +88,26 @@ async def get_period_start_dates(db: AsyncSession, client_id: uuid.UUID) -> list
 async def get_recipe_recommendations(
     db: AsyncSession, client_id: uuid.UUID, cycle_phase: CyclePhase
 ) -> list[Recipe]:
-    plan = await get_active_nutrition_plan_by_client_id(db, client_id)
-    if plan is None:
-        return []
-    return [
-        assignment.recipe
-        for assignment in plan.recipes
-        if assignment.cycle_phase == cycle_phase
-    ]
+    result = await db.execute(
+        select(Recipe)
+        .join(NutritionPlanRecipe, NutritionPlanRecipe.recipe_id == Recipe.id)
+        .join(NutritionPlan, NutritionPlanRecipe.nutrition_plan_id == NutritionPlan.id)
+        .where(
+            NutritionPlan.client_id == client_id,
+            NutritionPlan.is_active.is_(True),
+            NutritionPlanRecipe.cycle_phase == cycle_phase,
+        )
+        .options(
+            selectinload(Recipe.ingredients).selectinload(RecipeIngredient.ingredient),
+            selectinload(Recipe.dietary_tags),
+        )
+    )
+    return list(result.scalars().all())
 
 
-def get_allowed_difficulty_levels(energy_level: int | None) -> list[str] | None:
+def get_allowed_difficulty_levels(
+    energy_level: int | None,
+) -> list[DifficultyLevel] | None:
     if energy_level is None:
         return None
     for rule in ENERGY_INTENSITY_RULES:
@@ -99,20 +123,21 @@ async def get_exercise_recommendations(
     day_of_week: int,
     energy_level: int | None,
 ) -> list[Exercise]:
-    plan = await get_active_training_plan_by_client_id(db, client_id)
-    if plan is None:
-        return []
-    allowed_exercises = [
-        allowed_exercise
-        for allowed_exercise in plan.exercises
-        if allowed_exercise.cycle_phase == cycle_phase
-        and allowed_exercise.day_of_week == day_of_week
-    ]
+    query = (
+        select(Exercise)
+        .join(TrainingPlanExercise, TrainingPlanExercise.exercise_id == Exercise.id)
+        .join(TrainingPlan, TrainingPlanExercise.training_plan_id == TrainingPlan.id)
+        .where(
+            TrainingPlan.client_id == client_id,
+            TrainingPlan.is_active.is_(True),
+            TrainingPlanExercise.cycle_phase == cycle_phase,
+            TrainingPlanExercise.day_of_week == day_of_week,
+        )
+    )
     allowed_difficulty = get_allowed_difficulty_levels(energy_level)
     if allowed_difficulty is not None:
-        allowed_exercises = [
-            exercise
-            for exercise in allowed_exercises
-            if exercise.difficulty_level in allowed_difficulty
-        ]
-    return [assignment.exercise for assignment in allowed_exercises]
+        query = query.where(
+            TrainingPlanExercise.difficulty_level.in_(allowed_difficulty)
+        )
+    result = await db.execute(query)
+    return list(result.scalars().all())

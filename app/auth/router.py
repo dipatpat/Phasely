@@ -1,6 +1,7 @@
 import time
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.concurrency import run_in_threadpool
 from fastapi.security import OAuth2PasswordRequestForm
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user, oauth2_scheme
 from app.auth.schemas import Token, UserPublic, UserRegister
 from app.auth.security import (
+    AuthError,
     create_access_token,
     decode_access_token,
     hash_password,
@@ -31,7 +33,7 @@ async def register_user(data: UserRegister, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_409_CONFLICT,
             detail="Email already registered",
         )
-    hashed_password = hash_password(data.password)
+    hashed_password = await run_in_threadpool(hash_password, data.password)
     try:
         new_user = await create_user(
             db, data.first_name, data.last_name, data.email, hashed_password, data.role
@@ -50,7 +52,9 @@ async def login_user(
 ) -> Token:
     username = form_data.username
     user = await get_user_by_email(db, username)
-    if not user or not verify_password(form_data.password, user.hashed_password):
+    if not user or not await run_in_threadpool(
+        verify_password, form_data.password, user.hashed_password
+    ):
         raise HTTPException(401, detail="Invalid email or password")
     access_token = create_access_token({"sub": str(user.id)})
     return Token(access_token=access_token, token_type="bearer")
@@ -65,6 +69,9 @@ async def get_user(current_user: User = Depends(get_current_user)) -> UserPublic
 async def logout_user(
     token: str = Depends(oauth2_scheme), redis: Redis = Depends(get_redis)
 ) -> None:
-    expiration_time = decode_access_token(token).get("exp")
+    try:
+        expiration_time = decode_access_token(token).get("exp")
+    except AuthError as e:
+        raise HTTPException(status_code=e.status_code, detail=e.message) from e
     remaining_time = expiration_time - int(time.time())
     await redis.set(f"blacklist:{token}", "0", ex=remaining_time)

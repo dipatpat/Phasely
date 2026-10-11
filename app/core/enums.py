@@ -18,3 +18,9 @@ class MealType(enum.Enum):
     lunch = "lunch"
     dinner = "dinner"
     snack = "snack"
+
+
+class DifficultyLevel(enum.Enum):
+    easy = "easy"
+    medium = "medium"
+    hard = "hard"

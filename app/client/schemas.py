@@ -1,24 +1,28 @@
 import uuid
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+CycleLengthDays = Annotated[int, Field(ge=21, le=45)]
+PeriodLengthDays = Annotated[int, Field(ge=1, le=10)]
 
 
 class ClientProfileCreate(BaseModel):
     trainer_id: uuid.UUID
     body_fat_percentage: Decimal | None = None
     fitness_goal: str | None = None
-    cycle_length_days: int = 28
-    period_length_days: int = 5
+    cycle_length_days: CycleLengthDays = 28
+    period_length_days: PeriodLengthDays = 5
     last_period_start: date | None = None
 
 
 class ClientProfileUpdate(BaseModel):
     body_fat_percentage: Decimal | None = None
     fitness_goal: str | None = None
-    cycle_length_days: int | None = None
-    period_length_days: int | None = None
+    cycle_length_days: CycleLengthDays | None = None
+    period_length_days: PeriodLengthDays | None = None
     last_period_start: date | None = None
 
 

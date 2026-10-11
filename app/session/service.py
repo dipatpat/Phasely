@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 
 from app.client.models import ClientProfile
 from app.client.service import get_client_profile_by_user_id
+from app.core.config import APP_TZ
 from app.core.enums import UserRole
 from app.session.models import Session, SessionStatus
 from app.trainer.models import TrainerAvailability, TrainerProfile
@@ -48,7 +49,7 @@ async def book_session(
     )
     if not free_slot:
         raise SlotUnavailableError
-    scheduled_at = datetime.combine(slot_date, slot_start)
+    scheduled_at = datetime.combine(slot_date, slot_start, tzinfo=APP_TZ)
     new_session = Session(
         client_id=client_id,
         trainer_id=trainer_id,
@@ -98,7 +99,7 @@ async def cancel_session(
 async def is_slot_available(
     db: AsyncSession, trainer_id: uuid.UUID, slot_date: date, slot_start: time
 ) -> bool:
-    scheduled_at = datetime.combine(slot_date, slot_start)
+    scheduled_at = datetime.combine(slot_date, slot_start, tzinfo=APP_TZ)
     availability = await db.execute(
         select(TrainerAvailability).where(
             TrainerAvailability.trainer_id == trainer_id,
@@ -113,6 +114,7 @@ async def is_slot_available(
         select(Session).where(
             Session.trainer_id == trainer_id,
             Session.scheduled_at == scheduled_at,
+            Session.status != SessionStatus.cancelled,
         )
     )
 

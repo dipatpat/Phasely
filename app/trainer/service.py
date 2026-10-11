@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.config import settings
 from app.trainer.models import TrainerAvailability, TrainerProfile
 
 
@@ -70,7 +71,7 @@ async def create_availability_slot(
         slot_date=slot_date,
         slot_start=slot_start,
         slot_end=slot_end,
-        timezone="Europe/Warsaw",
+        timezone=settings.APP_TIMEZONE,
         is_active=True,
     )
     db.add(new_slot)

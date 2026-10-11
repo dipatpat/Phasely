@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.base import Base, TimestampMixin, UUIDMixin
-from app.core.enums import CyclePhase, MealType
+from app.core.enums import CyclePhase, DifficultyLevel, MealType
 
 
 class NutritionPlan(UUIDMixin, TimestampMixin, Base):
@@ -93,14 +93,15 @@ class TrainingPlanExercise(Base):
     cycle_phase: Mapped[CyclePhase] = mapped_column(
         Enum(CyclePhase), primary_key=True, nullable=False
     )
-    # ISO 8601 convention: 1 = Monday, ..., 7 = Sunday (matches date.isoweekday())
     day_of_week: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     sets: Mapped[int | None] = mapped_column(Integer, nullable=True)
     reps: Mapped[int | None] = mapped_column(Integer, nullable=True)
     duration_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
     weight_kg: Mapped[Decimal | None] = mapped_column(Numeric(6, 2), nullable=True)
     rest_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    difficulty_level: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    difficulty_level: Mapped[DifficultyLevel | None] = mapped_column(
+        Enum(DifficultyLevel), nullable=True
+    )
 
     training_plan: Mapped["TrainingPlan"] = relationship(back_populates="exercises")
     exercise: Mapped["Exercise"] = relationship()  # noqa: F821

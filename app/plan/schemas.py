@@ -2,9 +2,9 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
-from app.core.enums import CyclePhase, MealType
+from app.core.enums import CyclePhase, DifficultyLevel, MealType
 from app.exercise.schemas import ExercisePublic
 from app.recipe.schemas import RecipePublic
 
@@ -49,13 +49,13 @@ class NutritionPlanPublic(BaseModel):
 class TrainingPlanExerciseCreate(BaseModel):
     exercise_id: uuid.UUID
     cycle_phase: CyclePhase
-    day_of_week: int
-    sets: int | None = None
-    reps: int | None = None
-    duration_seconds: int | None = None
-    weight_kg: Decimal | None = None
-    rest_seconds: int | None = None
-    difficulty_level: str | None = None
+    day_of_week: int = Field(ge=1, le=7)
+    sets: int | None = Field(default=None, ge=1)
+    reps: int | None = Field(default=None, ge=1)
+    duration_seconds: int | None = Field(default=None, ge=1)
+    weight_kg: Decimal | None = Field(default=None, ge=0)
+    rest_seconds: int | None = Field(default=None, ge=0)
+    difficulty_level: DifficultyLevel | None = None
 
 
 class TrainingPlanExercisePublic(BaseModel):
@@ -68,7 +68,7 @@ class TrainingPlanExercisePublic(BaseModel):
     duration_seconds: int | None = None
     weight_kg: Decimal | None = None
     rest_seconds: int | None = None
-    difficulty_level: str | None = None
+    difficulty_level: DifficultyLevel | None = None
 
 
 class TrainingPlanCreate(BaseModel):

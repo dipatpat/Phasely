@@ -13,6 +13,7 @@ from app.recipe.service import (
     delete_recipe,
     get_recipe_by_id,
     list_recipes,
+    search_recipes,
     update_recipe,
 )
 from app.user.models import User
@@ -113,3 +114,15 @@ async def handle_get_recipe_by_id(
             status_code=status.HTTP_404_NOT_FOUND, detail="Recipe not found"
         )
     return recipe
+
+
+@router.get(
+    "/search", response_model=list[RecipePublic], status_code=status.HTTP_200_OK
+)
+async def handle_search_recipes(
+    query: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    recipes = await search_recipes(db, query)
+    return recipes

@@ -1,3 +1,4 @@
+import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -90,6 +91,11 @@ async def create_test_user(db: AsyncSession, role: UserRole, email: str) -> User
 def auth_headers(user: User) -> dict:
     token = create_access_token({"sub": str(user.id)})
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(autouse=True)
+def _mock_recipe_fts_sync(mocker):
+    mocker.patch("app.recipe.service.sync_recipe_to_postgres_full_text_search.delay")
 
 
 @pytest_asyncio.fixture(autouse=True)

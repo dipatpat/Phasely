@@ -1,6 +1,16 @@
 from decimal import Decimal
 
-from sqlalchemy import Column, Enum, ForeignKey, Integer, Numeric, String, Table, Text
+from sqlalchemy import (
+    Column,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Table,
+    Text,
+)
 from sqlalchemy.dialects.postgresql import TSVECTOR, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -32,6 +42,10 @@ class DietaryTag(UUIDMixin, Base):
 
 class Recipe(UUIDMixin, TimestampMixin, Base):
     __tablename__ = "recipe"
+
+    __table_args__ = (
+        Index("ix_recipe_search_vector", "search_vector", postgresql_using="gin"),
+    )
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     meal_type: Mapped[MealType] = mapped_column(Enum(MealType), nullable=False)

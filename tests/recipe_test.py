@@ -1,8 +1,13 @@
-from sqlalchemy import select
+import asyncio
+import uuid
+
+from sqlalchemy import func, select
+from sqlalchemy.pool import NullPool
 
 from app.core.enums import UserRole
-from app.recipe.models import Ingredient
-from tests.conftest import auth_headers, create_test_user
+from app.recipe.models import Ingredient, Recipe
+from app.recipe.tasks import sync_recipe_to_postgres_full_text_search, task_engine
+from tests.conftest import TestSessionLocal, auth_headers, create_test_user
 
 
 def _recipe_payload(**overrides):
@@ -238,3 +243,119 @@ async def test_delete_recipe_as_client_forbidden(client, db):
         headers=auth_headers(client_user),
     )
     assert response.status_code == 403
+
+
+async def _matches_search(db, recipe_id: str, term: str) -> bool:
+    result = await db.execute(
+        select(Recipe.search_vector.op("@@")(func.to_tsquery("english", term))).where(
+            Recipe.id == uuid.UUID(recipe_id)
+        )
+    )
+    return bool(result.scalar_one())
+
+
+async def test_sync_recipe_task_populates_search_vector(mocker, client, db):
+    trainer = await create_test_user(db, UserRole.trainer, "trainer1@example.com")
+    headers = auth_headers(trainer)
+    created = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Ceasar Salad", dietary_tag_names=["vegan"]),
+        headers=headers,
+    )
+    recipe_id = created.json()["id"]
+
+    mocker.patch("app.recipe.tasks.TaskSessionLocal", TestSessionLocal)
+
+    await asyncio.to_thread(sync_recipe_to_postgres_full_text_search, recipe_id)
+
+    assert await _matches_search(db, recipe_id, "salad")  # from name
+    assert await _matches_search(db, recipe_id, "vegan")  # from dietary tag
+    assert await _matches_search(db, recipe_id, "lunch")  # from meal_type
+    assert not await _matches_search(db, recipe_id, "dinner")
+
+
+def test_task_engine_does_not_pool_connections():
+    assert isinstance(task_engine.pool, NullPool)
+
+
+async def _sync_recipe(mocker, recipe_id: str) -> None:
+    mocker.patch("app.recipe.tasks.TaskSessionLocal", TestSessionLocal)
+    await asyncio.to_thread(sync_recipe_to_postgres_full_text_search, recipe_id)
+
+
+async def test_search_recipes_matches_by_name(mocker, client, db):
+    trainer = await create_test_user(db, UserRole.trainer, "trainer1@example.com")
+    headers = auth_headers(trainer)
+    created = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Ceasar Salad", dietary_tag_names=["vegan"]),
+        headers=headers,
+    )
+    await _sync_recipe(mocker, created.json()["id"])
+
+    response = await client.get(
+        "/recipe/search", params={"query": "salad"}, headers=headers
+    )
+    assert response.status_code == 200
+    names = [recipe["name"] for recipe in response.json()]
+    assert "Ceasar Salad" in names
+
+
+async def test_search_recipes_matches_by_dietary_tag(mocker, client, db):
+    trainer = await create_test_user(db, UserRole.trainer, "trainer1@example.com")
+    headers = auth_headers(trainer)
+    created = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Ceasar Salad", dietary_tag_names=["vegan"]),
+        headers=headers,
+    )
+    await _sync_recipe(mocker, created.json()["id"])
+
+    response = await client.get(
+        "/recipe/search", params={"query": "vegan"}, headers=headers
+    )
+    assert response.status_code == 200
+    names = [recipe["name"] for recipe in response.json()]
+    assert "Ceasar Salad" in names
+
+
+async def test_search_recipes_no_match_returns_empty(mocker, client, db):
+    trainer = await create_test_user(db, UserRole.trainer, "trainer1@example.com")
+    headers = auth_headers(trainer)
+    created = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Ceasar Salad", dietary_tag_names=["vegan"]),
+        headers=headers,
+    )
+    await _sync_recipe(mocker, created.json()["id"])
+
+    response = await client.get(
+        "/recipe/search", params={"query": "pizza"}, headers=headers
+    )
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+async def test_search_recipes_ranks_name_match_above_tag_match(mocker, client, db):
+    trainer = await create_test_user(db, UserRole.trainer, "trainer1@example.com")
+    headers = auth_headers(trainer)
+
+    name_match = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Protein Power Bowl", dietary_tag_names=["vegan"]),
+        headers=headers,
+    )
+    tag_match = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Chicken Soup", dietary_tag_names=["protein"]),
+        headers=headers,
+    )
+    await _sync_recipe(mocker, name_match.json()["id"])
+    await _sync_recipe(mocker, tag_match.json()["id"])
+
+    response = await client.get(
+        "/recipe/search", params={"query": "protein"}, headers=headers
+    )
+    assert response.status_code == 200
+    names = [recipe["name"] for recipe in response.json()]
+    assert names == ["Protein Power Bowl", "Chicken Soup"]

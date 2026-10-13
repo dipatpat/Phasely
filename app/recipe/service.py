@@ -1,7 +1,7 @@
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -9,6 +9,7 @@ from sqlalchemy.orm import selectinload
 from app.core.enums import MealType
 from app.recipe.models import DietaryTag, Ingredient, Recipe, RecipeIngredient
 from app.recipe.schemas import IngredientCreate
+from app.recipe.tasks import sync_recipe_to_postgres_full_text_search
 
 
 class RecipeNotFoundError(Exception):
@@ -81,6 +82,7 @@ async def create_recipe(
     new_recipe.dietary_tags = await _check_dietary_tags(db, names=dietary_tag_names)
     db.add(new_recipe)
     await db.commit()
+    sync_recipe_to_postgres_full_text_search.delay(str(new_recipe.id))
     return await get_recipe_by_id(db, new_recipe.id)
 
 
@@ -144,6 +146,8 @@ async def update_recipe(
     if dietary_tag_names is not None:
         recipe.dietary_tags = await _check_dietary_tags(db, names=dietary_tag_names)
     await db.commit()
+    sync_recipe_to_postgres_full_text_search.delay(str(recipe.id))
+
     return await get_recipe_by_id(db, recipe.id)
 
 
@@ -158,3 +162,18 @@ async def delete_recipe(db: AsyncSession, recipe_id: uuid.UUID) -> None:
         await db.rollback()
         raise RecipeInUseError("Recipe is used in a plan or log") from e
     return None
+
+
+async def search_recipes(db: AsyncSession, query: str) -> list[Recipe]:
+    tsquery = func.websearch_to_tsquery("english", query)
+    order_by_rank = func.ts_rank(Recipe.search_vector, tsquery)
+    result = await db.execute(
+        select(Recipe)
+        .options(
+            selectinload(Recipe.ingredients).selectinload(RecipeIngredient.ingredient),
+            selectinload(Recipe.dietary_tags),
+        )
+        .where(Recipe.search_vector.op("@@")(tsquery))
+        .order_by(order_by_rank.desc())
+    )
+    return list(result.scalars().all())

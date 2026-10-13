@@ -9,9 +9,7 @@ from app.session.models import SessionStatus
 from app.trainer.schemas import TrainerProfilePublic
 
 
-def to_app_wall_time(value: datetime) -> datetime:
-    # Slots are stored as local wall-clock times, so offset-aware input is
-    # converted to the app timezone before its date and time are matched
+def convert_to_app_tz(value: datetime) -> datetime:
     if value.tzinfo is not None:
         value = value.astimezone(APP_TZ)
     return value.replace(tzinfo=None)
@@ -21,7 +19,7 @@ class SessionCreateByClient(BaseModel):
     scheduled_at: datetime
     notes: str | None = None
 
-    _normalize_scheduled_at = field_validator("scheduled_at")(to_app_wall_time)
+    _normalize_scheduled_at = field_validator("scheduled_at")(convert_to_app_tz)
 
 
 class SessionCreateByTrainer(BaseModel):
@@ -29,7 +27,7 @@ class SessionCreateByTrainer(BaseModel):
     scheduled_at: datetime
     notes: str | None = None
 
-    _normalize_scheduled_at = field_validator("scheduled_at")(to_app_wall_time)
+    _normalize_scheduled_at = field_validator("scheduled_at")(convert_to_app_tz)
 
 
 class SessionUpdate(BaseModel):

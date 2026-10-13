@@ -1,10 +1,12 @@
 import uuid
+from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_trainer
 from app.core.database import get_db
+from app.core.enums import MealType
 from app.recipe.schemas import RecipeCreate, RecipePublic, RecipeUpdate
 from app.recipe.service import (
     RecipeInUseError,
@@ -121,8 +123,15 @@ async def handle_get_recipe_by_id(
 )
 async def handle_search_recipes(
     query: str,
+    meal_type: MealType | None = None,
+    max_calories: int | None = None,
+    min_protein: Decimal | None = None,
+    dietary_tag: str | None = None,
+    limit: int = 20,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    recipes = await search_recipes(db, query)
+    recipes = await search_recipes(
+        db, query, meal_type, max_calories, min_protein, dietary_tag, limit
+    )
     return recipes

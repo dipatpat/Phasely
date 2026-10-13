@@ -1,3 +1,4 @@
+import logging
 import uuid
 from decimal import Decimal
 
@@ -10,6 +11,8 @@ from app.core.enums import MealType
 from app.recipe.models import DietaryTag, Ingredient, Recipe, RecipeIngredient
 from app.recipe.schemas import IngredientCreate
 from app.recipe.tasks import sync_recipe_to_postgres_full_text_search
+
+logger = logging.getLogger(__name__)
 
 
 class RecipeNotFoundError(Exception):
@@ -82,7 +85,12 @@ async def create_recipe(
     new_recipe.dietary_tags = await _check_dietary_tags(db, names=dietary_tag_names)
     db.add(new_recipe)
     await db.commit()
-    sync_recipe_to_postgres_full_text_search.delay(str(new_recipe.id))
+    try:
+        sync_recipe_to_postgres_full_text_search.delay(str(new_recipe.id))
+    except Exception:
+        logger.exception(
+            "Failed to enqueue full-text search sync for recipe %s", new_recipe.id
+        )
     return await get_recipe_by_id(db, new_recipe.id)
 
 
@@ -146,7 +154,12 @@ async def update_recipe(
     if dietary_tag_names is not None:
         recipe.dietary_tags = await _check_dietary_tags(db, names=dietary_tag_names)
     await db.commit()
-    sync_recipe_to_postgres_full_text_search.delay(str(recipe.id))
+    try:
+        sync_recipe_to_postgres_full_text_search.delay(str(recipe.id))
+    except Exception:
+        logger.exception(
+            "Failed to enqueue full-text search sync for recipe %s", recipe.id
+        )
 
     return await get_recipe_by_id(db, recipe.id)
 
@@ -164,16 +177,34 @@ async def delete_recipe(db: AsyncSession, recipe_id: uuid.UUID) -> None:
     return None
 
 
-async def search_recipes(db: AsyncSession, query: str) -> list[Recipe]:
+async def search_recipes(
+    db: AsyncSession,
+    query: str,
+    meal_type: MealType | None = None,
+    max_calories: int | None = None,
+    min_protein: Decimal | None = None,
+    dietary_tag: str | None = None,
+    limit: int = 20,
+) -> list[Recipe]:
     tsquery = func.websearch_to_tsquery("english", query)
     order_by_rank = func.ts_rank(Recipe.search_vector, tsquery)
-    result = await db.execute(
+    stmt = (
         select(Recipe)
         .options(
             selectinload(Recipe.ingredients).selectinload(RecipeIngredient.ingredient),
             selectinload(Recipe.dietary_tags),
         )
         .where(Recipe.search_vector.op("@@")(tsquery))
-        .order_by(order_by_rank.desc())
     )
+    if meal_type is not None:
+        stmt = stmt.where(Recipe.meal_type == meal_type)
+    if max_calories is not None:
+        stmt = stmt.where(Recipe.calories <= max_calories)
+    if min_protein is not None:
+        stmt = stmt.where(Recipe.protein >= min_protein)
+    if dietary_tag is not None:
+        stmt = stmt.where(Recipe.dietary_tags.any(DietaryTag.name == dietary_tag))
+    stmt = stmt.order_by(order_by_rank.desc(), Recipe.name).limit(limit)
+
+    result = await db.execute(stmt)
     return list(result.scalars().all())

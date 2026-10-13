@@ -12,7 +12,7 @@ from tests.conftest import TestSessionLocal, auth_headers, create_test_user
 
 def _recipe_payload(**overrides):
     payload = {
-        "name": "Ceasar Salad",
+        "name": "Caesar Salad",
         "meal_type": "lunch",
         "protein": "30.00",
         "carbs": "10.00",
@@ -38,7 +38,7 @@ async def test_create_recipe_as_trainer_succeeds(client, db):
     )
     assert response.status_code == 201
     data = response.json()
-    assert data["name"] == "Ceasar Salad"
+    assert data["name"] == "Caesar Salad"
     ingredient_names = {i["name"] for i in data["ingredients"]}
     assert ingredient_names == {"chicken", "lettuce"}
     tag_names = {t["name"] for t in data["dietary_tags"]}
@@ -61,7 +61,7 @@ async def test_create_recipe_reuses_existing_ingredient(client, db):
 
     await client.post(
         "/recipe/create",
-        json=_recipe_payload(name="Ceasar Salad"),
+        json=_recipe_payload(name="Caesar Salad"),
         headers=headers,
     )
     await client.post(
@@ -83,7 +83,7 @@ async def test_create_recipe_reuses_existing_dietary_tag(client, db):
     headers = auth_headers(trainer)
 
     first_recipe = await client.post(
-        "/recipe/create", json=_recipe_payload(name="Ceasar Salad"), headers=headers
+        "/recipe/create", json=_recipe_payload(name="Caesar Salad"), headers=headers
     )
     second_recipe = await client.post(
         "/recipe/create",
@@ -116,7 +116,7 @@ async def test_list_recipes_visible_to_client(client, db):
     response = await client.get("/recipe/", headers=auth_headers(client_user))
     assert response.status_code == 200
     names = [recipe["name"] for recipe in response.json()]
-    assert "Ceasar Salad" in names
+    assert "Caesar Salad" in names
 
 
 async def test_get_recipe_by_id_success(client, db):
@@ -131,7 +131,7 @@ async def test_get_recipe_by_id_success(client, db):
         "/recipe/by_id", params={"recipe_id": recipe_id}, headers=headers
     )
     assert response.status_code == 200
-    assert response.json()["name"] == "Ceasar Salad"
+    assert response.json()["name"] == "Caesar Salad"
 
 
 async def test_get_recipe_by_id_not_found(client, db):
@@ -163,7 +163,7 @@ async def test_update_recipe_scalar_fields(client, db):
     assert response.status_code == 200
     data = response.json()
     assert data["calories"] == 400
-    assert data["name"] == "Ceasar Salad"
+    assert data["name"] == "Caesar Salad"
 
 
 async def test_update_recipe_replaces_ingredients(client, db):
@@ -259,7 +259,7 @@ async def test_sync_recipe_task_populates_search_vector(mocker, client, db):
     headers = auth_headers(trainer)
     created = await client.post(
         "/recipe/create",
-        json=_recipe_payload(name="Ceasar Salad", dietary_tag_names=["vegan"]),
+        json=_recipe_payload(name="Caesar Salad", dietary_tag_names=["vegan"]),
         headers=headers,
     )
     recipe_id = created.json()["id"]
@@ -288,7 +288,7 @@ async def test_search_recipes_matches_by_name(mocker, client, db):
     headers = auth_headers(trainer)
     created = await client.post(
         "/recipe/create",
-        json=_recipe_payload(name="Ceasar Salad", dietary_tag_names=["vegan"]),
+        json=_recipe_payload(name="Caesar Salad", dietary_tag_names=["vegan"]),
         headers=headers,
     )
     await _sync_recipe(mocker, created.json()["id"])
@@ -298,7 +298,7 @@ async def test_search_recipes_matches_by_name(mocker, client, db):
     )
     assert response.status_code == 200
     names = [recipe["name"] for recipe in response.json()]
-    assert "Ceasar Salad" in names
+    assert "Caesar Salad" in names
 
 
 async def test_search_recipes_matches_by_dietary_tag(mocker, client, db):
@@ -306,7 +306,7 @@ async def test_search_recipes_matches_by_dietary_tag(mocker, client, db):
     headers = auth_headers(trainer)
     created = await client.post(
         "/recipe/create",
-        json=_recipe_payload(name="Ceasar Salad", dietary_tag_names=["vegan"]),
+        json=_recipe_payload(name="Caesar Salad", dietary_tag_names=["vegan"]),
         headers=headers,
     )
     await _sync_recipe(mocker, created.json()["id"])
@@ -316,7 +316,7 @@ async def test_search_recipes_matches_by_dietary_tag(mocker, client, db):
     )
     assert response.status_code == 200
     names = [recipe["name"] for recipe in response.json()]
-    assert "Ceasar Salad" in names
+    assert "Caesar Salad" in names
 
 
 async def test_search_recipes_no_match_returns_empty(mocker, client, db):
@@ -324,7 +324,7 @@ async def test_search_recipes_no_match_returns_empty(mocker, client, db):
     headers = auth_headers(trainer)
     created = await client.post(
         "/recipe/create",
-        json=_recipe_payload(name="Ceasar Salad", dietary_tag_names=["vegan"]),
+        json=_recipe_payload(name="Caesar Salad", dietary_tag_names=["vegan"]),
         headers=headers,
     )
     await _sync_recipe(mocker, created.json()["id"])
@@ -359,3 +359,119 @@ async def test_search_recipes_ranks_name_match_above_tag_match(mocker, client, d
     assert response.status_code == 200
     names = [recipe["name"] for recipe in response.json()]
     assert names == ["Protein Power Bowl", "Chicken Soup"]
+
+
+async def test_search_recipes_matches_by_ingredient(mocker, client, db):
+    trainer = await create_test_user(db, UserRole.trainer, "trainer1@example.com")
+    headers = auth_headers(trainer)
+    created = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Garden Bowl", dietary_tag_names=["vegan"]),
+        headers=headers,
+    )
+    await _sync_recipe(mocker, created.json()["id"])
+
+    response = await client.get(
+        "/recipe/search", params={"query": "chicken"}, headers=headers
+    )
+    assert response.status_code == 200
+    names = [recipe["name"] for recipe in response.json()]
+    assert "Garden Bowl" in names
+
+
+async def test_search_recipes_filters_by_meal_type(mocker, client, db):
+    trainer = await create_test_user(db, UserRole.trainer, "trainer1@example.com")
+    headers = auth_headers(trainer)
+    lunch_recipe = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Chicken Lunch Bowl", meal_type="lunch"),
+        headers=headers,
+    )
+    dinner_recipe = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Chicken Dinner Bowl", meal_type="dinner"),
+        headers=headers,
+    )
+    await _sync_recipe(mocker, lunch_recipe.json()["id"])
+    await _sync_recipe(mocker, dinner_recipe.json()["id"])
+
+    response = await client.get(
+        "/recipe/search",
+        params={"query": "chicken", "meal_type": "dinner"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    names = [recipe["name"] for recipe in response.json()]
+    assert names == ["Chicken Dinner Bowl"]
+
+
+async def test_search_recipes_filters_by_max_calories(mocker, client, db):
+    trainer = await create_test_user(db, UserRole.trainer, "trainer1@example.com")
+    headers = auth_headers(trainer)
+    light_recipe = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Light Chicken Bowl", calories=300),
+        headers=headers,
+    )
+    heavy_recipe = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Heavy Chicken Bowl", calories=900),
+        headers=headers,
+    )
+    await _sync_recipe(mocker, light_recipe.json()["id"])
+    await _sync_recipe(mocker, heavy_recipe.json()["id"])
+
+    response = await client.get(
+        "/recipe/search",
+        params={"query": "chicken", "max_calories": 500},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    names = [recipe["name"] for recipe in response.json()]
+    assert names == ["Light Chicken Bowl"]
+
+
+async def test_search_recipes_filters_by_dietary_tag(mocker, client, db):
+    trainer = await create_test_user(db, UserRole.trainer, "trainer1@example.com")
+    headers = auth_headers(trainer)
+    vegan_recipe = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Vegan Chicken Bowl", dietary_tag_names=["vegan"]),
+        headers=headers,
+    )
+    keto_recipe = await client.post(
+        "/recipe/create",
+        json=_recipe_payload(name="Keto Chicken Bowl", dietary_tag_names=["keto"]),
+        headers=headers,
+    )
+    await _sync_recipe(mocker, vegan_recipe.json()["id"])
+    await _sync_recipe(mocker, keto_recipe.json()["id"])
+
+    response = await client.get(
+        "/recipe/search",
+        params={"query": "chicken", "dietary_tag": "keto"},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    names = [recipe["name"] for recipe in response.json()]
+    assert names == ["Keto Chicken Bowl"]
+
+
+async def test_search_recipes_respects_limit(mocker, client, db):
+    trainer = await create_test_user(db, UserRole.trainer, "trainer1@example.com")
+    headers = auth_headers(trainer)
+    for i in range(3):
+        created = await client.post(
+            "/recipe/create",
+            json=_recipe_payload(name=f"Chicken Bowl {i}"),
+            headers=headers,
+        )
+        await _sync_recipe(mocker, created.json()["id"])
+
+    response = await client.get(
+        "/recipe/search",
+        params={"query": "chicken", "limit": 2},
+        headers=headers,
+    )
+    assert response.status_code == 200
+    assert len(response.json()) == 2

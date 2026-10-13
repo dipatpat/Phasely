@@ -1,7 +1,7 @@
 import asyncio
 import uuid
 
-from sqlalchemy import func, select, update
+from sqlalchemy import func, select, text, update
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.orm import selectinload
 from sqlalchemy.pool import NullPool
@@ -33,10 +33,14 @@ async def _sync_recipe_to_postgres_full_text_search(recipe_id: str) -> None:
 
         tag_text = " ".join(tag.name for tag in recipe.dietary_tags)
         vector = (
-            func.setweight(func.to_tsvector("english", recipe.name), "A")
-            .op("||")(func.setweight(func.to_tsvector("english", tag_text), "B"))
+            func.setweight(func.to_tsvector("english", recipe.name), text("'A'"))
             .op("||")(
-                func.setweight(func.to_tsvector("english", recipe.meal_type.value), "C")
+                func.setweight(func.to_tsvector("english", tag_text), text("'B'"))
+            )
+            .op("||")(
+                func.setweight(
+                    func.to_tsvector("english", recipe.meal_type.value), text("'C'")
+                )
             )
         )
         await db.execute(

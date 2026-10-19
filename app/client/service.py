@@ -9,6 +9,7 @@ from sqlalchemy.orm import selectinload
 
 from app.client.models import ClientProfile
 from app.trainer.service import get_trainer_profile_by_id
+from app.user.models import User
 
 
 class ClientProfileAlreadyExistsError(Exception):
@@ -111,6 +112,15 @@ async def list_clients_by_trainer_id(
         .where(ClientProfile.trainer_id == trainer_id)
     )
 
+    return list(result.scalars().all())
+
+
+async def list_active_client_ids(db: AsyncSession) -> list[uuid.UUID]:
+    result = await db.execute(
+        select(ClientProfile.id)
+        .join(User, ClientProfile.user_id == User.id)
+        .where(User.is_active.is_(True))
+    )
     return list(result.scalars().all())
 
 

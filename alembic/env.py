@@ -4,17 +4,7 @@ from logging.config import fileConfig
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-import app.client.models  # noqa: F401
-import app.exercise.models  # noqa: F401
-import app.log.models  # noqa: F401
-import app.plan.models  # noqa: F401
-import app.recipe.models  # noqa: F401
-import app.session.models  # noqa: F401
-import app.trainer.models  # noqa: F401
-
-# Model imports — Alembic must import every model module to detect tables.
-# Add a new import here each time a new models.py is created.
-import app.user.models  # noqa: F401
+import app.models  # noqa: F401
 from alembic import context
 from app.core.base import Base
 from app.core.config import settings

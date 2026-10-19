@@ -23,7 +23,7 @@ async def handle_get_weekly_shopping_list(
 ):
     if week_start.isoweekday() != 1:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="week_start must be a Monday",
         )
     target_client_id = await resolve_target_client_id(db, user, client_id)

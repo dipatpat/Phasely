@@ -21,7 +21,7 @@ async def resolve_target_client_id(
             )
         if client_id is None:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
                 detail="client_id is required",
             )
         client_profile = await get_client_profile_by_id(

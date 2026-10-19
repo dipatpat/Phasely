@@ -28,5 +28,17 @@ services:
     env_file:
       - .env.docker
 
+  celery-beat:
+    build: .
+    command: uv run celery -A app.celery:celery_app beat --loglevel=info --schedule /tmp/celerybeat-schedule
+    environment:
+      UV_PROJECT_ENVIRONMENT: /venv
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    env_file:
+      - .env.docker
+
 volumes:
   postgres_data:

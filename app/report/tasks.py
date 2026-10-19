@@ -1,14 +1,15 @@
 import asyncio
 import json
 import uuid
-from datetime import date
+from datetime import date, datetime, timedelta
 
 import redis.asyncio as aioredis
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
 from app.celery import celery_app
-from app.core.config import settings
+from app.client.service import list_active_client_ids
+from app.core.config import APP_TZ, settings
 from app.report.service import generate_weekly_report_data
 
 task_engine = create_async_engine(settings.DATABASE_URL, poolclass=NullPool)
@@ -37,3 +38,21 @@ async def _generate_weekly_report_async(client_id: str, week_start: str) -> dict
     finally:
         await redis.aclose()
     return report
+
+
+def previous_week_start(today: date) -> date:
+    return today - timedelta(days=today.weekday() + 7)
+
+
+@celery_app.task(name="generate_all_weekly_reports")
+def generate_all_weekly_reports() -> int:
+    week_start = previous_week_start(datetime.now(APP_TZ).date())
+    client_ids = asyncio.run(_list_active_client_ids())
+    for client_id in client_ids:
+        generate_weekly_report.delay(str(client_id), week_start.isoformat())
+    return len(client_ids)
+
+
+async def _list_active_client_ids() -> list[uuid.UUID]:
+    async with TaskSessionLocal() as db:
+        return await list_active_client_ids(db)

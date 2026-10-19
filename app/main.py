@@ -2,14 +2,7 @@ from fastapi import Depends, FastAPI
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-import app.client.models
-import app.exercise.models
-import app.log.models
-import app.plan.models
-import app.recipe.models
-import app.session.models
-import app.trainer.models
-import app.user.models
+import app.models  # noqa: F401
 from app.auth.router import router as auth_router
 from app.client.router import router as client_router
 from app.core.database import get_db

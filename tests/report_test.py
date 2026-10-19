@@ -1,14 +1,21 @@
 import asyncio
 import json
 import uuid
-from datetime import date
+from datetime import date, datetime
 
+import pytest
 from sqlalchemy.pool import NullPool
 
+from app.celery import celery_app
+from app.core.config import APP_TZ
 from app.core.enums import UserRole
 from app.report import tasks
 from app.report.service import generate_weekly_report_data
-from app.report.tasks import generate_weekly_report
+from app.report.tasks import (
+    generate_all_weekly_reports,
+    generate_weekly_report,
+    previous_week_start,
+)
 from app.trainer.service import create_trainer_profile
 from tests.conftest import FakeRedis, TestSessionLocal, auth_headers, create_test_user
 
@@ -424,3 +431,50 @@ async def test_generate_weekly_report_task_runs_repeatedly(mocker, client, db):
 
     assert first["week_start"] == "2026-09-07"
     assert second["week_start"] == "2026-09-14"
+
+
+@pytest.mark.parametrize(
+    "today",
+    [date(2026, 10, 19), date(2026, 10, 21), date(2026, 10, 25)],
+)
+def test_previous_week_start_is_last_weeks_monday(today):
+    assert previous_week_start(today) == date(2026, 10, 12)
+
+
+def test_beat_schedule_runs_dispatcher_every_monday_at_6am():
+    entry = celery_app.conf.beat_schedule["weekly-reports-monday-6am"]
+    schedule = entry["schedule"]
+
+    assert entry["task"] == "generate_all_weekly_reports"
+    assert entry["task"] in celery_app.tasks
+    assert schedule.hour == {6}
+    assert schedule.minute == {0}
+    assert schedule.day_of_week == {1}
+    assert celery_app.conf.timezone == "Europe/Warsaw"
+
+
+async def test_dispatcher_queues_last_weeks_report_for_each_active_client(
+    mocker, client, db
+):
+    _, trainer_profile = await _create_test_trainer_profile(db, "trainer1@trainer.com")
+    active_user = await _create_test_client(
+        client, trainer_profile.id, "active@client.com", db
+    )
+    deactivated_user = await _create_test_client(
+        client, trainer_profile.id, "deactivated@client.com", db
+    )
+    active_profile_id = await _get_own_client_profile_id(
+        client, auth_headers(active_user)
+    )
+    deactivated_user.is_active = False
+    await db.commit()
+
+    mocker.patch("app.report.tasks.TaskSessionLocal", TestSessionLocal)
+    mock_now = mocker.patch("app.report.tasks.datetime")
+    mock_now.now.return_value = datetime(2026, 10, 19, 6, 0, tzinfo=APP_TZ)
+    mock_delay = mocker.patch("app.report.tasks.generate_weekly_report.delay")
+
+    queued = await asyncio.to_thread(generate_all_weekly_reports)
+
+    assert queued == 1
+    mock_delay.assert_called_once_with(active_profile_id, "2026-10-12")

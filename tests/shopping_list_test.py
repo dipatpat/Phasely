@@ -4,8 +4,6 @@ from app.core.enums import UserRole
 from app.trainer.service import create_trainer_profile
 from tests.conftest import auth_headers, create_test_user
 
-# Cycle of 28 days with a 5-day period starting 2026-09-24 puts the week of
-# Monday 2026-10-19 at: Mon-Wed luteal (cycle days 26-28), Thu-Sun menstrual (1-4)
 WEEK_START = "2026-10-19"
 CYCLE_DATA = {
     "last_period_start": "2026-09-24",

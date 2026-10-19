@@ -9,6 +9,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U phasely -d phasely"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
 
   redis:
     image: redis:7
@@ -37,6 +42,26 @@ services:
       - .:/app
     depends_on:
       - redis
+    env_file:
+      - .env.docker
+
+  # Only started with `docker compose --profile demo up`; day to day the API runs
+  # locally (uv run uvicorn) so it can be debugged in VS Code
+  api:
+    profiles: ["demo"]
+    build: .
+    command: sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    environment:
+      UV_PROJECT_ENVIRONMENT: /venv
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     env_file:
       - .env.docker
 

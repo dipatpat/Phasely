@@ -1,10 +1,12 @@
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.models  # noqa: F401
 from app.auth.router import router as auth_router
 from app.client.router import router as client_router
+from app.core.config import settings
 from app.core.database import get_db
 from app.exercise.router import router as exercise_router
 from app.log.router import router as log_router
@@ -16,7 +18,12 @@ from app.shopping.router import router as shopping_router
 from app.trainer.router import router as trainer_router
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_methods=["*"],
+    allow_headers=["Authorization", "Content-Type"],
+)
 app.include_router(auth_router)
 app.include_router(trainer_router)
 app.include_router(client_router)

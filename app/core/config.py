@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     APP_TIMEZONE: str = "Europe/Warsaw"
+    CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
 
 settings = Settings()

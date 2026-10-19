@@ -89,7 +89,7 @@ async def create_recipe(
         sync_recipe_to_postgres_full_text_search.delay(str(new_recipe.id))
     except Exception:
         logger.exception(
-            "Failed to enqueue full-text search sync for recipe %s", new_recipe.id
+            "Failed to load full-text search sync for recipe %s", new_recipe.id
         )
     return await get_recipe_by_id(db, new_recipe.id)
 
@@ -158,7 +158,7 @@ async def update_recipe(
         sync_recipe_to_postgres_full_text_search.delay(str(recipe.id))
     except Exception:
         logger.exception(
-            "Failed to enqueue full-text search sync for recipe %s", recipe.id
+            "Failed to load full-text search sync for recipe %s", recipe.id
         )
 
     return await get_recipe_by_id(db, recipe.id)
@@ -188,7 +188,7 @@ async def search_recipes(
 ) -> list[Recipe]:
     tsquery = func.websearch_to_tsquery("english", query)
     order_by_rank = func.ts_rank(Recipe.search_vector, tsquery)
-    stmt = (
+    query_result = (
         select(Recipe)
         .options(
             selectinload(Recipe.ingredients).selectinload(RecipeIngredient.ingredient),
@@ -197,14 +197,16 @@ async def search_recipes(
         .where(Recipe.search_vector.op("@@")(tsquery))
     )
     if meal_type is not None:
-        stmt = stmt.where(Recipe.meal_type == meal_type)
+        query_result = query_result.where(Recipe.meal_type == meal_type)
     if max_calories is not None:
-        stmt = stmt.where(Recipe.calories <= max_calories)
+        query_result = query_result.where(Recipe.calories <= max_calories)
     if min_protein is not None:
-        stmt = stmt.where(Recipe.protein >= min_protein)
+        query_result = query_result.where(Recipe.protein >= min_protein)
     if dietary_tag is not None:
-        stmt = stmt.where(Recipe.dietary_tags.any(DietaryTag.name == dietary_tag))
-    stmt = stmt.order_by(order_by_rank.desc(), Recipe.name).limit(limit)
+        query_result = query_result.where(
+            Recipe.dietary_tags.any(DietaryTag.name == dietary_tag)
+        )
+    query_result = query_result.order_by(order_by_rank.desc(), Recipe.name).limit(limit)
 
-    result = await db.execute(stmt)
+    result = await db.execute(query_result)
     return list(result.scalars().all())

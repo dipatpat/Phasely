@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.config import APP_TZ
 from app.core.enums import CyclePhase, MealType
 from app.exercise.schemas import ExercisePublic
 from app.exercise.service import ExerciseNotFound, get_exercise_by_id
@@ -199,3 +200,75 @@ async def create_exercise_log(
     await db.commit()
 
     return await get_exercise_log_by_id(db, new_log.id)
+
+
+def _day_bounds(
+    start_date: datetime.date, end_date: datetime.date
+) -> tuple[datetime.datetime, datetime.datetime]:
+    start = datetime.datetime.combine(start_date, datetime.time.min, tzinfo=APP_TZ)
+    end = datetime.datetime.combine(
+        end_date + datetime.timedelta(days=1), datetime.time.min, tzinfo=APP_TZ
+    )
+    return start, end
+
+
+async def list_daily_logs(
+    db: AsyncSession,
+    client_id: uuid.UUID,
+    start_date: datetime.date,
+    end_date: datetime.date,
+) -> list[DailyLog]:
+    result = await db.execute(
+        select(DailyLog)
+        .where(
+            DailyLog.client_id == client_id,
+            DailyLog.log_date.between(start_date, end_date),
+        )
+        .order_by(DailyLog.log_date)
+    )
+    return list(result.scalars().all())
+
+
+async def list_meal_logs(
+    db: AsyncSession,
+    client_id: uuid.UUID,
+    start_date: datetime.date,
+    end_date: datetime.date,
+) -> list[MealLog]:
+    start, end = _day_bounds(start_date, end_date)
+    result = await db.execute(
+        select(MealLog)
+        .options(
+            selectinload(MealLog.recipe)
+            .selectinload(Recipe.ingredients)
+            .selectinload(RecipeIngredient.ingredient),
+            selectinload(MealLog.recipe).selectinload(Recipe.dietary_tags),
+        )
+        .where(
+            MealLog.client_id == client_id,
+            MealLog.consumed_at >= start,
+            MealLog.consumed_at < end,
+        )
+        .order_by(MealLog.consumed_at)
+    )
+    return list(result.scalars().all())
+
+
+async def list_exercise_logs(
+    db: AsyncSession,
+    client_id: uuid.UUID,
+    start_date: datetime.date,
+    end_date: datetime.date,
+) -> list[ExerciseLog]:
+    start, end = _day_bounds(start_date, end_date)
+    result = await db.execute(
+        select(ExerciseLog)
+        .options(selectinload(ExerciseLog.exercise))
+        .where(
+            ExerciseLog.client_id == client_id,
+            ExerciseLog.completed_at >= start,
+            ExerciseLog.completed_at < end,
+        )
+        .order_by(ExerciseLog.completed_at)
+    )
+    return list(result.scalars().all())

@@ -1,16 +1,19 @@
+import uuid  # new
 from datetime import date
 
 import redis.asyncio as aioredis
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import require_client
+from app.auth.dependencies import get_current_user, require_client
+from app.client.dependencies import resolve_target_client_id
 from app.client.service import get_client_profile_by_user_id
 from app.core.database import get_db
 from app.core.redis import get_redis
 from app.exercise.service import ExerciseNotFound
 from app.log.schemas import (
     DailyLogCreate,
+    DailyLogPublic,
     DailyLogWithRecommendations,
     ExerciseLogCreate,
     ExerciseLogPublic,
@@ -24,12 +27,33 @@ from app.log.service import (
     create_exercise_log,
     create_meal_log,
     get_daily_log_by_client_and_date,
+    list_daily_logs,
+    list_exercise_logs,
+    list_meal_logs,
     trigger_recommendation,
 )
 from app.recipe.service import RecipeNotFoundError
 from app.user.models import User
 
 router = APIRouter(prefix="/log", tags=["log"])
+MAX_RANGE_DAYS = 31
+
+
+async def date_range(
+    start_date: date, end_date: date | None = None
+) -> tuple[date, date]:
+    end_date = end_date or start_date
+    if end_date < start_date:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="end_date must not be before start_date",
+        )
+    if (end_date - start_date).days >= MAX_RANGE_DAYS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=f"Date range can span at most {MAX_RANGE_DAYS} days",
+        )
+    return start_date, end_date
 
 
 @router.post(
@@ -165,3 +189,36 @@ async def handle_get_today_recommendations(
         recommended_recipes=recipes,
         recommended_exercises=exercises,
     )
+
+
+@router.get("/daily", response_model=list[DailyLogPublic])
+async def handle_list_daily_logs(
+    dates: tuple[date, date] = Depends(date_range),
+    client_id: uuid.UUID | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    target_client_id = await resolve_target_client_id(db, user, client_id)
+    return await list_daily_logs(db, target_client_id, *dates)
+
+
+@router.get("/meal", response_model=list[MealLogPublic])
+async def handle_list_meal_logs(
+    dates: tuple[date, date] = Depends(date_range),
+    client_id: uuid.UUID | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    target_client_id = await resolve_target_client_id(db, user, client_id)
+    return await list_meal_logs(db, target_client_id, *dates)
+
+
+@router.get("/exercise", response_model=list[ExerciseLogPublic])
+async def handle_list_exercise_logs(
+    dates: tuple[date, date] = Depends(date_range),
+    client_id: uuid.UUID | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    target_client_id = await resolve_target_client_id(db, user, client_id)
+    return await list_exercise_logs(db, target_client_id, *dates)

@@ -19,6 +19,7 @@ from app.plan.router import router as plan_router
 from app.recipe.router import router as recipe_router
 from app.report.router import router as report_router
 from app.session.router import router as session_router
+from app.shopping.router import router as shopping_router
 from app.trainer.router import router as trainer_router
 
 app = FastAPI()
@@ -32,6 +33,7 @@ app.include_router(recipe_router)
 app.include_router(plan_router)
 app.include_router(log_router)
 app.include_router(report_router)
+app.include_router(shopping_router)
 
 
 @app.get("/health")

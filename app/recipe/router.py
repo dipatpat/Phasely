@@ -1,7 +1,7 @@
 import uuid
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_trainer
@@ -127,7 +127,7 @@ async def handle_search_recipes(
     max_calories: int | None = None,
     min_protein: Decimal | None = None,
     dietary_tag: str | None = None,
-    limit: int = 20,
+    limit: int = Query(20, ge=1, le=100),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):

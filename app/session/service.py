@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -122,24 +122,37 @@ async def is_slot_available(
 
 
 async def list_available_slots(
-    db: AsyncSession, trainer_id: uuid.UUID, date_target: datetime
+    db: AsyncSession, trainer_id: uuid.UUID, date_target: date
 ) -> list[TrainerAvailability]:
-    results = await db.execute(
-        select(TrainerAvailability).where(
+    # Two queries regardless of how many slots the day has (previously one per slot)
+    slots_result = await db.execute(
+        select(TrainerAvailability)
+        .where(
             TrainerAvailability.trainer_id == trainer_id,
             TrainerAvailability.slot_date == date_target,
             TrainerAvailability.is_active.is_(True),
         )
+        .order_by(TrainerAvailability.slot_start)
     )
-    slots_on_day = results.scalars().all()
-    available_slots = []
-    for slot in slots_on_day:
-        available_slot = await is_slot_available(
-            db, trainer_id, slot.slot_date, slot.slot_start
+    slots_on_day = slots_result.scalars().all()
+
+    day_start = datetime.combine(date_target, time.min, tzinfo=APP_TZ)
+    booked_result = await db.execute(
+        select(Session.scheduled_at).where(
+            Session.trainer_id == trainer_id,
+            Session.scheduled_at >= day_start,
+            Session.scheduled_at < day_start + timedelta(days=1),
+            Session.status != SessionStatus.cancelled,
         )
-        if available_slot:
-            available_slots.append(slot)
-    return available_slots
+    )
+    booked_times = set(booked_result.scalars().all())
+
+    return [
+        slot
+        for slot in slots_on_day
+        if datetime.combine(slot.slot_date, slot.slot_start, tzinfo=APP_TZ)
+        not in booked_times
+    ]
 
 
 async def list_session_for_user(db: AsyncSession, user: User) -> list[Session]:

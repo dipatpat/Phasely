@@ -9,7 +9,6 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.client.service import get_client_profile_by_profile_id
 from app.core.enums import CyclePhase, MealType
 from app.exercise.schemas import ExercisePublic
 from app.exercise.service import ExerciseNotFound, get_exercise_by_id
@@ -18,11 +17,9 @@ from app.recipe.models import Recipe, RecipeIngredient
 from app.recipe.schemas import RecipePublic
 from app.recipe.service import RecipeNotFoundError, get_recipe_by_id
 from app.recommendation.service import (
-    calculate_cycle_length,
-    calculate_cycle_phase,
     create_period_log,
+    get_cycle_parameters,
     get_exercise_recommendations,
-    get_period_start_dates,
     get_recipe_recommendations,
 )
 
@@ -49,32 +46,12 @@ async def create_daily_log(
         await create_period_log(db, client_id, log_date)
 
     if cycle_phase is None:
-        period_starts = await get_period_start_dates(db, client_id)
-        if period_starts:
-            last_period_start = max(period_starts)
-            cycle_length_days = calculate_cycle_length(period_starts)
-        else:
-            last_period_start = None
-            cycle_length_days = None
-
-        client_profile = await get_client_profile_by_profile_id(db, client_id)
-
-        if last_period_start is None:
-            last_period_start = client_profile.last_period_start
-        if cycle_length_days is None:
-            cycle_length_days = client_profile.cycle_length_days
-
-        if last_period_start is None or cycle_length_days is None:
+        cycle_parameters = await get_cycle_parameters(db, client_id)
+        if cycle_parameters is None:
             raise InsufficientCycleDataError(
                 "Not enough data to calculate cycle phase; please provide it manually"
             )
-
-        cycle_phase = calculate_cycle_phase(
-            last_period_start,
-            cycle_length_days,
-            client_profile.period_length_days,
-            log_date,
-        )
+        cycle_phase = cycle_parameters.phase_on(log_date)
 
     new_log = DailyLog(
         client_id=client_id,

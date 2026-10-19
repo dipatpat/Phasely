@@ -1,10 +1,12 @@
 import uuid
+from dataclasses import dataclass
 from datetime import date
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.client.service import get_client_profile_by_profile_id
 from app.core.enums import CyclePhase, DifficultyLevel
 from app.exercise.models import Exercise
 from app.log.models import PeriodLog
@@ -18,6 +20,20 @@ from app.recipe.models import Recipe, RecipeIngredient
 
 LUTEAL_LENGTH_DAYS = 14
 OVULATION_WINDOW_DAYS = 3
+CYCLE_PHASE_RULES = [
+    {"phase": CyclePhase.menstrual, "ends_at": "period_end", "offset_days": 0},
+    {
+        "phase": CyclePhase.follicular,
+        "ends_at": "cycle_end",
+        "offset_days": -(LUTEAL_LENGTH_DAYS + OVULATION_WINDOW_DAYS),
+    },
+    {
+        "phase": CyclePhase.ovulatory,
+        "ends_at": "cycle_end",
+        "offset_days": -LUTEAL_LENGTH_DAYS,
+    },
+    {"phase": CyclePhase.luteal, "ends_at": "cycle_end", "offset_days": 0},
+]
 ENERGY_INTENSITY_RULES = [
     {
         "min_energy": 0,
@@ -48,17 +64,11 @@ def calculate_cycle_phase(
     target_date: date,
 ) -> CyclePhase:
     day_of_cycle = ((target_date - last_period_start).days % cycle_length_days) + 1
-    luteal_start_day = cycle_length_days - LUTEAL_LENGTH_DAYS + 1
-    ovulatory_start_day = luteal_start_day - OVULATION_WINDOW_DAYS
-
-    if day_of_cycle <= period_length_days:
-        return CyclePhase.menstrual
-    elif day_of_cycle < ovulatory_start_day:
-        return CyclePhase.follicular
-    elif day_of_cycle < luteal_start_day:
-        return CyclePhase.ovulatory
-    else:
-        return CyclePhase.luteal
+    anchors = {"period_end": period_length_days, "cycle_end": cycle_length_days}
+    for rule in CYCLE_PHASE_RULES:
+        if day_of_cycle <= anchors[rule["ends_at"]] + rule["offset_days"]:
+            return rule["phase"]
+    return CYCLE_PHASE_RULES[-1]["phase"]
 
 
 def calculate_cycle_length(period_starts: list[date]) -> int | None:
@@ -66,6 +76,43 @@ def calculate_cycle_length(period_starts: list[date]) -> int | None:
         return None
     sorted_starts = sorted(period_starts)
     return (sorted_starts[-1] - sorted_starts[-2]).days
+
+
+@dataclass(frozen=True)
+class CycleParameters:
+    last_period_start: date
+    cycle_length_days: int
+    period_length_days: int
+
+    def phase_on(self, target_date: date) -> CyclePhase:
+        return calculate_cycle_phase(
+            self.last_period_start,
+            self.cycle_length_days,
+            self.period_length_days,
+            target_date,
+        )
+
+
+async def get_cycle_parameters(
+    db: AsyncSession, client_id: uuid.UUID
+) -> CycleParameters | None:
+    period_starts = await get_period_start_dates(db, client_id)
+    last_period_start = max(period_starts) if period_starts else None
+    cycle_length_days = calculate_cycle_length(period_starts)
+
+    client_profile = await get_client_profile_by_profile_id(db, client_id)
+    if last_period_start is None:
+        last_period_start = client_profile.last_period_start
+    if cycle_length_days is None:
+        cycle_length_days = client_profile.cycle_length_days
+
+    if last_period_start is None or cycle_length_days is None:
+        return None
+    return CycleParameters(
+        last_period_start=last_period_start,
+        cycle_length_days=cycle_length_days,
+        period_length_days=client_profile.period_length_days,
+    )
 
 
 async def create_period_log(

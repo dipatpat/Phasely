@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Auth</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #cdddd6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      width: 480px;
+      padding: 60px 60px 50px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #3d3d3d;
+      margin-bottom: 10px;
+    }
+
+    .underline {
+      width: 160px;
+      height: 4px;
+      background-color: #e8c96a;
+      border-radius: 2px;
+      margin-bottom: 48px;
+    }
+
+    .form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .input-group {
+      width: 100%;
+    }
+
+    input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1.5px solid #8aada0;
+      padding: 10px 0;
+      font-size: 1.1rem;
+      color: #3d3d3d;
+      outline: none;
+      text-align: center;
+      color: #9ab5ad;
+    }
+
+    input::placeholder {
+      color: #9ab5ad;
+      font-size: 1.1rem;
+    }
+
+    input:focus {
+      border-bottom-color: #3d3d3d;
+      color: #3d3d3d;
+    }
+
+    .btn {
+      margin-top: 16px;
+      width: 100%;
+      padding: 18px;
+      background-color: #e8c96a;
+      border: none;
+      border-radius: 14px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+    }
+
+    .btn:hover { background-color: #deba55; }
+
+    .toggle {
+      margin-top: 28px;
+      font-size: 0.9rem;
+      color: #6a9088;
+    }
+
+    .toggle a {
+      color: #3d3d3d;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .toggle a:hover { text-decoration: underline; }
+
+    /* hide/show pages */
+    #register { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div class="card" id="login">
+    <h1>Log in</h1>
+    <div class="underline"></div>
+    <div class="form">
+      <div class="input-group">
+        <input type="email" placeholder="Email" />
+      </div>
+      <div class="input-group">
+        <input type="password" placeholder="Password" />
+      </div>
+      <button class="btn" onclick="location.href='trainer-dashboard.html'">Log in</button>
+    </div>
+    <p class="toggle">
+      Don't have an account?
+      <a href="trainer-register.html">Register</a>
+    </p>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="card" id="register">
+    <h1>Register as Trainer</h1>
+    <div class="underline"></div>
+    <div class="form">
+      <div class="input-group">
+        <input type="text" placeholder="First name" />
+      </div>
+      <div class="input-group">
+        <input type="text" placeholder="Last name" />
+      </div>
+      <div class="input-group">
+        <input type="email" placeholder="Email" />
+      </div>
+      <div class="input-group">
+        <input type="text" placeholder="Specialization (e.g. Strength & Conditioning)" />
+      </div>
+      <div class="input-group">
+        <input type="password" placeholder="Password" />
+      </div>
+      <div class="input-group">
+        <input type="password" placeholder="Confirm password" />
+      </div>
+      <button class="btn" onclick="location.href='trainer-dashboard.html'">Create account</button>
+    </div>
+    <p class="toggle">
+      Already have an account?
+      <a href="#" onclick="show('login')">Log in</a>
+    </p>
+  </div>
+
+  <script>
+    function show(page) {
+      document.getElementById('login').style.display = 'none';
+      document.getElementById('register').style.display = 'none';
+      document.getElementById(page).style.display = 'flex';
+    }
+  </script>
+
+</body>
+</html>

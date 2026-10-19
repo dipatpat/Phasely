@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Availability</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .logo { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; margin-bottom: 36px; padding-left: 8px; }
+    .logo span { color: #e8c96a; }
+
+    .nav-item {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #4a6e65;
+      cursor: pointer;
+      display: block;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #6a9088;
+    }
+
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .top-bar h1 { font-size: 1.8rem; font-weight: 700; }
+
+    .btn-add {
+      background-color: #e8c96a;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-add:hover { background-color: #deba55; }
+
+    /* TIMEZONE NOTE */
+    .timezone-note {
+      font-size: 0.85rem;
+      color: #8aada0;
+      margin-bottom: 28px;
+    }
+
+    .timezone-note strong { color: #4a6e65; }
+
+    /* DAY SECTION */
+    .day-block {
+      background: white;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 28px;
+      border-bottom: 1px solid #f0f5f3;
+    }
+
+    .day-name {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .day-count {
+      font-size: 0.82rem;
+      color: #8aada0;
+    }
+
+    .btn-add-slot {
+      background: none;
+      border: 1.5px solid #cdddd6;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #4a6e65;
+      cursor: pointer;
+    }
+
+    .btn-add-slot:hover { background-color: #eef5f2; }
+
+    /* SLOT ROW */
+    .slot-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 28px;
+      gap: 16px;
+      border-bottom: 1px solid #f0f5f3;
+    }
+
+    .slot-row:last-child { border-bottom: none; }
+
+    .slot-time {
+      font-size: 0.95rem;
+      font-weight: 600;
+      min-width: 160px;
+    }
+
+    .slot-duration {
+      font-size: 0.82rem;
+      color: #8aada0;
+    }
+
+    .slot-status {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      cursor: pointer;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background-color: #cdddd6;
+      border-radius: 22px;
+      transition: 0.2s;
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      left: 3px;
+      top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+
+    input:checked + .slider { background-color: #4caf50; }
+    input:checked + .slider:before { transform: translateX(18px); }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      color: #c0504d;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .btn-delete:hover { background-color: #fde8e8; }
+
+    /* EMPTY DAY */
+    .empty-day {
+      padding: 18px 28px;
+      font-size: 0.88rem;
+      color: #b0c8c0;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item">Dashboard</a>
+    <a class="nav-item">Clients</a>
+    <a class="nav-item">Recipes</a>
+    <a class="nav-item">Exercises</a>
+    <a class="nav-item">Sessions</a>
+    <a class="nav-item active">Availability</a>
+    <div class="sidebar-bottom">
+      <strong>Anna Kowalska</strong>
+      Personal Trainer
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="top-bar">
+      <h1>Availability</h1>
+      <button class="btn-add">+ Add slot</button>
+    </div>
+
+    <p class="timezone-note">All times shown in <strong>Europe/Warsaw</strong> timezone.</p>
+
+    <!-- MONDAY -->
+    <div class="day-block">
+      <div class="day-header">
+        <span class="day-name">Monday</span>
+        <span class="day-count">2 slots</span>
+        <button class="btn-add-slot">+ Add slot</button>
+      </div>
+      <div class="slot-row">
+        <span class="slot-time">08:00 — 09:00</span>
+        <span class="slot-duration">60 min</span>
+        <div class="slot-status">
+          <label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label>
+          <button class="btn-delete">✕</button>
+        </div>
+      </div>
+      <div class="slot-row">
+        <span class="slot-time">10:00 — 11:00</span>
+        <span class="slot-duration">60 min</span>
+        <div class="slot-status">
+          <label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label>
+          <button class="btn-delete">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TUESDAY -->
+    <div class="day-block">
+      <div class="day-header">
+        <span class="day-name">Tuesday</span>
+        <span class="day-count">1 slot</span>
+        <button class="btn-add-slot">+ Add slot</button>
+      </div>
+      <div class="slot-row">
+        <span class="slot-time">09:00 — 10:00</span>
+        <span class="slot-duration">60 min</span>
+        <div class="slot-status">
+          <label class="toggle"><input type="checkbox" /><span class="slider"></span></label>
+          <button class="btn-delete">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WEDNESDAY -->
+    <div class="day-block">
+      <div class="day-header">
+        <span class="day-name">Wednesday</span>
+        <span class="day-count">No slots</span>
+        <button class="btn-add-slot">+ Add slot</button>
+      </div>
+      <div class="empty-day">No availability set for this day.</div>
+    </div>
+
+    <!-- THURSDAY -->
+    <div class="day-block">
+      <div class="day-header">
+        <span class="day-name">Thursday</span>
+        <span class="day-count">2 slots</span>
+        <button class="btn-add-slot">+ Add slot</button>
+      </div>
+      <div class="slot-row">
+        <span class="slot-time">10:00 — 11:00</span>
+        <span class="slot-duration">60 min</span>
+        <div class="slot-status">
+          <label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label>
+          <button class="btn-delete">✕</button>
+        </div>
+      </div>
+      <div class="slot-row">
+        <span class="slot-time">16:00 — 17:00</span>
+        <span class="slot-duration">60 min</span>
+        <div class="slot-status">
+          <label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label>
+          <button class="btn-delete">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FRIDAY -->
+    <div class="day-block">
+      <div class="day-header">
+        <span class="day-name">Friday</span>
+        <span class="day-count">1 slot</span>
+        <button class="btn-add-slot">+ Add slot</button>
+      </div>
+      <div class="slot-row">
+        <span class="slot-time">08:00 — 09:00</span>
+        <span class="slot-duration">60 min</span>
+        <div class="slot-status">
+          <label class="toggle"><input type="checkbox" checked /><span class="slider"></span></label>
+          <button class="btn-delete">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SATURDAY -->
+    <div class="day-block">
+      <div class="day-header">
+        <span class="day-name">Saturday</span>
+        <span class="day-count">No slots</span>
+        <button class="btn-add-slot">+ Add slot</button>
+      </div>
+      <div class="empty-day">No availability set for this day.</div>
+    </div>
+
+    <!-- SUNDAY -->
+    <div class="day-block">
+      <div class="day-header">
+        <span class="day-name">Sunday</span>
+        <span class="day-count">No slots</span>
+        <button class="btn-add-slot">+ Add slot</button>
+      </div>
+      <div class="empty-day">No availability set for this day.</div>
+    </div>
+
+  </main>
+
+</body>
+</html>

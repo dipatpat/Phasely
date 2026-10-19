@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Clients</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .logo { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; margin-bottom: 36px; padding-left: 8px; }
+    .logo span { color: #e8c96a; }
+    .nav-item {
+      padding: 10px 14px; border-radius: 10px; font-size: 0.95rem; font-weight: 500;
+      color: #4a6e65; cursor: pointer; text-decoration: none; display: block;
+    }
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+    .sidebar-bottom { margin-top: auto; padding: 10px 14px; font-size: 0.85rem; color: #6a9088; }
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+
+    .top-bar {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px;
+    }
+    .top-bar h1 { font-size: 1.8rem; font-weight: 700; }
+
+    .btn-add {
+      background-color: #e8c96a; border: none; border-radius: 10px;
+      padding: 12px 24px; font-size: 0.95rem; font-weight: 700; color: white;
+      cursor: pointer; text-decoration: none; display: inline-block;
+    }
+    .btn-add:hover { background-color: #deba55; }
+
+    /* FILTERS ROW */
+    .filters-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      align-items: center;
+    }
+
+    .search-wrap { position: relative; flex: 1; }
+
+    .search-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      font-size: 0.9rem; color: #8aada0; pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%; background: white; border: none; border-radius: 10px;
+      padding: 11px 16px 11px 38px; font-size: 0.9rem; color: #3d3d3d;
+      outline: none; font-family: inherit;
+    }
+    .search-input::placeholder { color: #b0c8c0; }
+    .search-input:focus { box-shadow: 0 0 0 2px #cdddd6; }
+
+    .filter-select {
+      background: white; border: none; border-radius: 10px;
+      padding: 11px 16px; font-size: 0.88rem; color: #4a6e65;
+      font-weight: 600; cursor: pointer; outline: none; font-family: inherit;
+    }
+
+    /* PHASE FILTER CHIPS */
+    .phase-chips {
+      display: flex;
+      gap: 8px;
+    }
+
+    .phase-chip {
+      padding: 7px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; border: 2px solid transparent; white-space: nowrap;
+      background: white; color: #8aada0; transition: all 0.15s;
+    }
+    .phase-chip:hover { border-color: #cdddd6; color: #4a6e65; }
+    .phase-chip.active-all      { background: #3d3d3d; color: white; }
+    .phase-chip.active-mens     { background: #fde8e8; color: #c0504d; border-color: #f5b8b8; }
+    .phase-chip.active-foll     { background: #ddeeff; color: #4a90c4; border-color: #90caf9; }
+    .phase-chip.active-ovul     { background: #e8fde8; color: #4caf50; border-color: #a5d6a7; }
+    .phase-chip.active-lute     { background: #fef5e4; color: #e8a030; border-color: #f5c87a; }
+
+    /* RESULTS INFO */
+    .results-info {
+      font-size: 0.82rem; color: #8aada0; margin-bottom: 14px;
+    }
+    .results-info strong { color: #3d3d3d; }
+
+    /* CLIENT CARDS */
+    .client-card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border: 2px solid transparent;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      cursor: pointer;
+    }
+
+    .client-card:hover {
+      border-color: #cdddd6;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* AVATAR */
+    .avatar {
+      width: 48px; height: 48px; border-radius: 50%; background: #cdddd6;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.88rem; font-weight: 700; color: #4a6e65; flex-shrink: 0;
+    }
+
+    /* CLIENT INFO */
+    .client-info { flex: 1; }
+
+    .client-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+
+    .client-meta {
+      font-size: 0.78rem; color: #8aada0;
+      display: flex; gap: 16px; flex-wrap: wrap;
+    }
+
+    .client-meta span { display: flex; align-items: center; gap: 4px; }
+
+    /* PHASE BADGE */
+    .phase-badge {
+      display: inline-block; padding: 4px 14px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 700; white-space: nowrap; flex-shrink: 0;
+    }
+    .phase-menstrual  { background: #fde8e8; color: #c0504d; }
+    .phase-follicular { background: #e8f4fd; color: #4a90c4; }
+    .phase-ovulatory  { background: #e8fde8; color: #4caf50; }
+    .phase-luteal     { background: #fdf4e8; color: #e8a030; }
+    .phase-none       { background: #f0f0f0; color: #999; }
+
+    /* LOG STATUS */
+    .log-status {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 3px; min-width: 60px; flex-shrink: 0;
+    }
+
+    .log-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+    .log-today { background: #4caf50; }
+    .log-recent { background: #e8c96a; }
+    .log-old    { background: #e0e8e5; }
+
+    .log-label { font-size: 0.68rem; color: #8aada0; font-weight: 600; text-align: center; }
+
+    /* PLAN BADGES */
+    .plan-badges { display: flex; gap: 6px; flex-shrink: 0; }
+
+    .plan-chip {
+      font-size: 0.7rem; font-weight: 700; padding: 3px 10px;
+      border-radius: 8px; white-space: nowrap;
+    }
+    .plan-active   { background: #e8fde8; color: #4caf50; }
+    .plan-inactive { background: #f5f5f5; color: #b0b0b0; }
+
+    /* ACTIONS */
+    .client-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .btn-view {
+      background: none; border: 1.5px solid #cdddd6; border-radius: 8px;
+      padding: 7px 18px; font-size: 0.82rem; font-weight: 600;
+      color: #4a6e65; cursor: pointer; white-space: nowrap;
+    }
+    .btn-view:hover { background: #eef5f2; }
+
+    .btn-summary {
+      background: none; border: 1.5px solid #cdddd6; border-radius: 8px;
+      padding: 7px 18px; font-size: 0.82rem; font-weight: 600;
+      color: #4a6e65; cursor: pointer; white-space: nowrap;
+    }
+    .btn-summary:hover { background: #eef5f2; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item" href="trainer-dashboard.html">Dashboard</a>
+    <a class="nav-item active" href="trainer-clients.html">Clients</a>
+    <a class="nav-item" href="recipe-library.html">Recipes</a>
+    <a class="nav-item" href="exercise-library.html">Exercises</a>
+    <a class="nav-item" href="trainer-sessions.html">Sessions</a>
+    <a class="nav-item" href="trainer-availability.html">Availability</a>
+    <div class="sidebar-bottom">
+      <strong>Anna Kowalska</strong>
+      Personal Trainer
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="top-bar">
+      <h1>Clients</h1>
+      <a class="btn-add" href="trainer-create-client.html">+ Add client</a>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters-row">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" placeholder="Search clients by name or goal…" />
+      </div>
+      <select class="filter-select">
+        <option>Sort: Last active</option>
+        <option>Sort: Name A–Z</option>
+        <option>Sort: Phase</option>
+      </select>
+    </div>
+
+    <div class="phase-chips" style="margin-bottom:20px;">
+      <div class="phase-chip active-all" onclick="filterPhase(this)">All</div>
+      <div class="phase-chip" onclick="filterPhase(this)">🔴 Menstrual</div>
+      <div class="phase-chip" onclick="filterPhase(this)">🔵 Follicular</div>
+      <div class="phase-chip" onclick="filterPhase(this)">🟢 Ovulatory</div>
+      <div class="phase-chip" onclick="filterPhase(this)">🟠 Luteal</div>
+      <div class="phase-chip" onclick="filterPhase(this)">⬜ Not logged</div>
+    </div>
+
+    <div class="results-info"><strong>8 clients</strong></div>
+
+    <!-- CLIENT CARDS -->
+
+    <div class="client-card" onclick="location.href='trainer-client-detail.html'">
+      <div class="avatar">MN</div>
+      <div class="client-info">
+        <div class="client-name">Maria Nowak</div>
+        <div class="client-meta">
+          <span>🎯 Lose weight</span>
+          <span>📅 Logged today</span>
+          <span>⚡ Energy 4 · 💤 7.5h sleep</span>
+        </div>
+      </div>
+      <div class="plan-badges">
+        <span class="plan-chip plan-active">Nutrition plan</span>
+        <span class="plan-chip plan-active">Training plan</span>
+      </div>
+      <span class="phase-badge phase-follicular">Follicular</span>
+      <div class="client-actions">
+        <button class="btn-view" onclick="event.stopPropagation(); location.href='trainer-client-detail.html'">View</button>
+        <button class="btn-summary" onclick="event.stopPropagation(); location.href='trainer-weekly-summary.html'">Summary</button>
+      </div>
+    </div>
+
+    <div class="client-card" onclick="location.href='trainer-client-detail.html'">
+      <div class="avatar">KW</div>
+      <div class="client-info">
+        <div class="client-name">Kasia Wiśniewska</div>
+        <div class="client-meta">
+          <span>🎯 Build muscle</span>
+          <span>📅 Logged today</span>
+          <span>⚡ Energy 3 · 💤 6.5h sleep</span>
+        </div>
+      </div>
+      <div class="plan-badges">
+        <span class="plan-chip plan-active">Nutrition plan</span>
+        <span class="plan-chip plan-active">Training plan</span>
+      </div>
+      <span class="phase-badge phase-luteal">Luteal</span>
+      <div class="client-actions">
+        <button class="btn-view" onclick="event.stopPropagation(); location.href='trainer-client-detail.html'">View</button>
+        <button class="btn-summary" onclick="event.stopPropagation(); location.href='trainer-weekly-summary.html'">Summary</button>
+      </div>
+    </div>
+
+    <div class="client-card" onclick="location.href='trainer-client-detail.html'">
+      <div class="avatar">JK</div>
+      <div class="client-info">
+        <div class="client-name">Julia Kowalczyk</div>
+        <div class="client-meta">
+          <span>🎯 Improve endurance</span>
+          <span>📅 Logged today</span>
+          <span>⚡ Energy 5 · 💤 8.0h sleep</span>
+        </div>
+      </div>
+      <div class="plan-badges">
+        <span class="plan-chip plan-active">Nutrition plan</span>
+        <span class="plan-chip plan-inactive">No training plan</span>
+      </div>
+      <span class="phase-badge phase-ovulatory">Ovulatory</span>
+      <div class="client-actions">
+        <button class="btn-view" onclick="event.stopPropagation(); location.href='trainer-client-detail.html'">View</button>
+        <button class="btn-summary" onclick="event.stopPropagation(); location.href='trainer-weekly-summary.html'">Summary</button>
+      </div>
+    </div>
+
+    <div class="client-card" onclick="location.href='trainer-client-detail.html'">
+      <div class="avatar">AZ</div>
+      <div class="client-info">
+        <div class="client-name">Aleksandra Zając</div>
+        <div class="client-meta">
+          <span>🎯 Stress relief</span>
+          <span>📅 2 days ago</span>
+        </div>
+      </div>
+      <div class="plan-badges">
+        <span class="plan-chip plan-active">Nutrition plan</span>
+        <span class="plan-chip plan-active">Training plan</span>
+      </div>
+      <span class="phase-badge phase-menstrual">Menstrual</span>
+      <div class="client-actions">
+        <button class="btn-view" onclick="event.stopPropagation(); location.href='trainer-client-detail.html'">View</button>
+        <button class="btn-summary" onclick="event.stopPropagation(); location.href='trainer-weekly-summary.html'">Summary</button>
+      </div>
+    </div>
+
+    <div class="client-card" onclick="location.href='trainer-client-detail.html'">
+      <div class="avatar">PB</div>
+      <div class="client-info">
+        <div class="client-name">Patrycja Bąk</div>
+        <div class="client-meta">
+          <span>🎯 General fitness</span>
+          <span>📅 5 days ago</span>
+        </div>
+      </div>
+      <div class="plan-badges">
+        <span class="plan-chip plan-inactive">No nutrition plan</span>
+        <span class="plan-chip plan-active">Training plan</span>
+      </div>
+      <span class="phase-badge phase-none">Not logged</span>
+      <div class="client-actions">
+        <button class="btn-view" onclick="event.stopPropagation(); location.href='trainer-client-detail.html'">View</button>
+        <button class="btn-summary" onclick="event.stopPropagation(); location.href='trainer-weekly-summary.html'">Summary</button>
+      </div>
+    </div>
+
+    <div class="client-card" onclick="location.href='trainer-client-detail.html'">
+      <div class="avatar">EK</div>
+      <div class="client-info">
+        <div class="client-name">Ewa Kowalczyk</div>
+        <div class="client-meta">
+          <span>🎯 Post-pregnancy recovery</span>
+          <span>📅 3 days ago</span>
+        </div>
+      </div>
+      <div class="plan-badges">
+        <span class="plan-chip plan-active">Nutrition plan</span>
+        <span class="plan-chip plan-active">Training plan</span>
+      </div>
+      <span class="phase-badge phase-luteal">Luteal</span>
+      <div class="client-actions">
+        <button class="btn-view" onclick="event.stopPropagation(); location.href='trainer-client-detail.html'">View</button>
+        <button class="btn-summary" onclick="event.stopPropagation(); location.href='trainer-weekly-summary.html'">Summary</button>
+      </div>
+    </div>
+
+    <div class="client-card" onclick="location.href='trainer-client-detail.html'">
+      <div class="avatar">MW</div>
+      <div class="client-info">
+        <div class="client-name">Magda Wróbel</div>
+        <div class="client-meta">
+          <span>🎯 Increase flexibility</span>
+          <span>📅 Yesterday</span>
+          <span>⚡ Energy 4 · 💤 7.0h sleep</span>
+        </div>
+      </div>
+      <div class="plan-badges">
+        <span class="plan-chip plan-inactive">No nutrition plan</span>
+        <span class="plan-chip plan-inactive">No training plan</span>
+      </div>
+      <span class="phase-badge phase-follicular">Follicular</span>
+      <div class="client-actions">
+        <button class="btn-view" onclick="event.stopPropagation(); location.href='trainer-client-detail.html'">View</button>
+        <button class="btn-summary" onclick="event.stopPropagation(); location.href='trainer-weekly-summary.html'">Summary</button>
+      </div>
+    </div>
+
+    <div class="client-card" onclick="location.href='trainer-client-detail.html'">
+      <div class="avatar">AS</div>
+      <div class="client-info">
+        <div class="client-name">Agnieszka Sikora</div>
+        <div class="client-meta">
+          <span>🎯 Lose weight</span>
+          <span>📅 Today</span>
+          <span>⚡ Energy 2 · 💤 5.5h sleep</span>
+        </div>
+      </div>
+      <div class="plan-badges">
+        <span class="plan-chip plan-active">Nutrition plan</span>
+        <span class="plan-chip plan-active">Training plan</span>
+      </div>
+      <span class="phase-badge phase-menstrual">Menstrual</span>
+      <div class="client-actions">
+        <button class="btn-view" onclick="event.stopPropagation(); location.href='trainer-client-detail.html'">View</button>
+        <button class="btn-summary" onclick="event.stopPropagation(); location.href='trainer-weekly-summary.html'">Summary</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    function filterPhase(el) {
+      document.querySelectorAll('.phase-chip').forEach(c => {
+        c.className = 'phase-chip';
+      });
+      const text = el.textContent.trim();
+      if (text === 'All')           el.classList.add('active-all');
+      else if (text.includes('Menstrual'))  el.classList.add('active-mens');
+      else if (text.includes('Follicular')) el.classList.add('active-foll');
+      else if (text.includes('Ovulatory'))  el.classList.add('active-ovul');
+      else if (text.includes('Luteal'))     el.classList.add('active-lute');
+      else el.classList.add('active-all');
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Client Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .logo { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; margin-bottom: 36px; padding-left: 8px; }
+    .logo span { color: #e8c96a; }
+
+    .nav-item {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #4a6e65;
+      cursor: pointer;
+      display: block;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+
+    .sidebar-bottom { margin-top: auto; padding: 10px 14px; font-size: 0.85rem; color: #6a9088; }
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .top-bar h1 { font-size: 1.8rem; font-weight: 700; }
+
+    .date-tag { font-size: 0.85rem; color: #8aada0; margin-bottom: 28px; }
+
+    /* PHASE HERO */
+    .phase-hero {
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .phase-hero.follicular {
+      background: linear-gradient(135deg, #ddeeff 0%, #c8e6ff 100%);
+    }
+
+    .phase-left { display: flex; align-items: center; gap: 20px; }
+
+    .phase-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+
+    .phase-icon.follicular { background-color: rgba(74, 144, 196, 0.2); }
+
+    .phase-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: #4a90c4;
+      margin-bottom: 4px;
+    }
+
+    .phase-name { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; }
+    .phase-sub { font-size: 0.85rem; color: #6a9088; margin-top: 4px; }
+
+    .phase-traits {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .trait-chip {
+      background: rgba(255,255,255,0.7);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #4a90c4;
+    }
+
+    /* LOG BANNER */
+    .log-banner {
+      background: white;
+      border-radius: 14px;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      border: 2px solid #f0f5f3;
+    }
+
+    .log-banner-text { font-size: 0.92rem; font-weight: 500; color: #4a6e65; }
+    .log-banner-text strong { color: #3d3d3d; }
+
+    .btn-log {
+      background-color: #e8c96a;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 24px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-log:hover { background-color: #deba55; }
+
+    /* GRID */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+
+    /* CARD */
+    .card { background: white; border-radius: 16px; padding: 24px 28px; }
+    .card-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #8aada0;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .phase-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #ddeeff;
+      border-radius: 12px;
+      padding: 3px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #4a90c4;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    /* MEAL RECOMMENDATIONS */
+    .meal-section { margin-bottom: 20px; }
+    .meal-section:last-child { margin-bottom: 0; }
+
+    .meal-type-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #8aada0;
+      margin-bottom: 10px;
+    }
+
+    .recipe-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #f5faf8;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    .recipe-item:last-child { margin-bottom: 0; }
+
+    .recipe-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+    .recipe-macros { font-size: 0.75rem; color: #8aada0; }
+
+    .macro-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 10px;
+      white-space: nowrap;
+    }
+
+    .macro-kcal { background: #fef9ec; color: #b89030; }
+
+    /* EXERCISE RECOMMENDATIONS */
+    .exercise-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: #f5faf8;
+      border-radius: 10px;
+      margin-bottom: 8px;
+    }
+
+    .exercise-item:last-child { margin-bottom: 0; }
+
+    .exercise-name { font-size: 0.9rem; font-weight: 600; margin-bottom: 2px; }
+    .exercise-params { font-size: 0.75rem; color: #8aada0; }
+
+    .difficulty-chip {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 10px;
+    }
+
+    .diff-medium { background: #fff3e0; color: #e8a030; }
+    .diff-easy   { background: #e8fde8; color: #4caf50; }
+    .diff-hard   { background: #fde8e8; color: #c0504d; }
+
+    /* DAILY LOG MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal { background: white; border-radius: 20px; padding: 40px; width: 520px; }
+    .modal-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
+    .modal-underline { width: 120px; height: 4px; background-color: #e8c96a; border-radius: 2px; margin-bottom: 28px; }
+
+    .form-group { margin-bottom: 20px; }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #8aada0;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: #f5faf8;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.92rem;
+      color: #3d3d3d;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .form-input:focus { background: #eef5f2; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    /* PHASE SELECTOR */
+    .phase-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .phase-option {
+      border: 2px solid #f0f5f3;
+      border-radius: 12px;
+      padding: 12px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #4a6e65;
+      transition: border-color 0.15s;
+    }
+
+    .phase-option:hover { border-color: #cdddd6; }
+
+    .phase-option.selected { border-color: #4a90c4; background: #ddeeff; color: #2a6090; }
+
+    .phase-option .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ENERGY SELECTOR */
+    .energy-selector { display: flex; gap: 10px; }
+
+    .energy-btn {
+      flex: 1;
+      border: 2px solid #f0f5f3;
+      border-radius: 10px;
+      padding: 10px 4px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    .energy-btn:hover { border-color: #cdddd6; }
+    .energy-btn.selected { border-color: #e8c96a; background: #fef9ec; }
+
+    .energy-label { font-size: 0.68rem; font-weight: 600; color: #8aada0; margin-top: 4px; }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      background: none;
+      border: 1.5px solid #cdddd6;
+      border-radius: 10px;
+      padding: 13px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #4a6e65;
+      cursor: pointer;
+    }
+
+    .btn-save {
+      flex: 2;
+      background-color: #e8c96a;
+      border: none;
+      border-radius: 10px;
+      padding: 13px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-save:hover { background-color: #deba55; }
+
+    /* HINT */
+    .hint {
+      font-size: 0.78rem;
+      color: #8aada0;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item active" href="client-dashboard.html">Today</a>
+    <a class="nav-item" href="client-recipe-browser.html">Meals</a>
+    <a class="nav-item" href="client-exercise-log.html">Workouts</a>
+    <a class="nav-item" href="client-weekly-summary.html">Progress</a>
+    <a class="nav-item" href="client-session-booking.html">Book session</a>
+    <div class="sidebar-bottom">
+      <strong>Maria Nowak</strong>
+      Client
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="top-bar">
+      <h1>Good morning, Maria 👋</h1>
+    </div>
+    <div class="date-tag">Wednesday, 27 May 2026</div>
+
+    <!-- PHASE HERO -->
+    <div class="phase-hero follicular">
+      <div class="phase-left">
+        <div class="phase-icon follicular">🌱</div>
+        <div>
+          <div class="phase-label">Today's phase</div>
+          <div class="phase-name">Follicular Phase</div>
+          <div class="phase-sub">Day 8 of your cycle · High energy window</div>
+        </div>
+      </div>
+      <div class="phase-traits">
+        <div class="trait-chip">↑ Energy</div>
+        <div class="trait-chip">↑ Strength</div>
+        <div class="trait-chip">Good for HIIT</div>
+        <div class="trait-chip">Iron-rich foods</div>
+      </div>
+    </div>
+
+    <!-- LOG BANNER -->
+    <div class="log-banner">
+      <div class="log-banner-text">
+        <strong>Log today's data</strong> — track your sleep, energy and confirm your phase to get better recommendations
+      </div>
+      <button class="btn-log" onclick="openModal()">Log today</button>
+    </div>
+
+    <div class="grid-2">
+
+      <!-- MEAL RECOMMENDATIONS -->
+      <div class="card">
+        <div class="card-title">
+          Today's meals
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span class="phase-badge">🌱 Follicular</span>
+            <a href="client-recipe-browser.html" style="font-size:0.78rem; color:#4a90c4; font-weight:600; text-decoration:none;">Browse all →</a>
+          </div>
+        </div>
+
+        <div class="meal-section">
+          <div class="meal-type-label">Breakfast</div>
+          <div class="recipe-item">
+            <div>
+              <div class="recipe-name">Greek Yogurt Bowl</div>
+              <div class="recipe-macros">P 24g · C 32g · F 8g</div>
+            </div>
+            <span class="macro-pill macro-kcal">296 kcal</span>
+          </div>
+        </div>
+
+        <div class="meal-section">
+          <div class="meal-type-label">Lunch</div>
+          <div class="recipe-item">
+            <div>
+              <div class="recipe-name">Lentil & Spinach Soup</div>
+              <div class="recipe-macros">P 18g · C 42g · F 5g</div>
+            </div>
+            <span class="macro-pill macro-kcal">285 kcal</span>
+          </div>
+          <div class="recipe-item">
+            <div>
+              <div class="recipe-name">Rye Bread (2 slices)</div>
+              <div class="recipe-macros">P 6g · C 38g · F 2g</div>
+            </div>
+            <span class="macro-pill macro-kcal">196 kcal</span>
+          </div>
+        </div>
+
+        <div class="meal-section">
+          <div class="meal-type-label">Dinner</div>
+          <div class="recipe-item">
+            <div>
+              <div class="recipe-name">Grilled Salmon & Quinoa</div>
+              <div class="recipe-macros">P 42g · C 38g · F 18g</div>
+            </div>
+            <span class="macro-pill macro-kcal">486 kcal</span>
+          </div>
+        </div>
+
+        <div class="meal-section">
+          <div class="meal-type-label">Snack</div>
+          <div class="recipe-item">
+            <div>
+              <div class="recipe-name">Handful of Almonds</div>
+              <div class="recipe-macros">P 6g · C 6g · F 14g</div>
+            </div>
+            <span class="macro-pill macro-kcal">174 kcal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXERCISE RECOMMENDATIONS -->
+      <div class="card">
+        <div class="card-title">
+          Today's workout
+          <span class="phase-badge">🌱 Follicular · Wed</span>
+        </div>
+
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">Barbell Squat</div>
+            <div class="exercise-params">4 sets · 8 reps · 60 kg · rest 90s</div>
+          </div>
+          <span class="difficulty-chip diff-medium">Medium</span>
+        </div>
+
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">Romanian Deadlift</div>
+            <div class="exercise-params">4 sets · 10 reps · 50 kg · rest 90s</div>
+          </div>
+          <span class="difficulty-chip diff-medium">Medium</span>
+        </div>
+
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">Walking Lunge</div>
+            <div class="exercise-params">3 sets · 12 reps · 10 kg</div>
+          </div>
+          <span class="difficulty-chip diff-easy">Easy</span>
+        </div>
+
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">Plank</div>
+            <div class="exercise-params">3 sets · 45 seconds</div>
+          </div>
+          <span class="difficulty-chip diff-easy">Easy</span>
+        </div>
+
+        <div class="exercise-item">
+          <div>
+            <div class="exercise-name">Dumbbell Shoulder Press</div>
+            <div class="exercise-params">3 sets · 12 reps · 10 kg · rest 60s</div>
+          </div>
+          <span class="difficulty-chip diff-medium">Medium</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- DAILY LOG MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-title">Today's Log</div>
+      <div class="modal-underline"></div>
+
+      <div class="form-group">
+        <label>Cycle phase</label>
+        <div class="phase-selector">
+          <div class="phase-option" onclick="selectPhase(this)">
+            <div class="dot" style="background:#c0504d;"></div>Menstrual
+          </div>
+          <div class="phase-option selected" onclick="selectPhase(this)">
+            <div class="dot" style="background:#4a90c4;"></div>Follicular
+          </div>
+          <div class="phase-option" onclick="selectPhase(this)">
+            <div class="dot" style="background:#4caf50;"></div>Ovulatory
+          </div>
+          <div class="phase-option" onclick="selectPhase(this)">
+            <div class="dot" style="background:#e8a030;"></div>Luteal
+          </div>
+        </div>
+        <div class="hint">Phasely estimated this based on your cycle data. You can change it.</div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hours of sleep</label>
+          <input class="form-input" type="number" placeholder="e.g. 7.5" min="0" max="24" step="0.5" />
+        </div>
+        <div class="form-group">
+          <label>Energy level</label>
+          <div class="energy-selector">
+            <div class="energy-btn" onclick="selectEnergy(this)">😴<div class="energy-label">1</div></div>
+            <div class="energy-btn" onclick="selectEnergy(this)">😐<div class="energy-label">2</div></div>
+            <div class="energy-btn" onclick="selectEnergy(this)">🙂<div class="energy-label">3</div></div>
+            <div class="energy-btn selected" onclick="selectEnergy(this)">😊<div class="energy-label">4</div></div>
+            <div class="energy-btn" onclick="selectEnergy(this)">🚀<div class="energy-label">5</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save">Save log</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openModal() { document.getElementById('modal').classList.add('open'); }
+    function closeModal() { document.getElementById('modal').classList.remove('open'); }
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    function selectPhase(el) {
+      document.querySelectorAll('.phase-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function selectEnergy(el) {
+      document.querySelectorAll('.energy-btn').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+  </script>
+
+</body>
+</html>

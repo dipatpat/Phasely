@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Training Plan Builder</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .logo { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; margin-bottom: 36px; padding-left: 8px; }
+    .logo span { color: #e8c96a; }
+
+    .nav-item {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #4a6e65;
+      cursor: pointer;
+      display: block;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+
+    .sidebar-bottom { margin-top: auto; padding: 10px 14px; font-size: 0.85rem; color: #6a9088; }
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+
+    .back { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; color: #6a9088; margin-bottom: 24px; cursor: pointer; font-weight: 500; }
+    .back:hover { color: #3d3d3d; }
+
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .top-bar h1 { font-size: 1.8rem; font-weight: 700; }
+
+    .client-tag { font-size: 0.85rem; color: #8aada0; margin-bottom: 28px; }
+    .client-tag strong { color: #4a6e65; }
+
+    .btn-save { background-color: #e8c96a; border: none; border-radius: 10px; padding: 12px 28px; font-size: 0.95rem; font-weight: 700; color: white; cursor: pointer; }
+    .btn-save:hover { background-color: #deba55; }
+
+    /* PHASE TABS */
+    .phase-tabs { display: flex; gap: 8px; margin-bottom: 28px; }
+
+    .phase-tab {
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 2px solid transparent;
+      background: white;
+      color: #8aada0;
+    }
+
+    .phase-tab:hover { border-color: #cdddd6; color: #4a6e65; }
+    .phase-tab.active-menstrual  { background-color: #fde8e8; color: #c0504d; border-color: #c0504d; }
+    .phase-tab.active-follicular { background-color: #e8f4fd; color: #4a90c4; border-color: #4a90c4; }
+    .phase-tab.active-ovulatory  { background-color: #e8fde8; color: #4caf50; border-color: #4caf50; }
+    .phase-tab.active-luteal     { background-color: #fdf4e8; color: #e8a030; border-color: #e8a030; }
+
+    /* PHASE CONTENT */
+    .phase-content { display: none; }
+    .phase-content.visible { display: block; }
+
+    /* DAY SECTION */
+    .day-section { background: white; border-radius: 16px; margin-bottom: 16px; overflow: hidden; }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid #f0f5f3;
+    }
+
+    .day-title { font-weight: 700; font-size: 0.95rem; }
+
+    .btn-add-exercise {
+      background: none;
+      border: 1.5px solid #cdddd6;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #4a6e65;
+      cursor: pointer;
+    }
+
+    .btn-add-exercise:hover { background-color: #eef5f2; }
+
+    /* EXERCISE ROW */
+    .exercise-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 24px;
+      gap: 16px;
+      border-bottom: 1px solid #f0f5f3;
+      flex-wrap: wrap;
+    }
+
+    .exercise-row:last-child { border-bottom: none; }
+
+    .exercise-name { font-weight: 600; font-size: 0.92rem; min-width: 180px; }
+
+    .params {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .param {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #f5faf8;
+      border-radius: 8px;
+      padding: 6px 12px;
+      min-width: 58px;
+    }
+
+    .param-value { font-size: 0.88rem; font-weight: 700; color: #3d3d3d; }
+    .param-label { font-size: 0.68rem; color: #8aada0; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    .param-empty .param-value { color: #b0c8c0; }
+
+    .btn-remove { background: none; border: none; color: #c0504d; font-size: 1rem; cursor: pointer; padding: 4px 8px; border-radius: 6px; margin-left: auto; }
+    .btn-remove:hover { background-color: #fde8e8; }
+
+    .empty-day { padding: 16px 24px; font-size: 0.85rem; color: #b0c8c0; font-style: italic; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal { background: white; border-radius: 20px; padding: 36px; width: 540px; max-height: 85vh; overflow-y: auto; }
+
+    .modal-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+
+    .modal-underline { width: 100px; height: 4px; background-color: #e8c96a; border-radius: 2px; margin-bottom: 24px; }
+
+    /* EXERCISE PICKER */
+    .exercise-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f5f3;
+      cursor: pointer;
+    }
+
+    .exercise-option:last-of-type { border-bottom: none; margin-bottom: 16px; }
+
+    .exercise-option-name { font-weight: 600; font-size: 0.92rem; }
+
+    .btn-pick { background-color: #eef5f2; border: none; border-radius: 8px; padding: 6px 14px; font-size: 0.82rem; font-weight: 600; color: #4a6e65; cursor: pointer; }
+    .btn-pick:hover { background-color: #cdddd6; }
+
+    /* PARAM FORM */
+    .param-form { border-top: 1px solid #f0f5f3; padding-top: 20px; margin-top: 4px; }
+
+    .param-form-title { font-size: 0.82rem; font-weight: 700; color: #8aada0; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 16px; }
+
+    .param-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+
+    .param-field label { display: block; font-size: 0.78rem; font-weight: 600; color: #8aada0; text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 6px; }
+
+    .param-field input, .param-field select {
+      width: 100%;
+      background: #f5faf8;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 0.88rem;
+      color: #3d3d3d;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+
+    .btn-cancel { flex: 1; background: none; border: 1.5px solid #cdddd6; border-radius: 10px; padding: 12px; font-size: 0.9rem; font-weight: 600; color: #4a6e65; cursor: pointer; }
+    .btn-confirm { flex: 2; background-color: #e8c96a; border: none; border-radius: 10px; padding: 12px; font-size: 0.9rem; font-weight: 700; color: white; cursor: pointer; }
+    .btn-confirm:hover { background-color: #deba55; }
+
+    .modal-close { display: block; text-align: center; margin-top: 16px; color: #8aada0; font-size: 0.88rem; cursor: pointer; }
+    .modal-close:hover { color: #3d3d3d; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item active">Dashboard</a>
+    <a class="nav-item">Clients</a>
+    <a class="nav-item">Recipes</a>
+    <a class="nav-item">Exercises</a>
+    <a class="nav-item">Sessions</a>
+    <a class="nav-item">Availability</a>
+    <div class="sidebar-bottom">
+      <strong>Anna Kowalska</strong>
+      Personal Trainer
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="back">← Back to client</div>
+
+    <div class="top-bar">
+      <h1>Training Plan</h1>
+      <button class="btn-save">Save plan</button>
+    </div>
+    <div class="client-tag">For <strong>Maria Nowak</strong> · Full Body — Cycle-Aware</div>
+
+    <!-- PHASE TABS -->
+    <div class="phase-tabs">
+      <div class="phase-tab" onclick="showPhase('menstrual')" id="tab-menstrual">🔴 Menstrual</div>
+      <div class="phase-tab active-follicular" onclick="showPhase('follicular')" id="tab-follicular">🔵 Follicular</div>
+      <div class="phase-tab" onclick="showPhase('ovulatory')" id="tab-ovulatory">🟢 Ovulatory</div>
+      <div class="phase-tab" onclick="showPhase('luteal')" id="tab-luteal">🟡 Luteal</div>
+    </div>
+
+    <!-- MENSTRUAL -->
+    <div class="phase-content" id="phase-menstrual">
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Monday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="exercise-row">
+          <span class="exercise-name">Cat-Cow Stretch</span>
+          <div class="params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param param-empty"><span class="param-value">—</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">60s</span><span class="param-label">duration</span></div>
+            <div class="param param-empty"><span class="param-value">—</span><span class="param-label">weight</span></div>
+            <div class="param"><span class="param-value">30s</span><span class="param-label">rest</span></div>
+            <div class="param"><span class="param-value">Easy</span><span class="param-label">level</span></div>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Wednesday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="empty-day">No exercises added yet.</div>
+      </div>
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Friday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="empty-day">No exercises added yet.</div>
+      </div>
+    </div>
+
+    <!-- FOLLICULAR (default) -->
+    <div class="phase-content visible" id="phase-follicular">
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Monday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="exercise-row">
+          <span class="exercise-name">Barbell Squat</span>
+          <div class="params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">8</span><span class="param-label">reps</span></div>
+            <div class="param param-empty"><span class="param-value">—</span><span class="param-label">duration</span></div>
+            <div class="param"><span class="param-value">60kg</span><span class="param-label">weight</span></div>
+            <div class="param"><span class="param-value">90s</span><span class="param-label">rest</span></div>
+            <div class="param"><span class="param-value">Hard</span><span class="param-label">level</span></div>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+        <div class="exercise-row">
+          <span class="exercise-name">Romanian Deadlift</span>
+          <div class="params">
+            <div class="param"><span class="param-value">4</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">10</span><span class="param-label">reps</span></div>
+            <div class="param param-empty"><span class="param-value">—</span><span class="param-label">duration</span></div>
+            <div class="param"><span class="param-value">50kg</span><span class="param-label">weight</span></div>
+            <div class="param"><span class="param-value">90s</span><span class="param-label">rest</span></div>
+            <div class="param"><span class="param-value">Hard</span><span class="param-label">level</span></div>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Wednesday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="exercise-row">
+          <span class="exercise-name">Push-up</span>
+          <div class="params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">15</span><span class="param-label">reps</span></div>
+            <div class="param param-empty"><span class="param-value">—</span><span class="param-label">duration</span></div>
+            <div class="param param-empty"><span class="param-value">—</span><span class="param-label">weight</span></div>
+            <div class="param"><span class="param-value">60s</span><span class="param-label">rest</span></div>
+            <div class="param"><span class="param-value">Med</span><span class="param-label">level</span></div>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+        <div class="exercise-row">
+          <span class="exercise-name">Plank</span>
+          <div class="params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param param-empty"><span class="param-value">—</span><span class="param-label">reps</span></div>
+            <div class="param"><span class="param-value">45s</span><span class="param-label">duration</span></div>
+            <div class="param param-empty"><span class="param-value">—</span><span class="param-label">weight</span></div>
+            <div class="param"><span class="param-value">45s</span><span class="param-label">rest</span></div>
+            <div class="param"><span class="param-value">Med</span><span class="param-label">level</span></div>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Friday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="exercise-row">
+          <span class="exercise-name">Walking Lunge</span>
+          <div class="params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">12</span><span class="param-label">reps</span></div>
+            <div class="param param-empty"><span class="param-value">—</span><span class="param-label">duration</span></div>
+            <div class="param"><span class="param-value">10kg</span><span class="param-label">weight</span></div>
+            <div class="param"><span class="param-value">60s</span><span class="param-label">rest</span></div>
+            <div class="param"><span class="param-value">Med</span><span class="param-label">level</span></div>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OVULATORY -->
+    <div class="phase-content" id="phase-ovulatory">
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Monday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="exercise-row">
+          <span class="exercise-name">Barbell Squat</span>
+          <div class="params">
+            <div class="param"><span class="param-value">5</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">6</span><span class="param-label">reps</span></div>
+            <div class="param param-empty"><span class="param-value">—</span><span class="param-label">duration</span></div>
+            <div class="param"><span class="param-value">70kg</span><span class="param-label">weight</span></div>
+            <div class="param"><span class="param-value">120s</span><span class="param-label">rest</span></div>
+            <div class="param"><span class="param-value">Hard</span><span class="param-label">level</span></div>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Wednesday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="empty-day">No exercises added yet.</div>
+      </div>
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Friday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="empty-day">No exercises added yet.</div>
+      </div>
+    </div>
+
+    <!-- LUTEAL -->
+    <div class="phase-content" id="phase-luteal">
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Monday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="exercise-row">
+          <span class="exercise-name">Barbell Squat</span>
+          <div class="params">
+            <div class="param"><span class="param-value">3</span><span class="param-label">sets</span></div>
+            <div class="param"><span class="param-value">12</span><span class="param-label">reps</span></div>
+            <div class="param param-empty"><span class="param-value">—</span><span class="param-label">duration</span></div>
+            <div class="param"><span class="param-value">40kg</span><span class="param-label">weight</span></div>
+            <div class="param"><span class="param-value">60s</span><span class="param-label">rest</span></div>
+            <div class="param"><span class="param-value">Med</span><span class="param-label">level</span></div>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Wednesday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="empty-day">No exercises added yet.</div>
+      </div>
+      <div class="day-section">
+        <div class="day-header"><span class="day-title">Friday</span><button class="btn-add-exercise" onclick="openModal()">+ Add exercise</button></div>
+        <div class="empty-day">No exercises added yet.</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- MODAL: pick exercise + set params -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-title">Add Exercise</div>
+      <div class="modal-underline"></div>
+
+      <div class="exercise-option">
+        <div class="exercise-option-name">Barbell Squat</div>
+        <button class="btn-pick">Select</button>
+      </div>
+      <div class="exercise-option">
+        <div class="exercise-option-name">Push-up</div>
+        <button class="btn-pick">Select</button>
+      </div>
+      <div class="exercise-option">
+        <div class="exercise-option-name">Plank</div>
+        <button class="btn-pick">Select</button>
+      </div>
+      <div class="exercise-option">
+        <div class="exercise-option-name">Romanian Deadlift</div>
+        <button class="btn-pick">Select</button>
+      </div>
+      <div class="exercise-option">
+        <div class="exercise-option-name">Walking Lunge</div>
+        <button class="btn-pick">Select</button>
+      </div>
+      <div class="exercise-option">
+        <div class="exercise-option-name">Cat-Cow Stretch</div>
+        <button class="btn-pick">Select</button>
+      </div>
+
+      <div class="param-form">
+        <div class="param-form-title">Set parameters for this phase</div>
+        <div class="param-grid">
+          <div class="param-field">
+            <label>Sets</label>
+            <input type="number" placeholder="e.g. 4" />
+          </div>
+          <div class="param-field">
+            <label>Reps</label>
+            <input type="number" placeholder="e.g. 8" />
+          </div>
+          <div class="param-field">
+            <label>Weight (kg)</label>
+            <input type="number" placeholder="optional" />
+          </div>
+          <div class="param-field">
+            <label>Duration (s)</label>
+            <input type="number" placeholder="optional" />
+          </div>
+          <div class="param-field">
+            <label>Rest (s)</label>
+            <input type="number" placeholder="e.g. 90" />
+          </div>
+          <div class="param-field">
+            <label>Difficulty</label>
+            <select>
+              <option value="">—</option>
+              <option>Easy</option>
+              <option>Medium</option>
+              <option>Hard</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-confirm" onclick="closeModal()">Add to plan</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showPhase(phase) {
+      document.querySelectorAll('.phase-content').forEach(el => el.classList.remove('visible'));
+      document.querySelectorAll('.phase-tab').forEach(el => el.className = 'phase-tab');
+      document.getElementById('phase-' + phase).classList.add('visible');
+      document.getElementById('tab-' + phase).classList.add('active-' + phase);
+    }
+
+    function openModal() { document.getElementById('modal').classList.add('open'); }
+    function closeModal() { document.getElementById('modal').classList.remove('open'); }
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
+
+</body>
+</html>

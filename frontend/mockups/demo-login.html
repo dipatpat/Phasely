@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: #3d3d3d;
+    }
+
+    /* LOGO */
+    .logo {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #3d3d3d;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .logo span { color: #e8c96a; }
+
+    .tagline {
+      font-size: 0.9rem;
+      color: #8aada0;
+      margin-bottom: 48px;
+      font-weight: 500;
+    }
+
+
+    /* CARDS ROW */
+    .cards {
+      display: flex;
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    /* ROLE CARD */
+    .role-card {
+      background: white;
+      border-radius: 20px;
+      padding: 36px 32px;
+      width: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .role-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+    }
+
+    .role-card.trainer:hover   { border-color: #3d3d3d; }
+    .role-card.client:hover    { border-color: #e8c96a; }
+    .role-card.register:hover  { border-color: #4a90c4; }
+
+    .role-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+    }
+
+    .role-card.trainer  .role-avatar { background: #cdddd6; }
+    .role-card.client   .role-avatar { background: #fef5e4; }
+    .role-card.register .role-avatar { background: #ddeeff; }
+
+    .role-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .role-name {
+      font-size: 0.88rem;
+      color: #8aada0;
+      font-weight: 500;
+      margin-bottom: 28px;
+    }
+
+    .btn-enter {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .role-card.trainer .btn-enter {
+      background: #3d3d3d;
+      color: white;
+    }
+
+    .role-card.trainer .btn-enter:hover { background: #2a2a2a; }
+
+    .role-card.client .btn-enter {
+      background: #e8c96a;
+      color: white;
+    }
+
+    .role-card.client .btn-enter:hover { background: #deba55; }
+
+    .role-card.register .btn-enter {
+      background: white;
+      color: #4a90c4;
+      border: 2px solid #4a90c4;
+    }
+
+    .role-card.register .btn-enter:hover { background: #ddeeff; }
+
+    /* DIVIDER */
+    .or-divider {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #b0c8c0;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .or-line {
+      width: 1px;
+      flex: 1;
+      background: #dde9e5;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="logo">Phase<span>ly</span></div>
+  <div class="tagline">Cycle-aware fitness & nutrition platform</div>
+
+  <div class="cards">
+
+    <!-- TRAINER -->
+    <a class="role-card trainer" href="trainer-dashboard.html">
+      <div class="role-avatar">🏋️</div>
+      <div class="role-title">Trainer view</div>
+      <div class="role-name">Anna Kowalska</div>
+      <span class="btn-enter">Enter as Trainer →</span>
+    </a>
+
+    <div class="or-divider">
+      <div class="or-line"></div>
+      or
+      <div class="or-line"></div>
+    </div>
+
+    <!-- CLIENT -->
+    <a class="role-card client" href="client-dashboard.html">
+      <div class="role-avatar">🌸</div>
+      <div class="role-title">Client view</div>
+      <div class="role-name">Maria Nowak</div>
+      <span class="btn-enter">Enter as Client →</span>
+    </a>
+
+    <div class="or-divider">
+      <div class="or-line"></div>
+      or
+      <div class="or-line"></div>
+    </div>
+
+    <!-- REGISTER -->
+    <a class="role-card register" href="trainer-register.html">
+      <div class="role-avatar">✍️</div>
+      <div class="role-title">New trainer?</div>
+      <div class="role-name">Create an account</div>
+      <span class="btn-enter">Register as Trainer →</span>
+    </a>
+
+  </div>
+
+</body>
+</html>

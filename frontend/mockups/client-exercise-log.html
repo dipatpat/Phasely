@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Exercise Log</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .logo { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; margin-bottom: 36px; padding-left: 8px; }
+    .logo span { color: #e8c96a; }
+    .nav-item {
+      padding: 10px 14px; border-radius: 10px; font-size: 0.95rem; font-weight: 500;
+      color: #4a6e65; cursor: pointer; display: block; text-decoration: none;
+    }
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+    .sidebar-bottom { margin-top: auto; padding: 10px 14px; font-size: 0.85rem; color: #6a9088; }
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .top-bar h1 { font-size: 1.8rem; font-weight: 700; }
+    .date-tag { font-size: 0.85rem; color: #8aada0; margin-bottom: 28px; }
+
+    /* PROGRESS CARD */
+    .progress-card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px 28px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
+    .progress-ring-wrap {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+    }
+
+    .progress-ring-wrap svg {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-bg { fill: none; stroke: #f0f5f3; stroke-width: 6; }
+    .progress-ring-fill { fill: none; stroke: #4caf50; stroke-width: 6; stroke-linecap: round;
+      stroke-dasharray: 163; stroke-dashoffset: 98; transition: stroke-dashoffset 0.4s; }
+
+    .progress-ring-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #3d3d3d;
+      line-height: 1;
+    }
+
+    .progress-ring-label span {
+      font-size: 0.62rem;
+      font-weight: 500;
+      color: #8aada0;
+      margin-top: 1px;
+    }
+
+    .progress-info { flex: 1; }
+    .progress-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+    .progress-sub { font-size: 0.82rem; color: #8aada0; }
+
+    .progress-track {
+      flex: 1;
+    }
+
+    .track-bg {
+      height: 8px;
+      background: #f0f5f3;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .track-fill {
+      height: 8px;
+      border-radius: 4px;
+      background: #4caf50;
+      width: 40%;
+    }
+
+    .track-label {
+      font-size: 0.75rem;
+      color: #8aada0;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* SECTION LABEL */
+    .section-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #8aada0;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    /* EXERCISE CARD */
+    .exercise-card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border: 2px solid transparent;
+      transition: border-color 0.15s;
+    }
+
+    .exercise-card.logged {
+      border-color: #c8eecc;
+      background: #f4fbf5;
+    }
+
+    .exercise-number {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #f0f5f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #8aada0;
+      flex-shrink: 0;
+    }
+
+    .exercise-card.logged .exercise-number {
+      background: #d6f5da;
+      color: #4caf50;
+    }
+
+    .exercise-info { flex: 1; }
+
+    .exercise-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .exercise-plan-params {
+      font-size: 0.78rem;
+      color: #8aada0;
+      margin-bottom: 0;
+    }
+
+    .exercise-plan-params .param {
+      display: inline-block;
+      margin-right: 10px;
+    }
+
+    .logged-detail {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: #4caf50;
+      font-weight: 600;
+    }
+
+    .difficulty-chip {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 10px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .diff-medium { background: #fff3e0; color: #e8a030; }
+    .diff-easy   { background: #e8fde8; color: #4caf50; }
+    .diff-hard   { background: #fde8e8; color: #c0504d; }
+
+    .logged-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #e8fde8;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #4caf50;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-log-ex {
+      background-color: #e8c96a;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-log-ex:hover { background-color: #deba55; }
+
+    .btn-edit-log {
+      background: none;
+      border: 1.5px solid #cdddd6;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #4a6e65;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-edit-log:hover { background: #eef5f2; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; border-radius: 20px; padding: 40px; width: 520px; }
+
+    .modal-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+    .modal-subtitle { font-size: 0.85rem; color: #8aada0; margin-bottom: 8px; }
+    .modal-underline { width: 100px; height: 4px; background-color: #e8c96a; border-radius: 2px; margin-bottom: 24px; }
+
+    /* PLAN TARGET ROW */
+    .plan-target {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .plan-target-chip {
+      background: #f0f5f3;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #4a6e65;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .plan-target-chip .chip-label {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: #8aada0;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    /* SET ROWS */
+    .sets-header {
+      display: grid;
+      grid-template-columns: 36px 1fr 1fr 1fr 32px;
+      gap: 8px;
+      padding: 0 4px 8px;
+      border-bottom: 1px solid #f0f5f3;
+      margin-bottom: 8px;
+    }
+
+    .sets-header span {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #8aada0;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .set-row {
+      display: grid;
+      grid-template-columns: 36px 1fr 1fr 1fr 32px;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 4px;
+      margin-bottom: 4px;
+    }
+
+    .set-num {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #8aada0;
+      text-align: center;
+    }
+
+    .set-input {
+      background: #f5faf8;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #3d3d3d;
+      outline: none;
+      width: 100%;
+      text-align: center;
+      font-family: inherit;
+    }
+
+    .set-input:focus { background: #eef5f2; }
+
+    .set-check {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: #f0f5f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #b0c8c0;
+      transition: background 0.15s;
+      border: none;
+    }
+
+    .set-check.done { background: #d6f5da; color: #4caf50; }
+
+    .btn-add-set {
+      background: none;
+      border: 1.5px dashed #cdddd6;
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #8aada0;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 4px;
+      margin-bottom: 16px;
+    }
+
+    .btn-add-set:hover { border-color: #4a6e65; color: #4a6e65; }
+
+    .form-group { margin-bottom: 16px; }
+
+    label {
+      display: block; font-size: 0.82rem; font-weight: 600; color: #8aada0;
+      text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%; background: #f5faf8; border: none; border-radius: 10px;
+      padding: 12px 16px; font-size: 0.92rem; color: #3d3d3d; outline: none; font-family: inherit;
+    }
+
+    .form-input:focus { background: #eef5f2; }
+
+    .modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+    .btn-cancel {
+      flex: 1; background: none; border: 1.5px solid #cdddd6; border-radius: 10px;
+      padding: 13px; font-size: 0.92rem; font-weight: 600; color: #4a6e65; cursor: pointer;
+    }
+    .btn-save {
+      flex: 2; background-color: #e8c96a; border: none; border-radius: 10px;
+      padding: 13px; font-size: 0.92rem; font-weight: 700; color: white; cursor: pointer;
+    }
+    .btn-save:hover { background-color: #deba55; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item" href="client-dashboard.html">Today</a>
+    <a class="nav-item" href="client-recipe-browser.html">Meals</a>
+    <a class="nav-item active" href="client-exercise-log.html">Workouts</a>
+    <a class="nav-item" href="client-weekly-summary.html">Progress</a>
+    <a class="nav-item" href="client-session-booking.html">Book session</a>
+    <div class="sidebar-bottom">
+      <strong>Maria Nowak</strong>
+      Client
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="top-bar">
+      <h1>Workout Log</h1>
+    </div>
+    <div class="date-tag">Friday, 29 May 2026 · Follicular phase · Friday</div>
+
+    <!-- PROGRESS CARD -->
+    <div class="progress-card">
+      <div class="progress-ring-wrap">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle class="progress-ring-bg" cx="32" cy="32" r="26"/>
+          <circle class="progress-ring-fill" cx="32" cy="32" r="26"/>
+        </svg>
+        <div class="progress-ring-label">2/5<span>done</span></div>
+      </div>
+      <div class="progress-info">
+        <div class="progress-title">2 of 5 exercises logged</div>
+        <div class="progress-sub">Keep going — 3 more to complete today's workout</div>
+      </div>
+      <div class="progress-track">
+        <div class="track-bg"><div class="track-fill"></div></div>
+        <div class="track-label"><span>40% complete</span><span>5 exercises assigned</span></div>
+      </div>
+    </div>
+
+    <!-- EXERCISE LIST -->
+    <div class="section-label">Today's exercises · Follicular phase · Friday</div>
+
+    <!-- LOGGED -->
+    <div class="exercise-card logged">
+      <div class="exercise-number">✓</div>
+      <div class="exercise-info">
+        <div class="exercise-name">Barbell Squat</div>
+        <div class="exercise-plan-params">
+          <span class="param">📋 Plan: 4 sets · 8 reps · 60 kg</span>
+        </div>
+        <div class="logged-detail">✓ Logged: 4 sets · 8 reps · 62 kg</div>
+      </div>
+      <span class="difficulty-chip diff-medium">Medium</span>
+      <span class="logged-badge">✓ Done</span>
+      <button class="btn-edit-log" onclick="openModal('Barbell Squat', 4, 8, 60)">Edit</button>
+    </div>
+
+    <!-- LOGGED -->
+    <div class="exercise-card logged">
+      <div class="exercise-number">✓</div>
+      <div class="exercise-info">
+        <div class="exercise-name">Romanian Deadlift</div>
+        <div class="exercise-plan-params">
+          <span class="param">📋 Plan: 4 sets · 10 reps · 50 kg</span>
+        </div>
+        <div class="logged-detail">✓ Logged: 4 sets · 10 reps · 50 kg</div>
+      </div>
+      <span class="difficulty-chip diff-medium">Medium</span>
+      <span class="logged-badge">✓ Done</span>
+      <button class="btn-edit-log" onclick="openModal('Romanian Deadlift', 4, 10, 50)">Edit</button>
+    </div>
+
+    <!-- NOT LOGGED -->
+    <div class="exercise-card">
+      <div class="exercise-number">3</div>
+      <div class="exercise-info">
+        <div class="exercise-name">Walking Lunge</div>
+        <div class="exercise-plan-params">
+          <span class="param">📋 Plan: 3 sets · 12 reps · 10 kg</span>
+        </div>
+      </div>
+      <span class="difficulty-chip diff-easy">Easy</span>
+      <button class="btn-log-ex" onclick="openModal('Walking Lunge', 3, 12, 10)">Log</button>
+    </div>
+
+    <!-- NOT LOGGED -->
+    <div class="exercise-card">
+      <div class="exercise-number">4</div>
+      <div class="exercise-info">
+        <div class="exercise-name">Plank</div>
+        <div class="exercise-plan-params">
+          <span class="param">📋 Plan: 3 sets · 45 sec</span>
+        </div>
+      </div>
+      <span class="difficulty-chip diff-easy">Easy</span>
+      <button class="btn-log-ex" onclick="openModal('Plank', 3, null, null, true)">Log</button>
+    </div>
+
+    <!-- NOT LOGGED -->
+    <div class="exercise-card">
+      <div class="exercise-number">5</div>
+      <div class="exercise-info">
+        <div class="exercise-name">Dumbbell Shoulder Press</div>
+        <div class="exercise-plan-params">
+          <span class="param">📋 Plan: 3 sets · 12 reps · 10 kg</span>
+        </div>
+      </div>
+      <span class="difficulty-chip diff-medium">Medium</span>
+      <button class="btn-log-ex" onclick="openModal('Dumbbell Shoulder Press', 3, 12, 10)">Log</button>
+    </div>
+
+  </main>
+
+  <!-- LOG EXERCISE MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-title" id="modal-ex-name">Walking Lunge</div>
+      <div class="modal-subtitle">Log your actual performance</div>
+      <div class="modal-underline"></div>
+
+      <!-- PLAN TARGET -->
+      <div class="plan-target" id="plan-target">
+        <div class="plan-target-chip">
+          <span id="target-sets">3</span>
+          <span class="chip-label">sets</span>
+        </div>
+        <div class="plan-target-chip">
+          <span id="target-reps">12</span>
+          <span class="chip-label">reps</span>
+        </div>
+        <div class="plan-target-chip">
+          <span id="target-weight">10 kg</span>
+          <span class="chip-label">weight</span>
+        </div>
+        <div class="plan-target-chip" style="background:#fef9ec; color:#b89030;">
+          📋 Plan target
+        </div>
+      </div>
+
+      <!-- SET TABLE -->
+      <div class="sets-header">
+        <span style="text-align:center;">Set</span>
+        <span style="text-align:center;">Reps</span>
+        <span style="text-align:center;">Weight (kg)</span>
+        <span style="text-align:center;">Rest (s)</span>
+        <span></span>
+      </div>
+
+      <div id="set-rows">
+        <div class="set-row">
+          <div class="set-num">1</div>
+          <input class="set-input" type="number" placeholder="12" min="1" />
+          <input class="set-input" type="number" placeholder="10" min="0" step="0.5" />
+          <input class="set-input" type="number" placeholder="60" min="0" />
+          <button class="set-check" onclick="toggleCheck(this)">✓</button>
+        </div>
+        <div class="set-row">
+          <div class="set-num">2</div>
+          <input class="set-input" type="number" placeholder="12" min="1" />
+          <input class="set-input" type="number" placeholder="10" min="0" step="0.5" />
+          <input class="set-input" type="number" placeholder="60" min="0" />
+          <button class="set-check" onclick="toggleCheck(this)">✓</button>
+        </div>
+        <div class="set-row">
+          <div class="set-num">3</div>
+          <input class="set-input" type="number" placeholder="12" min="1" />
+          <input class="set-input" type="number" placeholder="10" min="0" step="0.5" />
+          <input class="set-input" type="number" placeholder="60" min="0" />
+          <button class="set-check" onclick="toggleCheck(this)">✓</button>
+        </div>
+      </div>
+
+      <button class="btn-add-set" onclick="addSet()">+ Add set</button>
+
+      <div class="form-group">
+        <label>Notes (optional)</label>
+        <textarea class="form-input" rows="2" placeholder="e.g. felt strong, increased weight" style="resize:none;"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save" onclick="closeModal()">Save exercise</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let setCount = 3;
+
+    function openModal(name, sets, reps, weight, isTimed) {
+      setCount = sets || 3;
+      document.getElementById('modal-ex-name').textContent = name;
+      document.getElementById('target-sets').textContent = sets || '—';
+      document.getElementById('target-reps').textContent = isTimed ? '45 sec' : (reps || '—');
+      document.getElementById('target-weight').textContent = weight ? weight + ' kg' : '—';
+
+      // rebuild set rows
+      const container = document.getElementById('set-rows');
+      container.innerHTML = '';
+      for (let i = 1; i <= setCount; i++) {
+        container.innerHTML += `
+          <div class="set-row">
+            <div class="set-num">${i}</div>
+            <input class="set-input" type="number" placeholder="${isTimed ? '45' : (reps || '—')}" min="1" />
+            <input class="set-input" type="number" placeholder="${weight || '—'}" min="0" step="0.5" />
+            <input class="set-input" type="number" placeholder="60" min="0" />
+            <button class="set-check" onclick="toggleCheck(this)">✓</button>
+          </div>`;
+      }
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+    }
+
+    function toggleCheck(btn) {
+      btn.classList.toggle('done');
+    }
+
+    function addSet() {
+      setCount++;
+      const container = document.getElementById('set-rows');
+      const row = document.createElement('div');
+      row.className = 'set-row';
+      row.innerHTML = `
+        <div class="set-num">${setCount}</div>
+        <input class="set-input" type="number" placeholder="—" min="1" />
+        <input class="set-input" type="number" placeholder="—" min="0" step="0.5" />
+        <input class="set-input" type="number" placeholder="60" min="0" />
+        <button class="set-check" onclick="toggleCheck(this)">✓</button>`;
+      container.appendChild(row);
+    }
+
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
+
+</body>
+</html>

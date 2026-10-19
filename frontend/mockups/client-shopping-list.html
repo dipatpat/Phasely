@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Shopping List</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .logo { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; margin-bottom: 36px; padding-left: 8px; }
+    .logo span { color: #e8c96a; }
+    .nav-item {
+      padding: 10px 14px; border-radius: 10px; font-size: 0.95rem; font-weight: 500;
+      color: #4a6e65; cursor: pointer; display: block; text-decoration: none;
+    }
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+    .sidebar-bottom { margin-top: auto; padding: 10px 14px; font-size: 0.85rem; color: #6a9088; }
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .top-bar h1 { font-size: 1.8rem; font-weight: 700; }
+
+    .btn-print {
+      background: white;
+      border: 1.5px solid #cdddd6;
+      border-radius: 10px;
+      padding: 10px 20px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #4a6e65;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-print:hover { background: #eef5f2; }
+
+    .date-tag { font-size: 0.85rem; color: #8aada0; margin-bottom: 28px; }
+
+    /* WEEK NAV */
+    .week-nav { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+    .week-btn {
+      background: white; border: none; border-radius: 8px; width: 36px; height: 36px;
+      font-size: 1rem; cursor: pointer; color: #4a6e65;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .week-btn:hover { background-color: #cdddd6; }
+    .week-label { font-weight: 600; font-size: 0.95rem; }
+
+    /* SUMMARY BANNER */
+    .summary-banner {
+      background: white;
+      border-radius: 14px;
+      padding: 18px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .summary-stat { text-align: center; }
+    .summary-val { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; line-height: 1; }
+    .summary-label { font-size: 0.72rem; color: #8aada0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 4px; }
+
+    .summary-divider { width: 1px; height: 40px; background: #f0f5f3; flex-shrink: 0; }
+
+    .summary-note {
+      flex: 1;
+      font-size: 0.82rem;
+      color: #6a9088;
+      line-height: 1.5;
+    }
+
+    .summary-note strong { color: #3d3d3d; }
+
+    .progress-wrap { flex: 1; }
+    .progress-row { display: flex; justify-content: space-between; font-size: 0.75rem; color: #8aada0; margin-bottom: 6px; }
+    .progress-track { height: 8px; background: #f0f5f3; border-radius: 4px; overflow: hidden; }
+    .progress-fill  { height: 8px; border-radius: 4px; background: #4caf50; width: 33%; transition: width 0.4s; }
+
+    /* LAYOUT */
+    .list-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* CATEGORY CARD */
+    .category-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 0;
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 20px;
+      border-bottom: 1px solid #f0f5f3;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .category-header:hover { background: #fafcfb; }
+
+    .category-icon { font-size: 1.1rem; }
+
+    .category-name {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #4a6e65;
+      flex: 1;
+    }
+
+    .category-count {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #8aada0;
+      background: #f0f5f3;
+      border-radius: 10px;
+      padding: 2px 10px;
+    }
+
+    .category-count.all-done {
+      background: #e8fde8;
+      color: #4caf50;
+    }
+
+    /* ITEM ROW */
+    .item-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 13px 20px;
+      border-bottom: 1px solid #f9fcfb;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .item-row:last-child { border-bottom: none; }
+    .item-row:hover { background: #fafcfb; }
+
+    .item-row.checked { opacity: 0.45; }
+
+    /* CHECKBOX */
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid #cdddd6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+      transition: background 0.15s, border-color 0.15s;
+      font-size: 0.7rem;
+      color: white;
+    }
+
+    .item-row.checked .checkbox {
+      background: #4caf50;
+      border-color: #4caf50;
+    }
+
+    .item-content { flex: 1; }
+
+    .item-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .item-row.checked .item-name { text-decoration: line-through; }
+
+    .item-qty {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #4a6e65;
+    }
+
+    .item-recipes {
+      font-size: 0.72rem;
+      color: #b0c8c0;
+      margin-top: 2px;
+    }
+
+    /* AGGREGATED BADGE */
+    .agg-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      background: #fef9ec;
+      color: #b89030;
+      border-radius: 8px;
+      padding: 2px 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item" href="client-dashboard.html">Today</a>
+    <a class="nav-item active" href="client-recipe-browser.html">Meals</a>
+    <a class="nav-item" href="client-exercise-log.html">Workouts</a>
+    <a class="nav-item" href="client-weekly-summary.html">Progress</a>
+    <a class="nav-item" href="client-session-booking.html">Book session</a>
+    <div class="sidebar-bottom">
+      <strong>Maria Nowak</strong>
+      Client
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="top-bar">
+      <h1>Shopping List</h1>
+      <button class="btn-print">🖨 Print / Export</button>
+    </div>
+    <div class="date-tag">Auto-generated from your nutrition plan · 26 May — 1 Jun 2026</div>
+
+    <!-- WEEK NAV -->
+    <div class="week-nav">
+      <button class="week-btn">←</button>
+      <span class="week-label">26 May — 1 Jun 2026</span>
+      <button class="week-btn">→</button>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="summary-banner">
+      <div class="summary-stat">
+        <div class="summary-val">8</div>
+        <div class="summary-label">Recipes</div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-stat">
+        <div class="summary-val">27</div>
+        <div class="summary-label">Ingredients</div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-stat">
+        <div class="summary-val" id="checked-count">9</div>
+        <div class="summary-label">In cart</div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="progress-wrap">
+        <div class="progress-row">
+          <span>Shopping progress</span>
+          <span id="progress-pct">33%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-note">
+        Quantities are <strong>aggregated across all recipes</strong> for the week — if salmon appears in two recipes, you'll see the combined total here.
+      </div>
+    </div>
+
+    <!-- LIST -->
+    <div class="list-layout">
+
+      <!-- LEFT COLUMN -->
+      <div>
+
+        <!-- PRODUCE -->
+        <div class="category-card" style="margin-bottom:16px;">
+          <div class="category-header">
+            <span class="category-icon">🥦</span>
+            <span class="category-name">Produce</span>
+            <span class="category-count" id="count-produce">0 / 7</span>
+          </div>
+          <div class="item-row checked" onclick="toggle(this)" data-cat="produce">
+            <div class="checkbox">✓</div>
+            <div class="item-content">
+              <div class="item-name">Fresh spinach</div>
+              <div class="item-qty">300g</div>
+              <div class="item-recipes">Lentil soup · Salmon bowl</div>
+            </div>
+          </div>
+          <div class="item-row checked" onclick="toggle(this)" data-cat="produce">
+            <div class="checkbox">✓</div>
+            <div class="item-content">
+              <div class="item-name">Banana (ripe)</div>
+              <div class="item-qty">3 large</div>
+              <div class="item-recipes">Banana & Oat Smoothie</div>
+            </div>
+          </div>
+          <div class="item-row checked" onclick="toggle(this)" data-cat="produce">
+            <div class="checkbox">✓</div>
+            <div class="item-content">
+              <div class="item-name">Mixed berries</div>
+              <div class="item-qty">320g</div>
+              <div class="item-recipes">Greek Yogurt Bowl</div>
+            </div>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="produce">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Cherry tomatoes</div>
+              <div class="item-qty">240g</div>
+              <div class="item-recipes">Chicken Rice Bowl</div>
+            </div>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="produce">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Cucumber</div>
+              <div class="item-qty">180g</div>
+              <div class="item-recipes">Chicken Rice Bowl</div>
+            </div>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="produce">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Broccoli</div>
+              <div class="item-qty">300g</div>
+              <div class="item-recipes">Grilled Salmon & Quinoa</div>
+            </div>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="produce">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Lemon</div>
+              <div class="item-qty">3 pieces</div>
+              <div class="item-recipes">Salmon · Chicken Bowl</div>
+            </div>
+            <span class="agg-badge">×2 recipes</span>
+          </div>
+        </div>
+
+        <!-- PROTEIN -->
+        <div class="category-card" style="margin-bottom:16px;">
+          <div class="category-header">
+            <span class="category-icon">🥩</span>
+            <span class="category-name">Protein</span>
+            <span class="category-count" id="count-protein">0 / 4</span>
+          </div>
+          <div class="item-row checked" onclick="toggle(this)" data-cat="protein">
+            <div class="checkbox">✓</div>
+            <div class="item-content">
+              <div class="item-name">Salmon fillet</div>
+              <div class="item-qty">540g</div>
+              <div class="item-recipes">Grilled Salmon & Quinoa (×3 days)</div>
+            </div>
+            <span class="agg-badge">×3 days</span>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="protein">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Chicken breast</div>
+              <div class="item-qty">480g</div>
+              <div class="item-recipes">Chicken & Brown Rice Bowl (×3 days)</div>
+            </div>
+            <span class="agg-badge">×3 days</span>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="protein">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Greek yogurt (full fat)</div>
+              <div class="item-qty">1,000g</div>
+              <div class="item-recipes">Greek Yogurt Bowl (×5 days)</div>
+            </div>
+            <span class="agg-badge">×5 days</span>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="protein">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Red lentils</div>
+              <div class="item-qty">200g</div>
+              <div class="item-recipes">Lentil & Spinach Soup (×2 days)</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div>
+
+        <!-- GRAINS & PANTRY -->
+        <div class="category-card" style="margin-bottom:16px;">
+          <div class="category-header">
+            <span class="category-icon">🌾</span>
+            <span class="category-name">Grains & Pantry</span>
+            <span class="category-count" id="count-grains">0 / 7</span>
+          </div>
+          <div class="item-row checked" onclick="toggle(this)" data-cat="grains">
+            <div class="checkbox">✓</div>
+            <div class="item-content">
+              <div class="item-name">Rolled oats</div>
+              <div class="item-qty">200g</div>
+              <div class="item-recipes">Banana & Oat Smoothie</div>
+            </div>
+          </div>
+          <div class="item-row checked" onclick="toggle(this)" data-cat="grains">
+            <div class="checkbox">✓</div>
+            <div class="item-content">
+              <div class="item-name">Quinoa</div>
+              <div class="item-qty">240g</div>
+              <div class="item-recipes">Grilled Salmon & Quinoa (×3 days)</div>
+            </div>
+            <span class="agg-badge">×3 days</span>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="grains">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Brown rice</div>
+              <div class="item-qty">240g</div>
+              <div class="item-recipes">Chicken & Brown Rice Bowl (×3 days)</div>
+            </div>
+            <span class="agg-badge">×3 days</span>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="grains">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Granola</div>
+              <div class="item-qty">200g</div>
+              <div class="item-recipes">Greek Yogurt Bowl</div>
+            </div>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="grains">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Olive oil</div>
+              <div class="item-qty">80ml</div>
+              <div class="item-recipes">Salmon · Chicken Bowl · Soup</div>
+            </div>
+            <span class="agg-badge">×3 recipes</span>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="grains">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Honey</div>
+              <div class="item-qty">5 tsp</div>
+              <div class="item-recipes">Greek Yogurt Bowl</div>
+            </div>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="grains">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Peanut butter</div>
+              <div class="item-qty">5 tsp</div>
+              <div class="item-recipes">Banana & Oat Smoothie</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAIRY & OTHER -->
+        <div class="category-card">
+          <div class="category-header">
+            <span class="category-icon">🥛</span>
+            <span class="category-name">Dairy & Other</span>
+            <span class="category-count" id="count-dairy">0 / 5</span>
+          </div>
+          <div class="item-row checked" onclick="toggle(this)" data-cat="dairy">
+            <div class="checkbox">✓</div>
+            <div class="item-content">
+              <div class="item-name">Oat milk</div>
+              <div class="item-qty">1,250ml</div>
+              <div class="item-recipes">Banana & Oat Smoothie</div>
+            </div>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="dairy">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Almonds (raw)</div>
+              <div class="item-qty">150g</div>
+              <div class="item-recipes">Daily snack (×5 days)</div>
+            </div>
+            <span class="agg-badge">×5 days</span>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="dairy">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Chia seeds</div>
+              <div class="item-qty">5 tsp</div>
+              <div class="item-recipes">Greek Yogurt Bowl</div>
+            </div>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="dairy">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Vegetable broth</div>
+              <div class="item-qty">1,000ml</div>
+              <div class="item-recipes">Lentil & Spinach Soup (×2 days)</div>
+            </div>
+          </div>
+          <div class="item-row" onclick="toggle(this)" data-cat="dairy">
+            <div class="checkbox"></div>
+            <div class="item-content">
+              <div class="item-name">Spices (cumin, turmeric, dill)</div>
+              <div class="item-qty">to taste</div>
+              <div class="item-recipes">Soup · Salmon · Rice Bowl</div>
+            </div>
+            <span class="agg-badge">×3 recipes</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const totalItems = 27;
+
+    function updateProgress() {
+      const checked = document.querySelectorAll('.item-row.checked').length;
+      const pct = Math.round((checked / totalItems) * 100);
+      document.getElementById('checked-count').textContent = checked;
+      document.getElementById('progress-pct').textContent = pct + '%';
+      document.getElementById('progress-fill').style.width = pct + '%';
+
+      // update category counts
+      ['produce','protein','grains','dairy'].forEach(cat => {
+        const rows = document.querySelectorAll(`.item-row[data-cat="${cat}"]`);
+        const done = document.querySelectorAll(`.item-row.checked[data-cat="${cat}"]`).length;
+        const el = document.getElementById('count-' + cat);
+        el.textContent = done + ' / ' + rows.length;
+        el.className = 'category-count' + (done === rows.length ? ' all-done' : '');
+      });
+    }
+
+    function toggle(row) {
+      row.classList.toggle('checked');
+      const cb = row.querySelector('.checkbox');
+      cb.textContent = row.classList.contains('checked') ? '✓' : '';
+      updateProgress();
+    }
+
+    updateProgress();
+  </script>
+
+</body>
+</html>

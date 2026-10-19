@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Meal Log</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .logo { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; margin-bottom: 36px; padding-left: 8px; }
+    .logo span { color: #e8c96a; }
+    .nav-item {
+      padding: 10px 14px; border-radius: 10px; font-size: 0.95rem; font-weight: 500;
+      color: #4a6e65; cursor: pointer; display: block; text-decoration: none;
+    }
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+    .sidebar-bottom { margin-top: auto; padding: 10px 14px; font-size: 0.85rem; color: #6a9088; }
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .top-bar h1 { font-size: 1.8rem; font-weight: 700; }
+    .date-tag { font-size: 0.85rem; color: #8aada0; margin-bottom: 28px; }
+
+    /* MACRO SUMMARY BAR */
+    .macro-bar-card {
+      background: white;
+      border-radius: 14px;
+      padding: 18px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .macro-total {
+      flex-shrink: 0;
+    }
+
+    .macro-total-val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #3d3d3d;
+      line-height: 1;
+    }
+
+    .macro-total-label {
+      font-size: 0.75rem;
+      color: #8aada0;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-top: 3px;
+    }
+
+    .macro-divider {
+      width: 1px;
+      height: 40px;
+      background: #f0f5f3;
+      flex-shrink: 0;
+    }
+
+    .macro-pills {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .macro-stat {
+      text-align: center;
+    }
+
+    .macro-stat-val {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #3d3d3d;
+    }
+
+    .macro-stat-label {
+      font-size: 0.72rem;
+      color: #8aada0;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+
+    .macro-progress-wrap {
+      flex: 1;
+    }
+
+    .macro-progress-track {
+      height: 6px;
+      background: #f0f5f3;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .macro-progress-fill {
+      height: 6px;
+      border-radius: 3px;
+      background: #e8c96a;
+    }
+
+    .macro-progress-label {
+      font-size: 0.72rem;
+      color: #8aada0;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* MEAL TYPE TABS */
+    .meal-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .meal-tab {
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: white;
+      color: #8aada0;
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meal-tab:hover { border-color: #cdddd6; color: #4a6e65; }
+    .meal-tab.active { background-color: #3d3d3d; color: white; }
+
+    .tab-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #4caf50;
+      flex-shrink: 0;
+    }
+
+    .tab-dot.logged { background: #4caf50; }
+    .tab-dot.empty  { background: #d0ddd9; }
+
+    /* RECIPE CARDS */
+    .section-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #8aada0;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .recipe-card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border: 2px solid transparent;
+      transition: border-color 0.15s;
+    }
+
+    .recipe-card.logged {
+      border-color: #c8eecc;
+      background: #f4fbf5;
+    }
+
+    .recipe-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: #f0f5f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .recipe-info { flex: 1; }
+    .recipe-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+    .recipe-macros { font-size: 0.78rem; color: #8aada0; }
+
+    .recipe-macros span {
+      display: inline-block;
+      margin-right: 12px;
+    }
+
+    .logged-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #e8fde8;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #4caf50;
+      white-space: nowrap;
+    }
+
+    .btn-log-meal {
+      background-color: #e8c96a;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-log-meal:hover { background-color: #deba55; }
+
+    .btn-edit-log {
+      background: none;
+      border: 1.5px solid #cdddd6;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #4a6e65;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-edit-log:hover { background: #eef5f2; }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; border-radius: 20px; padding: 40px; width: 500px; }
+    .modal-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 4px; }
+    .modal-subtitle { font-size: 0.85rem; color: #8aada0; margin-bottom: 8px; }
+    .modal-underline { width: 100px; height: 4px; background-color: #e8c96a; border-radius: 2px; margin-bottom: 28px; }
+
+    /* MACRO PREVIEW */
+    .macro-preview {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .macro-chip {
+      flex: 1;
+      background: #f5faf8;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .macro-chip-val { font-size: 1rem; font-weight: 800; color: #3d3d3d; }
+    .macro-chip-label { font-size: 0.7rem; color: #8aada0; font-weight: 500; margin-top: 2px; }
+
+    .form-group { margin-bottom: 20px; }
+
+    label {
+      display: block; font-size: 0.82rem; font-weight: 600; color: #8aada0;
+      text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px;
+    }
+
+    .portion-row { display: flex; gap: 12px; }
+
+    .form-input {
+      width: 100%; background: #f5faf8; border: none; border-radius: 10px;
+      padding: 12px 16px; font-size: 0.92rem; color: #3d3d3d; outline: none; font-family: inherit;
+    }
+
+    .form-input:focus { background: #eef5f2; }
+
+    select.form-input { cursor: pointer; }
+
+    .portion-hint {
+      font-size: 0.78rem;
+      color: #8aada0;
+      margin-top: 6px;
+    }
+
+    .modal-actions { display: flex; gap: 12px; margin-top: 8px; }
+
+    .btn-cancel {
+      flex: 1; background: none; border: 1.5px solid #cdddd6; border-radius: 10px;
+      padding: 13px; font-size: 0.92rem; font-weight: 600; color: #4a6e65; cursor: pointer;
+    }
+
+    .btn-save {
+      flex: 2; background-color: #e8c96a; border: none; border-radius: 10px;
+      padding: 13px; font-size: 0.92rem; font-weight: 700; color: white; cursor: pointer;
+    }
+
+    .btn-save:hover { background-color: #deba55; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item" href="client-dashboard.html">Today</a>
+    <a class="nav-item active" href="client-recipe-browser.html">Meals</a>
+    <a class="nav-item" href="client-exercise-log.html">Workouts</a>
+    <a class="nav-item" href="client-weekly-summary.html">Progress</a>
+    <a class="nav-item" href="client-session-booking.html">Book session</a>
+    <div class="sidebar-bottom">
+      <strong>Maria Nowak</strong>
+      Client
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="top-bar">
+      <h1>Meal Log</h1>
+    </div>
+    <div class="date-tag">Friday, 29 May 2026 · Follicular phase</div>
+
+    <!-- MACRO SUMMARY -->
+    <div class="macro-bar-card">
+      <div class="macro-total">
+        <div class="macro-total-val">777</div>
+        <div class="macro-total-label">kcal logged</div>
+      </div>
+      <div class="macro-divider"></div>
+      <div class="macro-pills">
+        <div class="macro-stat">
+          <div class="macro-stat-val">48g</div>
+          <div class="macro-stat-label">Protein</div>
+        </div>
+        <div class="macro-stat">
+          <div class="macro-stat-val">98g</div>
+          <div class="macro-stat-label">Carbs</div>
+        </div>
+        <div class="macro-stat">
+          <div class="macro-stat-val">13g</div>
+          <div class="macro-stat-label">Fat</div>
+        </div>
+      </div>
+      <div class="macro-progress-wrap">
+        <div class="macro-progress-track">
+          <div class="macro-progress-fill" style="width: 47%;"></div>
+        </div>
+        <div class="macro-progress-label">
+          <span>777 kcal logged</span>
+          <span>Goal: 1,650 kcal</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEAL TYPE TABS -->
+    <div class="meal-tabs">
+      <div class="meal-tab active">
+        <div class="tab-dot logged"></div>
+        Breakfast
+      </div>
+      <div class="meal-tab">
+        <div class="tab-dot logged"></div>
+        Lunch
+      </div>
+      <div class="meal-tab">
+        <div class="tab-dot empty"></div>
+        Dinner
+      </div>
+      <div class="meal-tab">
+        <div class="tab-dot empty"></div>
+        Snack
+      </div>
+    </div>
+
+    <!-- BREAKFAST RECIPES -->
+    <div class="section-label">Breakfast · assigned for Follicular phase</div>
+
+    <!-- LOGGED -->
+    <div class="recipe-card logged">
+      <div class="recipe-icon">🥣</div>
+      <div class="recipe-info">
+        <div class="recipe-name">Greek Yogurt Bowl</div>
+        <div class="recipe-macros">
+          <span>P 24g</span><span>C 32g</span><span>F 8g</span><span>296 kcal</span>
+        </div>
+        <div style="margin-top:6px; font-size:0.78rem; color:#6aaa6a; font-weight:600;">
+          Logged: 1.0 serving (200g)
+        </div>
+      </div>
+      <span class="logged-badge">✓ Logged</span>
+      <button class="btn-edit-log" onclick="openModal('Greek Yogurt Bowl', '296', '24', '32', '8')">Edit</button>
+    </div>
+
+    <!-- NOT LOGGED -->
+    <div class="recipe-card">
+      <div class="recipe-icon">🍌</div>
+      <div class="recipe-info">
+        <div class="recipe-name">Banana & Oat Smoothie</div>
+        <div class="recipe-macros">
+          <span>P 12g</span><span>C 58g</span><span>F 4g</span><span>320 kcal</span>
+        </div>
+      </div>
+      <button class="btn-log-meal" onclick="openModal('Banana & Oat Smoothie', '320', '12', '58', '4')">Log</button>
+    </div>
+
+  </main>
+
+  <!-- LOG PORTION MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-title" id="modal-recipe-name">Greek Yogurt Bowl</div>
+      <div class="modal-subtitle">Log how much you ate</div>
+      <div class="modal-underline"></div>
+
+      <!-- MACRO PREVIEW -->
+      <div class="macro-preview">
+        <div class="macro-chip">
+          <div class="macro-chip-val" id="preview-kcal">296</div>
+          <div class="macro-chip-label">kcal</div>
+        </div>
+        <div class="macro-chip">
+          <div class="macro-chip-val" id="preview-p">24g</div>
+          <div class="macro-chip-label">protein</div>
+        </div>
+        <div class="macro-chip">
+          <div class="macro-chip-val" id="preview-c">32g</div>
+          <div class="macro-chip-label">carbs</div>
+        </div>
+        <div class="macro-chip">
+          <div class="macro-chip-val" id="preview-f">8g</div>
+          <div class="macro-chip-label">fat</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Portion</label>
+        <div class="portion-row">
+          <input class="form-input" id="portion-qty" type="number" placeholder="1.0" min="0.1" step="0.1" value="1.0"
+            style="flex:1;" oninput="updateMacros()" />
+          <select class="form-input" style="flex:1.2;">
+            <option selected>serving (200g)</option>
+            <option>grams</option>
+            <option>ml</option>
+            <option>pieces</option>
+          </select>
+        </div>
+        <div class="portion-hint">1 serving = 200g · macros shown above are per 1 serving</div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save" onclick="closeModal()">Save meal</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let baseKcal = 296, baseP = 24, baseC = 32, baseF = 8;
+
+    function openModal(name, kcal, p, c, f) {
+      baseKcal = parseInt(kcal); baseP = parseInt(p); baseC = parseInt(c); baseF = parseInt(f);
+      document.getElementById('modal-recipe-name').textContent = name;
+      document.getElementById('portion-qty').value = '1.0';
+      updateMacros();
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+    }
+
+    function updateMacros() {
+      const qty = parseFloat(document.getElementById('portion-qty').value) || 1;
+      document.getElementById('preview-kcal').textContent = Math.round(baseKcal * qty);
+      document.getElementById('preview-p').textContent = Math.round(baseP * qty) + 'g';
+      document.getElementById('preview-c').textContent = Math.round(baseC * qty) + 'g';
+      document.getElementById('preview-f').textContent = Math.round(baseF * qty) + 'g';
+    }
+
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    document.querySelectorAll('.meal-tab').forEach(tab => {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('.meal-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Recipe Browser</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .logo { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; margin-bottom: 36px; padding-left: 8px; }
+    .logo span { color: #e8c96a; }
+    .nav-item {
+      padding: 10px 14px; border-radius: 10px; font-size: 0.95rem; font-weight: 500;
+      color: #4a6e65; cursor: pointer; display: block; text-decoration: none;
+    }
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+    .sidebar-bottom { margin-top: auto; padding: 10px 14px; font-size: 0.85rem; color: #6a9088; }
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .top-bar h1 { font-size: 1.8rem; font-weight: 700; }
+
+    /* SEARCH BAR */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: #8aada0;
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      background: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 18px 14px 46px;
+      font-size: 0.95rem;
+      color: #3d3d3d;
+      outline: none;
+      font-family: inherit;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+
+    .search-input::placeholder { color: #b0c8c0; }
+    .search-input:focus { box-shadow: 0 0 0 2px #cdddd6; }
+
+    .search-hint {
+      font-size: 0.75rem;
+      color: #8aada0;
+      margin-bottom: 20px;
+      padding-left: 4px;
+    }
+
+    /* FILTER ROW */
+    .filters-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+      align-items: center;
+    }
+
+    .filter-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #8aada0;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-right: 4px;
+    }
+
+    .filter-chip {
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: white;
+      color: #8aada0;
+      border: 2px solid transparent;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .filter-chip:hover { border-color: #cdddd6; color: #4a6e65; }
+
+    .filter-chip.active { color: white; border-color: transparent; }
+
+    .chip-menstrual.active  { background: #c0504d; }
+    .chip-follicular.active { background: #4a90c4; }
+    .chip-ovulatory.active  { background: #4caf50; }
+    .chip-luteal.active     { background: #e8a030; }
+    .chip-meal.active       { background: #3d3d3d; }
+    .chip-diet.active       { background: #6a9088; }
+
+    .filter-divider {
+      width: 1px;
+      height: 24px;
+      background: #dde9e5;
+      flex-shrink: 0;
+    }
+
+    /* RESULTS INFO */
+    .results-info {
+      font-size: 0.82rem;
+      color: #8aada0;
+      margin-bottom: 16px;
+    }
+
+    .results-info strong { color: #3d3d3d; }
+
+    /* RECIPE GRID */
+    .recipe-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    /* RECIPE CARD */
+    .recipe-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      border: 2px solid transparent;
+    }
+
+    .recipe-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+    }
+
+    .recipe-card.in-plan {
+      border-color: #a5d6a7;
+    }
+
+    .recipe-thumb {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      background: #f0f5f3;
+    }
+
+    .recipe-body { padding: 16px; }
+
+    .recipe-name {
+      font-weight: 700;
+      font-size: 0.92rem;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    /* PHASE TAGS */
+    .phase-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .phase-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+
+    .tag-menstrual  { background: #fde8e8; color: #c0504d; }
+    .tag-follicular { background: #ddeeff; color: #4a90c4; }
+    .tag-ovulatory  { background: #e8fde8; color: #4caf50; }
+    .tag-luteal     { background: #fef5e4; color: #e8a030; }
+    .tag-meal       { background: #f0f5f3; color: #6a9088; }
+
+    /* MACROS ROW */
+    .macros-row {
+      display: flex;
+      gap: 0;
+      border-top: 1px solid #f0f5f3;
+      margin: 0 -16px -16px;
+      padding: 10px 16px;
+    }
+
+    .macro-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .macro-item + .macro-item {
+      border-left: 1px solid #f0f5f3;
+    }
+
+    .macro-item-val {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #3d3d3d;
+    }
+
+    .macro-item-label {
+      font-size: 0.65rem;
+      color: #8aada0;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-top: 1px;
+    }
+
+    .in-plan-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #e8fde8;
+      border-radius: 8px;
+      padding: 2px 8px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #4caf50;
+      margin-bottom: 8px;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 20px;
+      width: 540px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-thumb {
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      background: #f0f5f3;
+      border-radius: 20px 20px 0 0;
+    }
+
+    .modal-body { padding: 32px; }
+
+    .modal-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 8px; }
+    .modal-underline { width: 100px; height: 4px; background-color: #e8c96a; border-radius: 2px; margin-bottom: 20px; }
+
+    .modal-phase-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+
+    /* MACRO GRID */
+    .macro-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .macro-box {
+      background: #f5faf8;
+      border-radius: 10px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    .macro-box-val { font-size: 1.1rem; font-weight: 800; color: #3d3d3d; }
+    .macro-box-label { font-size: 0.7rem; color: #8aada0; font-weight: 500; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.3px; }
+
+    /* INGREDIENTS */
+    .modal-section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #8aada0;
+      margin-bottom: 12px;
+    }
+
+    .ingredient-list {
+      list-style: none;
+      margin-bottom: 20px;
+    }
+
+    .ingredient-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f5f3;
+      font-size: 0.88rem;
+    }
+
+    .ingredient-list li:last-child { border-bottom: none; }
+
+    .ingredient-qty { color: #8aada0; font-weight: 600; }
+
+    /* PREP NOTES */
+    .prep-notes {
+      background: #f5faf8;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 0.85rem;
+      color: #4a6e65;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .modal-close {
+      width: 100%;
+      background: none;
+      border: 1.5px solid #cdddd6;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #4a6e65;
+      cursor: pointer;
+    }
+
+    .modal-close:hover { background: #eef5f2; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item" href="client-dashboard.html">Today</a>
+    <a class="nav-item active" href="client-recipe-browser.html">Meals</a>
+    <a class="nav-item" href="client-exercise-log.html">Workouts</a>
+    <a class="nav-item" href="client-weekly-summary.html">Progress</a>
+    <a class="nav-item" href="client-session-booking.html">Book session</a>
+    <div class="sidebar-bottom">
+      <strong>Maria Nowak</strong>
+      Client
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="top-bar">
+      <h1>Recipe Browser</h1>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" type="text" placeholder="Search recipes — e.g. salmon, high protein, gluten-free…"
+        oninput="filterRecipes()" id="search-input" />
+    </div>
+    <div class="search-hint">Powered by full-text search · searches name, ingredients and preparation notes</div>
+
+    <!-- FILTERS -->
+    <div class="filters-row">
+      <span class="filter-label">Phase</span>
+      <div class="filter-chip chip-menstrual"  onclick="toggleFilter(this,'phase','menstrual')">🔴 Menstrual</div>
+      <div class="filter-chip chip-follicular active" onclick="toggleFilter(this,'phase','follicular')">🔵 Follicular</div>
+      <div class="filter-chip chip-ovulatory"  onclick="toggleFilter(this,'phase','ovulatory')">🟢 Ovulatory</div>
+      <div class="filter-chip chip-luteal"     onclick="toggleFilter(this,'phase','luteal')">🟠 Luteal</div>
+
+      <div class="filter-divider"></div>
+
+      <span class="filter-label">Meal</span>
+      <div class="filter-chip chip-meal" onclick="toggleFilter(this,'meal','breakfast')">Breakfast</div>
+      <div class="filter-chip chip-meal" onclick="toggleFilter(this,'meal','lunch')">Lunch</div>
+      <div class="filter-chip chip-meal" onclick="toggleFilter(this,'meal','dinner')">Dinner</div>
+      <div class="filter-chip chip-meal" onclick="toggleFilter(this,'meal','snack')">Snack</div>
+
+      <div class="filter-divider"></div>
+
+      <span class="filter-label">Diet</span>
+      <div class="filter-chip chip-diet" onclick="toggleFilter(this,'diet','high-protein')">High protein</div>
+      <div class="filter-chip chip-diet" onclick="toggleFilter(this,'diet','gluten-free')">Gluten-free</div>
+      <div class="filter-chip chip-diet" onclick="toggleFilter(this,'diet','vegan')">Vegan</div>
+    </div>
+
+    <!-- RESULTS COUNT -->
+    <div class="results-info"><strong>6 recipes</strong> found for Follicular phase</div>
+
+    <!-- RECIPE GRID -->
+    <div class="recipe-grid" id="recipe-grid">
+
+      <div class="recipe-card in-plan" onclick="openModal('greek-yogurt')">
+        <div class="recipe-thumb">🥣</div>
+        <div class="recipe-body">
+          <div class="in-plan-badge">✓ In your plan</div>
+          <div class="recipe-name">Greek Yogurt Bowl</div>
+          <div class="phase-tags">
+            <span class="phase-tag tag-follicular">Follicular</span>
+            <span class="phase-tag tag-meal">Breakfast</span>
+          </div>
+          <div class="macros-row">
+            <div class="macro-item"><div class="macro-item-val">296</div><div class="macro-item-label">kcal</div></div>
+            <div class="macro-item"><div class="macro-item-val">24g</div><div class="macro-item-label">protein</div></div>
+            <div class="macro-item"><div class="macro-item-val">32g</div><div class="macro-item-label">carbs</div></div>
+            <div class="macro-item"><div class="macro-item-val">8g</div><div class="macro-item-label">fat</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="recipe-card in-plan" onclick="openModal('lentil-soup')">
+        <div class="recipe-thumb">🍲</div>
+        <div class="recipe-body">
+          <div class="in-plan-badge">✓ In your plan</div>
+          <div class="recipe-name">Lentil & Spinach Soup</div>
+          <div class="phase-tags">
+            <span class="phase-tag tag-follicular">Follicular</span>
+            <span class="phase-tag tag-meal">Lunch</span>
+          </div>
+          <div class="macros-row">
+            <div class="macro-item"><div class="macro-item-val">285</div><div class="macro-item-label">kcal</div></div>
+            <div class="macro-item"><div class="macro-item-val">18g</div><div class="macro-item-label">protein</div></div>
+            <div class="macro-item"><div class="macro-item-val">42g</div><div class="macro-item-label">carbs</div></div>
+            <div class="macro-item"><div class="macro-item-val">5g</div><div class="macro-item-label">fat</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="recipe-card in-plan" onclick="openModal('salmon')">
+        <div class="recipe-thumb">🐟</div>
+        <div class="recipe-body">
+          <div class="in-plan-badge">✓ In your plan</div>
+          <div class="recipe-name">Grilled Salmon & Quinoa</div>
+          <div class="phase-tags">
+            <span class="phase-tag tag-follicular">Follicular</span>
+            <span class="phase-tag tag-ovulatory">Ovulatory</span>
+            <span class="phase-tag tag-meal">Dinner</span>
+          </div>
+          <div class="macros-row">
+            <div class="macro-item"><div class="macro-item-val">486</div><div class="macro-item-label">kcal</div></div>
+            <div class="macro-item"><div class="macro-item-val">42g</div><div class="macro-item-label">protein</div></div>
+            <div class="macro-item"><div class="macro-item-val">38g</div><div class="macro-item-label">carbs</div></div>
+            <div class="macro-item"><div class="macro-item-val">18g</div><div class="macro-item-label">fat</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="recipe-card" onclick="openModal('oat-smoothie')">
+        <div class="recipe-thumb">🍌</div>
+        <div class="recipe-body">
+          <div class="recipe-name">Banana & Oat Smoothie</div>
+          <div class="phase-tags">
+            <span class="phase-tag tag-follicular">Follicular</span>
+            <span class="phase-tag tag-meal">Breakfast</span>
+          </div>
+          <div class="macros-row">
+            <div class="macro-item"><div class="macro-item-val">320</div><div class="macro-item-label">kcal</div></div>
+            <div class="macro-item"><div class="macro-item-val">12g</div><div class="macro-item-label">protein</div></div>
+            <div class="macro-item"><div class="macro-item-val">58g</div><div class="macro-item-label">carbs</div></div>
+            <div class="macro-item"><div class="macro-item-val">4g</div><div class="macro-item-label">fat</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="recipe-card" onclick="openModal('chicken-rice')">
+        <div class="recipe-thumb">🍗</div>
+        <div class="recipe-body">
+          <div class="recipe-name">Chicken & Brown Rice Bowl</div>
+          <div class="phase-tags">
+            <span class="phase-tag tag-follicular">Follicular</span>
+            <span class="phase-tag tag-meal">Lunch</span>
+          </div>
+          <div class="macros-row">
+            <div class="macro-item"><div class="macro-item-val">440</div><div class="macro-item-label">kcal</div></div>
+            <div class="macro-item"><div class="macro-item-val">38g</div><div class="macro-item-label">protein</div></div>
+            <div class="macro-item"><div class="macro-item-val">46g</div><div class="macro-item-label">carbs</div></div>
+            <div class="macro-item"><div class="macro-item-val">10g</div><div class="macro-item-label">fat</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="recipe-card" onclick="openModal('almonds')">
+        <div class="recipe-thumb">🥜</div>
+        <div class="recipe-body">
+          <div class="recipe-name">Handful of Almonds</div>
+          <div class="phase-tags">
+            <span class="phase-tag tag-follicular">Follicular</span>
+            <span class="phase-tag tag-luteal">Luteal</span>
+            <span class="phase-tag tag-meal">Snack</span>
+          </div>
+          <div class="macros-row">
+            <div class="macro-item"><div class="macro-item-val">174</div><div class="macro-item-label">kcal</div></div>
+            <div class="macro-item"><div class="macro-item-val">6g</div><div class="macro-item-label">protein</div></div>
+            <div class="macro-item"><div class="macro-item-val">6g</div><div class="macro-item-label">carbs</div></div>
+            <div class="macro-item"><div class="macro-item-val">14g</div><div class="macro-item-label">fat</div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- RECIPE DETAIL MODAL -->
+  <div class="modal-overlay" id="modal" onclick="handleOverlayClick(event)">
+    <div class="modal">
+      <div class="modal-thumb" id="modal-thumb">🥣</div>
+      <div class="modal-body">
+        <div class="modal-title" id="modal-name">Greek Yogurt Bowl</div>
+        <div class="modal-underline"></div>
+        <div class="modal-phase-tags" id="modal-tags"></div>
+
+        <div class="macro-grid">
+          <div class="macro-box"><div class="macro-box-val" id="m-kcal">296</div><div class="macro-box-label">kcal</div></div>
+          <div class="macro-box"><div class="macro-box-val" id="m-p">24g</div><div class="macro-box-label">protein</div></div>
+          <div class="macro-box"><div class="macro-box-val" id="m-c">32g</div><div class="macro-box-label">carbs</div></div>
+          <div class="macro-box"><div class="macro-box-val" id="m-f">8g</div><div class="macro-box-label">fat</div></div>
+        </div>
+
+        <div class="modal-section-title">Ingredients</div>
+        <ul class="ingredient-list" id="modal-ingredients"></ul>
+
+        <div class="modal-section-title">Preparation</div>
+        <div class="prep-notes" id="modal-prep"></div>
+
+        <button class="modal-close" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const recipes = {
+      'greek-yogurt': {
+        thumb: '🥣', name: 'Greek Yogurt Bowl',
+        tags: ['<span class="phase-tag tag-follicular">Follicular</span>', '<span class="phase-tag tag-meal">Breakfast</span>'],
+        kcal: 296, p: '24g', c: '32g', f: '8g',
+        ingredients: [
+          ['Greek yogurt (full fat)', '200g'],
+          ['Granola', '40g'],
+          ['Mixed berries', '80g'],
+          ['Honey', '1 tsp'],
+          ['Chia seeds', '1 tsp'],
+        ],
+        prep: 'Spoon yogurt into a bowl. Top with granola, fresh berries and a drizzle of honey. Sprinkle chia seeds on top. Serve immediately.'
+      },
+      'lentil-soup': {
+        thumb: '🍲', name: 'Lentil & Spinach Soup',
+        tags: ['<span class="phase-tag tag-follicular">Follicular</span>', '<span class="phase-tag tag-meal">Lunch</span>'],
+        kcal: 285, p: '18g', c: '42g', f: '5g',
+        ingredients: [
+          ['Red lentils', '100g'],
+          ['Fresh spinach', '60g'],
+          ['Onion', '1 medium'],
+          ['Garlic', '2 cloves'],
+          ['Vegetable broth', '500ml'],
+          ['Cumin, turmeric', '1 tsp each'],
+        ],
+        prep: 'Sauté onion and garlic until soft. Add lentils, spices and broth. Simmer 20 min until lentils are tender. Stir in spinach and cook 2 min. Season and serve.'
+      },
+      'salmon': {
+        thumb: '🐟', name: 'Grilled Salmon & Quinoa',
+        tags: ['<span class="phase-tag tag-follicular">Follicular</span>', '<span class="phase-tag tag-ovulatory">Ovulatory</span>', '<span class="phase-tag tag-meal">Dinner</span>'],
+        kcal: 486, p: '42g', c: '38g', f: '18g',
+        ingredients: [
+          ['Salmon fillet', '180g'],
+          ['Quinoa (dry)', '80g'],
+          ['Lemon', '½'],
+          ['Olive oil', '1 tbsp'],
+          ['Garlic, dill', 'to taste'],
+          ['Steamed broccoli', '100g'],
+        ],
+        prep: 'Cook quinoa per packet. Season salmon with lemon, garlic and dill, brush with oil. Grill 4 min each side. Serve over quinoa with steamed broccoli.'
+      },
+      'oat-smoothie': {
+        thumb: '🍌', name: 'Banana & Oat Smoothie',
+        tags: ['<span class="phase-tag tag-follicular">Follicular</span>', '<span class="phase-tag tag-meal">Breakfast</span>'],
+        kcal: 320, p: '12g', c: '58g', f: '4g',
+        ingredients: [
+          ['Banana (ripe)', '1 large'],
+          ['Rolled oats', '40g'],
+          ['Milk or oat milk', '250ml'],
+          ['Peanut butter', '1 tsp'],
+          ['Cinnamon', 'pinch'],
+        ],
+        prep: 'Add all ingredients to a blender. Blend until smooth. Pour into a glass and serve immediately. Add ice cubes for a colder smoothie.'
+      },
+      'chicken-rice': {
+        thumb: '🍗', name: 'Chicken & Brown Rice Bowl',
+        tags: ['<span class="phase-tag tag-follicular">Follicular</span>', '<span class="phase-tag tag-meal">Lunch</span>'],
+        kcal: 440, p: '38g', c: '46g', f: '10g',
+        ingredients: [
+          ['Chicken breast', '160g'],
+          ['Brown rice (dry)', '80g'],
+          ['Cherry tomatoes', '80g'],
+          ['Cucumber', '60g'],
+          ['Olive oil', '1 tbsp'],
+          ['Lemon juice', '1 tbsp'],
+        ],
+        prep: 'Cook rice. Season chicken and grill or pan-fry until cooked through. Slice and serve over rice with tomatoes and cucumber. Drizzle with olive oil and lemon.'
+      },
+      'almonds': {
+        thumb: '🥜', name: 'Handful of Almonds',
+        tags: ['<span class="phase-tag tag-follicular">Follicular</span>', '<span class="phase-tag tag-luteal">Luteal</span>', '<span class="phase-tag tag-meal">Snack</span>'],
+        kcal: 174, p: '6g', c: '6g', f: '14g',
+        ingredients: [
+          ['Raw almonds', '30g'],
+        ],
+        prep: 'No preparation needed. Measure 30g (approx. a small handful). Rich in vitamin E and magnesium — supports energy levels during the follicular and luteal phases.'
+      }
+    };
+
+    function openModal(id) {
+      const r = recipes[id];
+      document.getElementById('modal-thumb').textContent = r.thumb;
+      document.getElementById('modal-name').textContent = r.name;
+      document.getElementById('modal-tags').innerHTML = r.tags.join('');
+      document.getElementById('m-kcal').textContent = r.kcal;
+      document.getElementById('m-p').textContent = r.p;
+      document.getElementById('m-c').textContent = r.c;
+      document.getElementById('m-f').textContent = r.f;
+      document.getElementById('modal-ingredients').innerHTML =
+        r.ingredients.map(([name, qty]) =>
+          `<li><span>${name}</span><span class="ingredient-qty">${qty}</span></li>`).join('');
+      document.getElementById('modal-prep').textContent = r.prep;
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('open');
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('modal')) closeModal();
+    }
+
+    function toggleFilter(el, group, value) {
+      el.classList.toggle('active');
+    }
+
+    function filterRecipes() {
+      // Visual only — real filtering handled by backend FTS + query params
+    }
+  </script>
+
+</body>
+</html>

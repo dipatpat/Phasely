@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Nutrition Plan Builder</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .logo { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; margin-bottom: 36px; padding-left: 8px; }
+    .logo span { color: #e8c96a; }
+
+    .nav-item {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #4a6e65;
+      cursor: pointer;
+      display: block;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #6a9088;
+    }
+
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+
+    .back { display: inline-flex; align-items: center; gap: 6px; font-size: 0.88rem; color: #6a9088; margin-bottom: 24px; cursor: pointer; font-weight: 500; }
+    .back:hover { color: #3d3d3d; }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .top-bar h1 { font-size: 1.8rem; font-weight: 700; }
+
+    .client-tag {
+      font-size: 0.85rem;
+      color: #8aada0;
+      margin-bottom: 28px;
+    }
+
+    .client-tag strong { color: #4a6e65; }
+
+    .btn-save {
+      background-color: #e8c96a;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 28px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-save:hover { background-color: #deba55; }
+
+    /* PHASE TABS */
+    .phase-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .phase-tab {
+      padding: 10px 22px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 2px solid transparent;
+      background: white;
+      color: #8aada0;
+    }
+
+    .phase-tab:hover { border-color: #cdddd6; color: #4a6e65; }
+
+    .phase-tab.active-menstrual  { background-color: #fde8e8; color: #c0504d; border-color: #c0504d; }
+    .phase-tab.active-follicular { background-color: #e8f4fd; color: #4a90c4; border-color: #4a90c4; }
+    .phase-tab.active-ovulatory  { background-color: #e8fde8; color: #4caf50; border-color: #4caf50; }
+    .phase-tab.active-luteal     { background-color: #fdf4e8; color: #e8a030; border-color: #e8a030; }
+
+    /* CONTENT */
+    .phase-content { display: none; }
+    .phase-content.visible { display: block; }
+
+    /* MEAL SECTION */
+    .meal-section {
+      background: white;
+      border-radius: 16px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .meal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-bottom: 1px solid #f0f5f3;
+    }
+
+    .meal-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .meal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .btn-add-recipe {
+      background: none;
+      border: 1.5px solid #cdddd6;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #4a6e65;
+      cursor: pointer;
+    }
+
+    .btn-add-recipe:hover { background-color: #eef5f2; }
+
+    /* RECIPE ROW */
+    .recipe-row {
+      display: flex;
+      align-items: center;
+      padding: 14px 24px;
+      gap: 16px;
+      border-bottom: 1px solid #f0f5f3;
+    }
+
+    .recipe-row:last-child { border-bottom: none; }
+
+    .recipe-row-name { font-weight: 600; font-size: 0.92rem; flex: 1; }
+
+    .recipe-macros {
+      display: flex;
+      gap: 16px;
+      font-size: 0.8rem;
+      color: #8aada0;
+    }
+
+    .recipe-macros span strong { color: #3d3d3d; font-weight: 600; }
+
+    .btn-remove {
+      background: none;
+      border: none;
+      color: #c0504d;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .btn-remove:hover { background-color: #fde8e8; }
+
+    .empty-meal {
+      padding: 16px 24px;
+      font-size: 0.85rem;
+      color: #b0c8c0;
+      font-style: italic;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 20px;
+      padding: 36px;
+      width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 8px; }
+
+    .modal-underline {
+      width: 100px;
+      height: 4px;
+      background-color: #e8c96a;
+      border-radius: 2px;
+      margin-bottom: 24px;
+    }
+
+    .recipe-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #f0f5f3;
+      cursor: pointer;
+    }
+
+    .recipe-option:last-child { border-bottom: none; }
+    .recipe-option:hover .recipe-option-name { color: #4a90c4; }
+
+    .recipe-option-name { font-weight: 600; font-size: 0.92rem; }
+    .recipe-option-meta { font-size: 0.8rem; color: #8aada0; margin-top: 2px; }
+
+    .btn-pick {
+      background-color: #eef5f2;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #4a6e65;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-pick:hover { background-color: #cdddd6; }
+
+    .modal-close {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #8aada0;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+
+    .modal-close:hover { color: #3d3d3d; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item active">Dashboard</a>
+    <a class="nav-item">Clients</a>
+    <a class="nav-item">Recipes</a>
+    <a class="nav-item">Exercises</a>
+    <a class="nav-item">Sessions</a>
+    <a class="nav-item">Availability</a>
+    <div class="sidebar-bottom">
+      <strong>Anna Kowalska</strong>
+      Personal Trainer
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="back">← Back to client</div>
+
+    <div class="top-bar">
+      <h1>Nutrition Plan</h1>
+      <button class="btn-save">Save plan</button>
+    </div>
+    <div class="client-tag">For <strong>Maria Nowak</strong> · Weight Loss — Phase-Adapted</div>
+
+    <!-- PHASE TABS -->
+    <div class="phase-tabs">
+      <div class="phase-tab" onclick="showPhase('menstrual')" id="tab-menstrual">🔴 Menstrual</div>
+      <div class="phase-tab active-follicular" onclick="showPhase('follicular')" id="tab-follicular">🔵 Follicular</div>
+      <div class="phase-tab" onclick="showPhase('ovulatory')" id="tab-ovulatory">🟢 Ovulatory</div>
+      <div class="phase-tab" onclick="showPhase('luteal')" id="tab-luteal">🟡 Luteal</div>
+    </div>
+
+    <!-- MENSTRUAL -->
+    <div class="phase-content" id="phase-menstrual">
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#e8a030;"></div>Breakfast</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="empty-meal">No recipes added yet.</div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#4a90c4;"></div>Lunch</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-row-name">Lentil Soup</span>
+          <div class="recipe-macros">
+            <span><strong>380</strong> kcal</span>
+            <span><strong>22g</strong> protein</span>
+            <span><strong>58g</strong> carbs</span>
+            <span><strong>6g</strong> fat</span>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#7c5cbf;"></div>Dinner</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="empty-meal">No recipes added yet.</div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#c04d8a;"></div>Snack</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="empty-meal">No recipes added yet.</div>
+      </div>
+    </div>
+
+    <!-- FOLLICULAR (default visible) -->
+    <div class="phase-content visible" id="phase-follicular">
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#e8a030;"></div>Breakfast</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-row-name">Overnight Oats</span>
+          <div class="recipe-macros">
+            <span><strong>320</strong> kcal</span>
+            <span><strong>12g</strong> protein</span>
+            <span><strong>54g</strong> carbs</span>
+            <span><strong>8g</strong> fat</span>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-row-name">Banana Protein Smoothie</span>
+          <div class="recipe-macros">
+            <span><strong>290</strong> kcal</span>
+            <span><strong>28g</strong> protein</span>
+            <span><strong>36g</strong> carbs</span>
+            <span><strong>4g</strong> fat</span>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#4a90c4;"></div>Lunch</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-row-name">Grilled Chicken Salad</span>
+          <div class="recipe-macros">
+            <span><strong>420</strong> kcal</span>
+            <span><strong>45g</strong> protein</span>
+            <span><strong>18g</strong> carbs</span>
+            <span><strong>16g</strong> fat</span>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#7c5cbf;"></div>Dinner</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-row-name">Salmon with Quinoa</span>
+          <div class="recipe-macros">
+            <span><strong>540</strong> kcal</span>
+            <span><strong>42g</strong> protein</span>
+            <span><strong>38g</strong> carbs</span>
+            <span><strong>20g</strong> fat</span>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#c04d8a;"></div>Snack</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-row-name">Greek Yogurt Bowl</span>
+          <div class="recipe-macros">
+            <span><strong>210</strong> kcal</span>
+            <span><strong>18g</strong> protein</span>
+            <span><strong>22g</strong> carbs</span>
+            <span><strong>4g</strong> fat</span>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OVULATORY -->
+    <div class="phase-content" id="phase-ovulatory">
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#e8a030;"></div>Breakfast</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-row-name">Banana Protein Smoothie</span>
+          <div class="recipe-macros">
+            <span><strong>290</strong> kcal</span>
+            <span><strong>28g</strong> protein</span>
+            <span><strong>36g</strong> carbs</span>
+            <span><strong>4g</strong> fat</span>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#4a90c4;"></div>Lunch</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="empty-meal">No recipes added yet.</div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#7c5cbf;"></div>Dinner</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="empty-meal">No recipes added yet.</div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#c04d8a;"></div>Snack</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="empty-meal">No recipes added yet.</div>
+      </div>
+    </div>
+
+    <!-- LUTEAL -->
+    <div class="phase-content" id="phase-luteal">
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#e8a030;"></div>Breakfast</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="empty-meal">No recipes added yet.</div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#4a90c4;"></div>Lunch</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="recipe-row">
+          <span class="recipe-row-name">Lentil Soup</span>
+          <div class="recipe-macros">
+            <span><strong>380</strong> kcal</span>
+            <span><strong>22g</strong> protein</span>
+            <span><strong>58g</strong> carbs</span>
+            <span><strong>6g</strong> fat</span>
+          </div>
+          <button class="btn-remove">✕</button>
+        </div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#7c5cbf;"></div>Dinner</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="empty-meal">No recipes added yet.</div>
+      </div>
+      <div class="meal-section">
+        <div class="meal-header">
+          <div class="meal-title"><div class="meal-dot" style="background:#c04d8a;"></div>Snack</div>
+          <button class="btn-add-recipe" onclick="openModal()">+ Add recipe</button>
+        </div>
+        <div class="empty-meal">No recipes added yet.</div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ADD RECIPE MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-title">Add Recipe</div>
+      <div class="modal-underline"></div>
+      <div class="recipe-option">
+        <div>
+          <div class="recipe-option-name">Overnight Oats</div>
+          <div class="recipe-option-meta">320 kcal · 12g protein · Breakfast</div>
+        </div>
+        <button class="btn-pick" onclick="closeModal()">Add</button>
+      </div>
+      <div class="recipe-option">
+        <div>
+          <div class="recipe-option-name">Grilled Chicken Salad</div>
+          <div class="recipe-option-meta">420 kcal · 45g protein · Lunch</div>
+        </div>
+        <button class="btn-pick" onclick="closeModal()">Add</button>
+      </div>
+      <div class="recipe-option">
+        <div>
+          <div class="recipe-option-name">Salmon with Quinoa</div>
+          <div class="recipe-option-meta">540 kcal · 42g protein · Dinner</div>
+        </div>
+        <button class="btn-pick" onclick="closeModal()">Add</button>
+      </div>
+      <div class="recipe-option">
+        <div>
+          <div class="recipe-option-name">Greek Yogurt Bowl</div>
+          <div class="recipe-option-meta">210 kcal · 18g protein · Snack</div>
+        </div>
+        <button class="btn-pick" onclick="closeModal()">Add</button>
+      </div>
+      <div class="recipe-option">
+        <div>
+          <div class="recipe-option-name">Lentil Soup</div>
+          <div class="recipe-option-meta">380 kcal · 22g protein · Lunch</div>
+        </div>
+        <button class="btn-pick" onclick="closeModal()">Add</button>
+      </div>
+      <div class="recipe-option">
+        <div>
+          <div class="recipe-option-name">Banana Protein Smoothie</div>
+          <div class="recipe-option-meta">290 kcal · 28g protein · Breakfast</div>
+        </div>
+        <button class="btn-pick" onclick="closeModal()">Add</button>
+      </div>
+      <span class="modal-close" onclick="closeModal()">Close</span>
+    </div>
+  </div>
+
+  <script>
+    function showPhase(phase) {
+      document.querySelectorAll('.phase-content').forEach(el => el.classList.remove('visible'));
+      document.querySelectorAll('.phase-tab').forEach(el => {
+        el.className = 'phase-tab';
+      });
+      document.getElementById('phase-' + phase).classList.add('visible');
+      document.getElementById('tab-' + phase).classList.add('active-' + phase);
+    }
+
+    function openModal() { document.getElementById('modal').classList.add('open'); }
+    function closeModal() { document.getElementById('modal').classList.remove('open'); }
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
+
+</body>
+</html>

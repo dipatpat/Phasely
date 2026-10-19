@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Client Detail</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #3d3d3d;
+      margin-bottom: 36px;
+      padding-left: 8px;
+    }
+
+    .logo span { color: #e8c96a; }
+
+    .nav-item {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #4a6e65;
+      cursor: pointer;
+      display: block;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #6a9088;
+    }
+
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main {
+      flex: 1;
+      padding: 40px 48px;
+      overflow-y: auto;
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      color: #6a9088;
+      margin-bottom: 24px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .back:hover { color: #3d3d3d; }
+
+    /* CLIENT HEADER */
+    .client-header {
+      background: white;
+      border-radius: 16px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .avatar-lg {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background-color: #cdddd6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #4a6e65;
+      flex-shrink: 0;
+    }
+
+    .client-header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+    .client-header .email { font-size: 0.88rem; color: #8aada0; }
+
+    .header-meta {
+      margin-left: auto;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .phase-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .phase-follicular { background-color: #e8f4fd; color: #4a90c4; }
+    .phase-luteal     { background-color: #fdf4e8; color: #e8a030; }
+    .phase-menstrual  { background-color: #fde8e8; color: #c0504d; }
+    .phase-ovulatory  { background-color: #e8fde8; color: #4caf50; }
+
+    .btn-action {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary { background-color: #e8c96a; color: white; }
+    .btn-primary:hover { background-color: #deba55; }
+    .btn-outline { background: none; border: 1.5px solid #cdddd6; color: #4a6e65; }
+    .btn-outline:hover { background-color: #cdddd6; }
+
+    /* GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .grid-full { grid-column: 1 / -1; }
+
+    /* CARD */
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px 28px;
+    }
+
+    .card-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #8aada0;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+
+    /* PROFILE INFO */
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0f5f3;
+      font-size: 0.92rem;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #8aada0; }
+    .info-value { font-weight: 600; }
+
+    /* TAGS */
+    .tag {
+      display: inline-block;
+      background-color: #eef5f2;
+      color: #4a6e65;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin: 2px;
+    }
+
+    /* PLAN CARD */
+    .plan-name {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .plan-meta {
+      font-size: 0.82rem;
+      color: #8aada0;
+      margin-bottom: 14px;
+    }
+
+    .plan-phases {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .plan-phase-tag {
+      font-size: 0.78rem;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    /* LOG LIST */
+    .log-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f5f3;
+      font-size: 0.9rem;
+    }
+
+    .log-item:last-child { border-bottom: none; }
+
+    .log-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .log-time { margin-left: auto; color: #8aada0; font-size: 0.8rem; }
+
+    /* SESSION */
+    .session-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f5f3;
+    }
+
+    .session-item:last-child { border-bottom: none; }
+    .session-date { font-weight: 600; font-size: 0.92rem; }
+    .session-time { font-size: 0.82rem; color: #8aada0; margin-top: 2px; }
+
+    .status-badge {
+      font-size: 0.78rem;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .status-confirmed { background-color: #e8fde8; color: #4caf50; }
+    .status-pending   { background-color: #fdf4e8; color: #e8a030; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item active">Dashboard</a>
+    <a class="nav-item">Clients</a>
+    <a class="nav-item">Recipes</a>
+    <a class="nav-item">Exercises</a>
+    <a class="nav-item">Sessions</a>
+    <a class="nav-item">Availability</a>
+    <div class="sidebar-bottom">
+      <strong>Anna Kowalska</strong>
+      Personal Trainer
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <div class="back">← Back to clients</div>
+
+    <!-- CLIENT HEADER -->
+    <div class="client-header">
+      <div class="avatar-lg">MN</div>
+      <div>
+        <h1>Maria Nowak</h1>
+        <div class="email">maria.nowak@email.com</div>
+      </div>
+      <div class="header-meta">
+        <span class="phase-badge phase-follicular">Follicular phase</span>
+        <button class="btn-action btn-outline">Book session</button>
+        <button class="btn-action btn-primary">Edit plans</button>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid">
+
+      <!-- PROFILE -->
+      <div class="card">
+        <div class="card-title">Profile</div>
+        <div class="info-row">
+          <span class="info-label">Fitness goal</span>
+          <span class="info-value">Lose weight</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Body fat</span>
+          <span class="info-value">24.5%</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Cycle length</span>
+          <span class="info-value">28 days</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Period length</span>
+          <span class="info-value">5 days</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Last period start</span>
+          <span class="info-value">May 14, 2026</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Onboarded</span>
+          <span class="info-value">Apr 2, 2026</span>
+        </div>
+        <div style="margin-top: 16px;">
+          <div class="info-label" style="font-size:0.82rem; margin-bottom: 8px;">Dietary preferences</div>
+          <span class="tag">Gluten-free</span>
+          <span class="tag">High-protein</span>
+        </div>
+      </div>
+
+      <!-- UPCOMING SESSIONS -->
+      <div class="card">
+        <div class="card-title">Upcoming sessions</div>
+        <div class="session-item">
+          <div>
+            <div class="session-date">Thursday, May 29</div>
+            <div class="session-time">10:00 — 11:00</div>
+          </div>
+          <span class="status-badge status-confirmed">Confirmed</span>
+        </div>
+        <div class="session-item">
+          <div>
+            <div class="session-date">Tuesday, June 3</div>
+            <div class="session-time">09:00 — 10:00</div>
+          </div>
+          <span class="status-badge status-pending">Pending</span>
+        </div>
+      </div>
+
+      <!-- NUTRITION PLAN -->
+      <div class="card">
+        <div class="card-title">Active nutrition plan</div>
+        <div class="plan-name">Weight Loss — Phase-Adapted</div>
+        <div class="plan-meta">12 recipes across 4 phases</div>
+        <div class="plan-phases">
+          <span class="plan-phase-tag phase-follicular">Follicular · 4 recipes</span>
+          <span class="plan-phase-tag phase-ovulatory" style="background:#e8fde8;color:#4caf50;">Ovulatory · 3 recipes</span>
+          <span class="plan-phase-tag phase-luteal">Luteal · 3 recipes</span>
+          <span class="plan-phase-tag phase-menstrual">Menstrual · 2 recipes</span>
+        </div>
+      </div>
+
+      <!-- TRAINING PLAN -->
+      <div class="card">
+        <div class="card-title">Active training plan</div>
+        <div class="plan-name">Full Body — Cycle-Aware</div>
+        <div class="plan-meta">16 exercises across 4 phases</div>
+        <div class="plan-phases">
+          <span class="plan-phase-tag phase-follicular">Follicular · 5 exercises</span>
+          <span class="plan-phase-tag phase-ovulatory" style="background:#e8fde8;color:#4caf50;">Ovulatory · 5 exercises</span>
+          <span class="plan-phase-tag phase-luteal">Luteal · 4 exercises</span>
+          <span class="plan-phase-tag phase-menstrual">Menstrual · 2 exercises</span>
+        </div>
+      </div>
+
+      <!-- RECENT LOGS -->
+      <div class="card grid-full">
+        <div class="card-title">Recent logs</div>
+        <div class="log-item">
+          <div class="log-dot" style="background:#4a90c4;"></div>
+          <span>Daily log — Follicular phase · Sleep 7.5h · Energy 4/5</span>
+          <span class="log-time">Today</span>
+        </div>
+        <div class="log-item">
+          <div class="log-dot" style="background:#e8c96a;"></div>
+          <span>Meal — Overnight oats (breakfast) · 1 serving</span>
+          <span class="log-time">Today, 08:30</span>
+        </div>
+        <div class="log-item">
+          <div class="log-dot" style="background:#4caf50;"></div>
+          <span>Exercise — Barbell Squat · completed</span>
+          <span class="log-time">Yesterday, 17:00</span>
+        </div>
+        <div class="log-item">
+          <div class="log-dot" style="background:#e8c96a;"></div>
+          <span>Meal — Grilled chicken salad (lunch) · 1.5 serving</span>
+          <span class="log-time">Yesterday, 13:00</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+</body>
+</html>

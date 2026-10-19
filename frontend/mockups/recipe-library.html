@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Recipe Library</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .logo { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; margin-bottom: 36px; padding-left: 8px; }
+    .logo span { color: #e8c96a; }
+
+    .nav-item {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #4a6e65;
+      cursor: pointer;
+      display: block;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      color: #6a9088;
+    }
+
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+    }
+
+    .top-bar h1 { font-size: 1.8rem; font-weight: 700; }
+
+    .btn-add {
+      background-color: #e8c96a;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-add:hover { background-color: #deba55; }
+
+    /* FILTERS */
+    .filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 200px;
+      background: white;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 18px;
+      font-size: 0.92rem;
+      color: #3d3d3d;
+      outline: none;
+    }
+
+    .search-box::placeholder { color: #b0c8c0; }
+
+    select {
+      background: white;
+      border: none;
+      border-radius: 10px;
+      padding: 11px 18px;
+      font-size: 0.88rem;
+      color: #4a6e65;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    /* RECIPE GRID */
+    .recipe-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .recipe-card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .recipe-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .recipe-name {
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .meal-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .meal-breakfast { background-color: #fdf4e8; color: #e8a030; }
+    .meal-lunch     { background-color: #e8f4fd; color: #4a90c4; }
+    .meal-dinner    { background-color: #ede8fd; color: #7c5cbf; }
+    .meal-snack     { background-color: #fde8f4; color: #c04d8a; }
+
+    .macros {
+      display: flex;
+      gap: 10px;
+    }
+
+    .macro {
+      flex: 1;
+      background-color: #f5faf8;
+      border-radius: 10px;
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    .macro-value {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #3d3d3d;
+    }
+
+    .macro-label {
+      font-size: 0.7rem;
+      color: #8aada0;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .tags-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background-color: #eef5f2;
+      color: #4a6e65;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .btn-edit {
+      flex: 1;
+      background: none;
+      border: 1.5px solid #cdddd6;
+      border-radius: 8px;
+      padding: 7px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #4a6e65;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .btn-edit:hover { background-color: #eef5f2; }
+
+    /* MODAL OVERLAY */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .modal-underline {
+      width: 120px;
+      height: 4px;
+      background-color: #e8c96a;
+      border-radius: 2px;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #8aada0;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: #f5faf8;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.92rem;
+      color: #3d3d3d;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .form-input:focus { background: #eef5f2; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-row-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      background: none;
+      border: 1.5px solid #cdddd6;
+      border-radius: 10px;
+      padding: 13px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #4a6e65;
+      cursor: pointer;
+    }
+
+    .btn-save {
+      flex: 2;
+      background-color: #e8c96a;
+      border: none;
+      border-radius: 10px;
+      padding: 13px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-save:hover { background-color: #deba55; }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item">Dashboard</a>
+    <a class="nav-item">Clients</a>
+    <a class="nav-item active">Recipes</a>
+    <a class="nav-item">Exercises</a>
+    <a class="nav-item">Sessions</a>
+    <a class="nav-item">Availability</a>
+    <div class="sidebar-bottom">
+      <strong>Anna Kowalska</strong>
+      Personal Trainer
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="top-bar">
+      <h1>Recipe Library</h1>
+      <button class="btn-add" onclick="openModal()">+ New recipe</button>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filters">
+      <input class="search-box" type="text" placeholder="Search recipes..." />
+      <select>
+        <option>All meal types</option>
+        <option>Breakfast</option>
+        <option>Lunch</option>
+        <option>Dinner</option>
+        <option>Snack</option>
+      </select>
+      <select>
+        <option>All tags</option>
+        <option>Vegan</option>
+        <option>Gluten-free</option>
+        <option>High-protein</option>
+      </select>
+    </div>
+
+    <!-- RECIPE GRID -->
+    <div class="recipe-grid">
+
+      <div class="recipe-card">
+        <div class="recipe-card-top">
+          <span class="recipe-name">Overnight Oats</span>
+          <span class="meal-badge meal-breakfast">Breakfast</span>
+        </div>
+        <div class="macros">
+          <div class="macro"><div class="macro-value">320</div><div class="macro-label">kcal</div></div>
+          <div class="macro"><div class="macro-value">12g</div><div class="macro-label">protein</div></div>
+          <div class="macro"><div class="macro-value">54g</div><div class="macro-label">carbs</div></div>
+          <div class="macro"><div class="macro-value">8g</div><div class="macro-label">fat</div></div>
+        </div>
+        <div class="tags-row">
+          <span class="tag">Vegan</span>
+          <span class="tag">Gluten-free</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn-edit" onclick="openModal()">Edit</button>
+        </div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-card-top">
+          <span class="recipe-name">Grilled Chicken Salad</span>
+          <span class="meal-badge meal-lunch">Lunch</span>
+        </div>
+        <div class="macros">
+          <div class="macro"><div class="macro-value">420</div><div class="macro-label">kcal</div></div>
+          <div class="macro"><div class="macro-value">45g</div><div class="macro-label">protein</div></div>
+          <div class="macro"><div class="macro-value">18g</div><div class="macro-label">carbs</div></div>
+          <div class="macro"><div class="macro-value">16g</div><div class="macro-label">fat</div></div>
+        </div>
+        <div class="tags-row">
+          <span class="tag">High-protein</span>
+          <span class="tag">Gluten-free</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn-edit" onclick="openModal()">Edit</button>
+        </div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-card-top">
+          <span class="recipe-name">Salmon with Quinoa</span>
+          <span class="meal-badge meal-dinner">Dinner</span>
+        </div>
+        <div class="macros">
+          <div class="macro"><div class="macro-value">540</div><div class="macro-label">kcal</div></div>
+          <div class="macro"><div class="macro-value">42g</div><div class="macro-label">protein</div></div>
+          <div class="macro"><div class="macro-value">38g</div><div class="macro-label">carbs</div></div>
+          <div class="macro"><div class="macro-value">20g</div><div class="macro-label">fat</div></div>
+        </div>
+        <div class="tags-row">
+          <span class="tag">High-protein</span>
+          <span class="tag">Omega-3</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn-edit" onclick="openModal()">Edit</button>
+        </div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-card-top">
+          <span class="recipe-name">Greek Yogurt Bowl</span>
+          <span class="meal-badge meal-snack">Snack</span>
+        </div>
+        <div class="macros">
+          <div class="macro"><div class="macro-value">210</div><div class="macro-label">kcal</div></div>
+          <div class="macro"><div class="macro-value">18g</div><div class="macro-label">protein</div></div>
+          <div class="macro"><div class="macro-value">22g</div><div class="macro-label">carbs</div></div>
+          <div class="macro"><div class="macro-value">4g</div><div class="macro-label">fat</div></div>
+        </div>
+        <div class="tags-row">
+          <span class="tag">High-protein</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn-edit" onclick="openModal()">Edit</button>
+        </div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-card-top">
+          <span class="recipe-name">Lentil Soup</span>
+          <span class="meal-badge meal-lunch">Lunch</span>
+        </div>
+        <div class="macros">
+          <div class="macro"><div class="macro-value">380</div><div class="macro-label">kcal</div></div>
+          <div class="macro"><div class="macro-value">22g</div><div class="macro-label">protein</div></div>
+          <div class="macro"><div class="macro-value">58g</div><div class="macro-label">carbs</div></div>
+          <div class="macro"><div class="macro-value">6g</div><div class="macro-label">fat</div></div>
+        </div>
+        <div class="tags-row">
+          <span class="tag">Vegan</span>
+          <span class="tag">Gluten-free</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn-edit" onclick="openModal()">Edit</button>
+        </div>
+      </div>
+
+      <div class="recipe-card">
+        <div class="recipe-card-top">
+          <span class="recipe-name">Banana Protein Smoothie</span>
+          <span class="meal-badge meal-breakfast">Breakfast</span>
+        </div>
+        <div class="macros">
+          <div class="macro"><div class="macro-value">290</div><div class="macro-label">kcal</div></div>
+          <div class="macro"><div class="macro-value">28g</div><div class="macro-label">protein</div></div>
+          <div class="macro"><div class="macro-value">36g</div><div class="macro-label">carbs</div></div>
+          <div class="macro"><div class="macro-value">4g</div><div class="macro-label">fat</div></div>
+        </div>
+        <div class="tags-row">
+          <span class="tag">High-protein</span>
+          <span class="tag">Vegan</span>
+        </div>
+        <div class="card-actions">
+          <button class="btn-edit" onclick="openModal()">Edit</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- CREATE / EDIT MODAL -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-title">New Recipe</div>
+      <div class="modal-underline"></div>
+
+      <div class="form-group">
+        <label>Recipe name</label>
+        <input class="form-input" type="text" placeholder="e.g. Overnight Oats" />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Meal type</label>
+          <select class="form-input">
+            <option>Breakfast</option>
+            <option>Lunch</option>
+            <option>Dinner</option>
+            <option>Snack</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Serving size</label>
+          <input class="form-input" type="text" placeholder="e.g. 200g" />
+        </div>
+      </div>
+
+      <div class="form-row-4">
+        <div class="form-group">
+          <label>Calories</label>
+          <input class="form-input" type="number" placeholder="kcal" />
+        </div>
+        <div class="form-group">
+          <label>Protein</label>
+          <input class="form-input" type="number" placeholder="g" />
+        </div>
+        <div class="form-group">
+          <label>Carbs</label>
+          <input class="form-input" type="number" placeholder="g" />
+        </div>
+        <div class="form-group">
+          <label>Fat</label>
+          <input class="form-input" type="number" placeholder="g" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Dietary tags</label>
+        <input class="form-input" type="text" placeholder="e.g. Vegan, Gluten-free" />
+      </div>
+
+      <div class="form-group">
+        <label>Preparation notes</label>
+        <textarea class="form-input" rows="3" placeholder="Optional instructions..." style="resize:none;"></textarea>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save">Save recipe</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openModal() { document.getElementById('modal').classList.add('open'); }
+    function closeModal() { document.getElementById('modal').classList.remove('open'); }
+    document.getElementById('modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
+
+</body>
+</html>

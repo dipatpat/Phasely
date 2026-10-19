@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — System Architecture</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f9f7;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 48px 32px;
+      color: #3d3d3d;
+    }
+
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #8aada0;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 40px;
+    }
+
+    /* DIAGRAM CONTAINER */
+    .diagram {
+      width: 900px;
+      position: relative;
+    }
+
+    /* LAYER LABELS */
+    .layer-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #b0c8c0;
+      margin-bottom: 8px;
+      padding-left: 4px;
+    }
+
+    /* ROW */
+    .row {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 0;
+      position: relative;
+    }
+
+    /* BOX */
+    .box {
+      border-radius: 14px;
+      padding: 18px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      min-width: 150px;
+      text-align: center;
+      position: relative;
+    }
+
+    .box-icon { font-size: 1.8rem; }
+    .box-title { font-size: 0.92rem; font-weight: 700; }
+    .box-sub { font-size: 0.72rem; font-weight: 500; opacity: 0.75; line-height: 1.4; }
+
+    /* BOX COLOURS */
+    .box-client   { background: #fff8e1; border: 2px solid #e8c96a; color: #7a6010; }
+    .box-api      { background: #e8f0fd; border: 2px solid #4a90c4; color: #1a4a6a; }
+    .box-db       { background: #e8f5e9; border: 2px solid #4caf50; color: #1b5e20; }
+    .box-redis    { background: #fde8e8; border: 2px solid #c0504d; color: #6a1010; }
+    .box-celery   { background: #f3e5f5; border: 2px solid #9c27b0; color: #4a1060; }
+    .box-auth     { background: #fff3e0; border: 2px solid #e8a030; color: #6a3a10; }
+
+    /* SPACER / CONNECTOR COLUMN */
+    .connector-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+    }
+
+    /* SVG ARROWS */
+    svg.arrows {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .arrow-line {
+      stroke: #b0c8c0;
+      stroke-width: 1.8;
+      fill: none;
+      marker-end: url(#arrowhead);
+    }
+
+    .arrow-line.bidirectional {
+      marker-start: url(#arrowhead-start);
+      marker-end: url(#arrowhead);
+    }
+
+    .arrow-label {
+      font-size: 10px;
+      fill: #8aada0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 600;
+    }
+
+    /* VERTICAL SPACER */
+    .vspace { height: 64px; position: relative; }
+
+    /* LEGEND */
+    .legend {
+      display: flex;
+      gap: 24px;
+      margin-top: 40px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      color: #6a9088;
+      font-weight: 500;
+    }
+
+    .legend-line {
+      width: 28px;
+      height: 2px;
+      background: #b0c8c0;
+      position: relative;
+    }
+
+    .legend-line::after {
+      content: '';
+      position: absolute;
+      right: -1px;
+      top: -3px;
+      border: 4px solid transparent;
+      border-left-color: #b0c8c0;
+    }
+
+    /* FULL DIAGRAM AS SVG */
+    .diagram-svg-wrap {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+  </style>
+</head>
+<body>
+
+<h2>Phasely — System Architecture</h2>
+
+<div class="diagram-svg-wrap">
+<svg width="860" height="560" viewBox="0 0 860 560" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#8aada0"/>
+    </marker>
+    <marker id="arr-rev" markerWidth="8" markerHeight="8" refX="2" refY="3" orient="auto">
+      <path d="M8,0 L8,6 L0,3 z" fill="#8aada0"/>
+    </marker>
+  </defs>
+
+  <!-- ── LAYER LABELS ── -->
+  <text x="20" y="78" font-size="10" font-weight="700" fill="#b0c8c0" letter-spacing="0.8" text-transform="uppercase">CLIENT LAYER</text>
+  <text x="20" y="218" font-size="10" font-weight="700" fill="#b0c8c0" letter-spacing="0.8">API LAYER</text>
+  <text x="20" y="378" font-size="10" font-weight="700" fill="#b0c8c0" letter-spacing="0.8">DATA &amp; TASK LAYER</text>
+
+  <!-- ══════════════════════════════════════
+       CLIENT LAYER
+  ══════════════════════════════════════ -->
+
+  <!-- Web Browser box -->
+  <rect x="180" y="88" width="180" height="90" rx="14" fill="#fff8e1" stroke="#e8c96a" stroke-width="2"/>
+  <text x="270" y="118" text-anchor="middle" font-size="22">🌐</text>
+  <text x="270" y="142" text-anchor="middle" font-size="13" font-weight="700" fill="#7a6010">Web Browser</text>
+  <text x="270" y="158" text-anchor="middle" font-size="11" fill="#a08040">React frontend</text>
+
+  <!-- Trainer -->
+  <rect x="400" y="88" width="130" height="90" rx="14" fill="#eef5f2" stroke="#cdddd6" stroke-width="2"/>
+  <text x="465" y="118" text-anchor="middle" font-size="22">🏋️</text>
+  <text x="465" y="142" text-anchor="middle" font-size="13" font-weight="700" fill="#3d3d3d">Trainer</text>
+  <text x="465" y="158" text-anchor="middle" font-size="11" fill="#8aada0">Anna Kowalska</text>
+
+  <!-- Client -->
+  <rect x="560" y="88" width="130" height="90" rx="14" fill="#fef5e4" stroke="#e8c96a" stroke-width="2"/>
+  <text x="625" y="118" text-anchor="middle" font-size="22">🌸</text>
+  <text x="625" y="142" text-anchor="middle" font-size="13" font-weight="700" fill="#3d3d3d">Client</text>
+  <text x="625" y="158" text-anchor="middle" font-size="11" fill="#8aada0">Maria Nowak</text>
+
+  <!-- Trainer/Client → Browser arrows -->
+  <line x1="465" y1="178" x2="380" y2="210" stroke="#cdddd6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <line x1="625" y1="178" x2="530" y2="210" stroke="#cdddd6" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+  <!-- ══════════════════════════════════════
+       API LAYER
+  ══════════════════════════════════════ -->
+
+  <!-- FastAPI box -->
+  <rect x="130" y="228" width="500" height="100" rx="14" fill="#e8f0fd" stroke="#4a90c4" stroke-width="2"/>
+  <text x="200" y="264" text-anchor="middle" font-size="22">⚡</text>
+  <text x="380" y="264" text-anchor="middle" font-size="14" font-weight="700" fill="#1a4a6a">FastAPI Backend</text>
+  <text x="380" y="284" text-anchor="middle" font-size="11" fill="#4a70a0">REST API · JWT Auth · Pydantic · OpenAPI docs</text>
+  <!-- sub-components -->
+  <rect x="150" y="296" width="120" height="22" rx="6" fill="#c8daf5" stroke="none"/>
+  <text x="210" y="311" text-anchor="middle" font-size="10" font-weight="600" fill="#1a4a6a">Auth Router</text>
+  <rect x="284" y="296" width="120" height="22" rx="6" fill="#c8daf5" stroke="none"/>
+  <text x="344" y="311" text-anchor="middle" font-size="10" font-weight="600" fill="#1a4a6a">Trainer Router</text>
+  <rect x="418" y="296" width="120" height="22" rx="6" fill="#c8daf5" stroke="none"/>
+  <text x="478" y="311" text-anchor="middle" font-size="10" font-weight="600" fill="#1a4a6a">Client Router</text>
+  <rect x="552" y="296" width="58" height="22" rx="6" fill="#c8daf5" stroke="none"/>
+  <text x="581" y="311" text-anchor="middle" font-size="10" font-weight="600" fill="#1a4a6a">+ more</text>
+
+  <!-- Browser ↔ FastAPI -->
+  <line x1="270" y1="178" x2="310" y2="228" stroke="#4a90c4" stroke-width="2" marker-end="url(#arr)" marker-start="url(#arr-rev)"/>
+  <text x="264" y="210" font-size="10" fill="#4a90c4" font-weight="600">HTTP / JWT</text>
+
+  <!-- ══════════════════════════════════════
+       DATA + TASK LAYER
+  ══════════════════════════════════════ -->
+
+  <!-- PostgreSQL -->
+  <rect x="60" y="398" width="180" height="100" rx="14" fill="#e8f5e9" stroke="#4caf50" stroke-width="2"/>
+  <text x="150" y="430" text-anchor="middle" font-size="22">🐘</text>
+  <text x="150" y="455" text-anchor="middle" font-size="13" font-weight="700" fill="#1b5e20">PostgreSQL</text>
+  <text x="150" y="472" text-anchor="middle" font-size="11" fill="#4a8050">Primary database</text>
+  <text x="150" y="486" text-anchor="middle" font-size="10" fill="#6aaa70">SQLAlchemy 2.0 async</text>
+
+  <!-- Redis -->
+  <rect x="280" y="398" width="180" height="100" rx="14" fill="#fde8e8" stroke="#c0504d" stroke-width="2"/>
+  <text x="370" y="430" text-anchor="middle" font-size="22">🔴</text>
+  <text x="370" y="455" text-anchor="middle" font-size="13" font-weight="700" fill="#6a1010">Redis</text>
+  <text x="370" y="472" text-anchor="middle" font-size="11" fill="#a04040">Cache · JWT blacklist</text>
+  <text x="370" y="486" text-anchor="middle" font-size="10" fill="#c06060">Celery broker + backend</text>
+
+  <!-- Celery -->
+  <rect x="500" y="398" width="180" height="100" rx="14" fill="#f3e5f5" stroke="#9c27b0" stroke-width="2"/>
+  <text x="590" y="430" text-anchor="middle" font-size="22">⚙️</text>
+  <text x="590" y="455" text-anchor="middle" font-size="13" font-weight="700" fill="#4a1060">Celery Worker</text>
+  <text x="590" y="472" text-anchor="middle" font-size="11" fill="#7a40a0">Async task queue</text>
+  <text x="590" y="486" text-anchor="middle" font-size="10" fill="#9a60c0">Weekly reports · FTS sync</text>
+
+  <!-- FastAPI → PostgreSQL -->
+  <line x1="240" y1="328" x2="170" y2="398" stroke="#4caf50" stroke-width="2" marker-end="url(#arr)" marker-start="url(#arr-rev)"/>
+  <text x="168" y="368" font-size="10" fill="#4caf50" font-weight="600" text-anchor="middle">SQLAlchemy</text>
+
+  <!-- FastAPI → Redis -->
+  <line x1="380" y1="328" x2="370" y2="398" stroke="#c0504d" stroke-width="2" marker-end="url(#arr)" marker-start="url(#arr-rev)"/>
+  <text x="405" y="368" font-size="10" fill="#c0504d" font-weight="600">Cache / BL</text>
+
+  <!-- FastAPI → Celery (dispatch) -->
+  <line x1="500" y1="328" x2="560" y2="398" stroke="#9c27b0" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="538" y="368" font-size="10" fill="#9c27b0" font-weight="600">Dispatch</text>
+
+  <!-- Celery ↔ Redis (broker) -->
+  <line x1="500" y1="455" x2="460" y2="455" stroke="#9c27b0" stroke-width="1.8" marker-end="url(#arr)" marker-start="url(#arr-rev)" stroke-dasharray="4,3"/>
+  <text x="478" y="448" font-size="10" fill="#9c27b0" font-weight="600" text-anchor="middle">Broker</text>
+
+  <!-- Celery → PostgreSQL (FTS update) -->
+  <line x1="520" y1="498" x2="240" y2="498" stroke="#4caf50" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <text x="380" y="513" font-size="10" fill="#4aaa50" font-weight="600" text-anchor="middle">FTS index update</text>
+
+  <!-- ══════════════════════════════════════
+       LEGEND
+  ══════════════════════════════════════ -->
+  <line x1="60" y1="540" x2="90" y2="540" stroke="#8aada0" stroke-width="2" marker-end="url(#arr)" marker-start="url(#arr-rev)"/>
+  <text x="96" y="544" font-size="10" fill="#8aada0">Bidirectional (request / response)</text>
+
+  <line x1="280" y1="540" x2="310" y2="540" stroke="#8aada0" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="316" y="544" font-size="10" fill="#8aada0">Unidirectional</text>
+
+  <line x1="450" y1="540" x2="480" y2="540" stroke="#8aada0" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <text x="486" y="544" font-size="10" fill="#8aada0">Async / indirect</text>
+
+</svg>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasely — Daily Log</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #eef5f2;
+      display: flex;
+      min-height: 100vh;
+      color: #3d3d3d;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 220px;
+      background-color: #cdddd6;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 20px;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .logo { font-size: 1.6rem; font-weight: 800; color: #3d3d3d; margin-bottom: 36px; padding-left: 8px; }
+    .logo span { color: #e8c96a; }
+
+    .nav-item {
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #4a6e65;
+      cursor: pointer;
+      display: block;
+      text-decoration: none;
+    }
+
+    .nav-item:hover { background-color: #b8cfc7; }
+    .nav-item.active { background-color: #3d3d3d; color: white; font-weight: 600; }
+
+    .sidebar-bottom { margin-top: auto; padding: 10px 14px; font-size: 0.85rem; color: #6a9088; }
+    .sidebar-bottom strong { display: block; color: #3d3d3d; font-size: 0.95rem; }
+
+    /* MAIN */
+    .main { flex: 1; padding: 40px 48px; overflow-y: auto; }
+
+    .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .top-bar h1 { font-size: 1.8rem; font-weight: 700; }
+
+    .date-tag { font-size: 0.85rem; color: #8aada0; margin-bottom: 36px; }
+
+    /* FORM WRAPPER */
+    .form-wrapper {
+      max-width: 640px;
+    }
+
+    /* SECTION */
+    .section {
+      background: white;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #8aada0;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    /* PHASE SELECTOR */
+    .phase-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .phase-option {
+      border: 2px solid #f0f5f3;
+      border-radius: 14px;
+      padding: 16px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .phase-option:hover { border-color: #cdddd6; }
+
+    .phase-option.selected.menstrual  { border-color: #c0504d; background: #fdf0f0; }
+    .phase-option.selected.follicular { border-color: #4a90c4; background: #ddeeff; }
+    .phase-option.selected.ovulatory  { border-color: #4caf50; background: #e8fde8; }
+    .phase-option.selected.luteal     { border-color: #e8a030; background: #fef5e4; }
+
+    .phase-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .phase-option-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .phase-option-desc {
+      font-size: 0.78rem;
+      color: #8aada0;
+      line-height: 1.4;
+    }
+
+    .phase-hint {
+      margin-top: 14px;
+      font-size: 0.8rem;
+      color: #8aada0;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.4;
+    }
+
+    .phase-hint-icon {
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    /* SLEEP SLIDER */
+    .sleep-display {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .sleep-value {
+      font-size: 3rem;
+      font-weight: 800;
+      color: #3d3d3d;
+      line-height: 1;
+    }
+
+    .sleep-unit {
+      font-size: 1.1rem;
+      color: #8aada0;
+      font-weight: 500;
+    }
+
+    .sleep-goal {
+      font-size: 0.8rem;
+      color: #8aada0;
+      margin-left: 8px;
+    }
+
+    .sleep-goal .below { color: #c0504d; }
+    .sleep-goal .on { color: #4caf50; }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: linear-gradient(to right, #4a90c4 72%, #e8f0f5 72%);
+      border-radius: 3px;
+      outline: none;
+      margin-bottom: 10px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #4a90c4;
+      cursor: pointer;
+    }
+
+    .sleep-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: #b0c8c0;
+    }
+
+    /* ENERGY SELECTOR */
+    .energy-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .energy-option {
+      flex: 1;
+      border: 2px solid #f0f5f3;
+      border-radius: 14px;
+      padding: 14px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .energy-option:hover { border-color: #cdddd6; }
+
+    .energy-option.selected {
+      border-color: #e8c96a;
+      background: #fef9ec;
+    }
+
+    .energy-emoji { font-size: 1.6rem; margin-bottom: 6px; }
+    .energy-num { font-size: 1rem; font-weight: 800; color: #3d3d3d; margin-bottom: 2px; }
+    .energy-label { font-size: 0.7rem; color: #8aada0; font-weight: 500; }
+
+    /* SUBMIT */
+    .submit-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .btn-submit {
+      flex: 1;
+      background-color: #e8c96a;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-submit:hover { background-color: #deba55; }
+
+    /* SUCCESS STATE */
+    .success-banner {
+      display: none;
+      background: #e8fde8;
+      border-radius: 14px;
+      padding: 18px 24px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #3a7a3a;
+    }
+
+    .success-icon { font-size: 1.2rem; }
+
+    .already-logged {
+      font-size: 0.78rem;
+      color: #8aada0;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">Phase<span>ly</span></div>
+    <a class="nav-item active" href="client-dashboard.html">Today</a>
+    <a class="nav-item" href="client-recipe-browser.html">Meals</a>
+    <a class="nav-item" href="client-exercise-log.html">Workouts</a>
+    <a class="nav-item" href="client-weekly-summary.html">Progress</a>
+    <a class="nav-item" href="client-session-booking.html">Book session</a>
+    <div class="sidebar-bottom">
+      <strong>Maria Nowak</strong>
+      Client
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="top-bar">
+      <h1>Daily Log</h1>
+    </div>
+    <div class="date-tag">Friday, 29 May 2026</div>
+
+    <div class="form-wrapper">
+
+      <!-- PHASE SECTION -->
+      <div class="section">
+        <div class="section-title">Cycle phase today</div>
+
+        <div class="phase-grid">
+          <div class="phase-option menstrual" onclick="selectPhase(this, 'menstrual')">
+            <div class="phase-dot" style="background:#c0504d; margin-top:3px;"></div>
+            <div>
+              <div class="phase-option-name">Menstrual</div>
+              <div class="phase-option-desc">Days 1–5 · Low energy, rest & recovery focus</div>
+            </div>
+          </div>
+          <div class="phase-option follicular selected" onclick="selectPhase(this, 'follicular')">
+            <div class="phase-dot" style="background:#4a90c4; margin-top:3px;"></div>
+            <div>
+              <div class="phase-option-name">Follicular</div>
+              <div class="phase-option-desc">Days 6–13 · Rising energy, strength training</div>
+            </div>
+          </div>
+          <div class="phase-option ovulatory" onclick="selectPhase(this, 'ovulatory')">
+            <div class="phase-dot" style="background:#4caf50; margin-top:3px;"></div>
+            <div>
+              <div class="phase-option-name">Ovulatory</div>
+              <div class="phase-option-desc">Days 14–16 · Peak energy, HIIT & cardio</div>
+            </div>
+          </div>
+          <div class="phase-option luteal" onclick="selectPhase(this, 'luteal')">
+            <div class="phase-dot" style="background:#e8a030; margin-top:3px;"></div>
+            <div>
+              <div class="phase-option-name">Luteal</div>
+              <div class="phase-option-desc">Days 17–28 · Moderate energy, reduce intensity</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="phase-hint">
+          <span class="phase-hint-icon">💡</span>
+          <span>Phasely estimated <strong>Follicular</strong> based on your last period start (21 May) and a 28-day cycle. Override if it doesn't feel right — your input improves future estimates.</span>
+        </div>
+      </div>
+
+      <!-- SLEEP SECTION -->
+      <div class="section">
+        <div class="section-title">Sleep last night</div>
+
+        <div class="sleep-display">
+          <span class="sleep-value" id="sleep-val">7.5</span>
+          <span class="sleep-unit">hours</span>
+          <span class="sleep-goal"><span class="below">0.5h below your 8h goal</span></span>
+        </div>
+
+        <input type="range" id="sleep-slider" min="0" max="12" step="0.5" value="7.5"
+          oninput="updateSleep(this.value)" />
+
+        <div class="sleep-labels">
+          <span>0h</span>
+          <span>3h</span>
+          <span>6h</span>
+          <span>9h</span>
+          <span>12h</span>
+        </div>
+      </div>
+
+      <!-- ENERGY SECTION -->
+      <div class="section">
+        <div class="section-title">Energy level</div>
+
+        <div class="energy-row">
+          <div class="energy-option" onclick="selectEnergy(this)">
+            <div class="energy-emoji">😴</div>
+            <div class="energy-num">1</div>
+            <div class="energy-label">Exhausted</div>
+          </div>
+          <div class="energy-option" onclick="selectEnergy(this)">
+            <div class="energy-emoji">😞</div>
+            <div class="energy-num">2</div>
+            <div class="energy-label">Low</div>
+          </div>
+          <div class="energy-option" onclick="selectEnergy(this)">
+            <div class="energy-emoji">😐</div>
+            <div class="energy-num">3</div>
+            <div class="energy-label">Okay</div>
+          </div>
+          <div class="energy-option selected" onclick="selectEnergy(this)">
+            <div class="energy-emoji">😊</div>
+            <div class="energy-num">4</div>
+            <div class="energy-label">Good</div>
+          </div>
+          <div class="energy-option" onclick="selectEnergy(this)">
+            <div class="energy-emoji">🚀</div>
+            <div class="energy-num">5</div>
+            <div class="energy-label">Excellent</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="submit-row">
+        <button class="btn-submit" onclick="submitLog()">Save today's log</button>
+      </div>
+      <div class="already-logged">Saving your log will update today's meal and workout recommendations.</div>
+
+    </div>
+  </main>
+
+  <script>
+    function selectPhase(el, phase) {
+      document.querySelectorAll('.phase-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function selectEnergy(el) {
+      document.querySelectorAll('.energy-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    function updateSleep(val) {
+      const v = parseFloat(val);
+      document.getElementById('sleep-val').textContent = v.toFixed(1).replace('.0', '');
+      const goal = document.querySelector('.sleep-goal');
+      const diff = (v - 8).toFixed(1);
+      if (v >= 8) {
+        goal.innerHTML = `<span class="on">✓ ${diff >= 0 ? '+' : ''}${diff}h vs 8h goal</span>`;
+      } else {
+        goal.innerHTML = `<span class="below">${Math.abs(diff)}h below your 8h goal</span>`;
+      }
+      const pct = (v / 12) * 100;
+      document.getElementById('sleep-slider').style.background =
+        `linear-gradient(to right, #4a90c4 ${pct}%, #e8f0f5 ${pct}%)`;
+    }
+
+    function submitLog() {
+      document.querySelector('.btn-submit').textContent = '✓ Log saved!';
+      document.querySelector('.btn-submit').style.backgroundColor = '#4caf50';
+      document.querySelector('.already-logged').textContent = 'Your recommendations for today have been updated.';
+    }
+  </script>
+
+</body>
+</html>

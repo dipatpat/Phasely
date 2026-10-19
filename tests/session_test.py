@@ -2,13 +2,14 @@ import uuid
 from datetime import datetime
 
 import pytest
+from sqlalchemy import event
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import APP_TZ
 from app.core.enums import UserRole
 from app.session.models import Session
 from app.trainer.service import create_trainer_profile
-from tests.conftest import auth_headers, create_test_user
+from tests.conftest import auth_headers, create_test_user, test_engine
 
 
 async def _create_test_trainer_profile(db, email: str):
@@ -530,3 +531,76 @@ async def test_book_session_with_utc_time_matches_local_slot(client, db):
         headers=auth_headers(client_user),
     )
     assert response.status_code == 201
+
+
+async def test_available_slots_includes_slot_of_cancelled_session(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    await _create_availability_slot(
+        client, auth_headers(trainer_user), "2026-10-01", "09:00:00", "10:00:00"
+    )
+    client_user, _ = await _create_test_client_profile(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    client_headers = auth_headers(client_user)
+    session = await _book_session(client, client_headers)
+    await client.patch(
+        "/session/cancel",
+        params={"session_id": session["id"]},
+        json={},
+        headers=client_headers,
+    )
+
+    response = await client.get(
+        "/session/available_slots",
+        params={"date_target": "2026-10-01"},
+        headers=client_headers,
+    )
+    assert [slot["slot_start"] for slot in response.json()] == ["09:00:00"]
+
+
+async def test_available_slots_query_count_does_not_grow_with_slots(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    trainer_headers = auth_headers(trainer_user)
+    for hour in range(8, 13):
+        await _create_availability_slot(
+            client,
+            trainer_headers,
+            "2026-10-01",
+            f"{hour:02}:00:00",
+            f"{hour:02}:30:00",
+        )
+    await _create_availability_slot(
+        client, trainer_headers, "2026-10-02", "09:00:00", "09:30:00"
+    )
+    client_user, _ = await _create_test_client_profile(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+    client_headers = auth_headers(client_user)
+
+    statements = []
+
+    def count_statement(*args):
+        statements.append(args)
+
+    async def count_queries_for(date_target):
+        statements.clear()
+        response = await client.get(
+            "/session/available_slots",
+            params={"date_target": date_target},
+            headers=client_headers,
+        )
+        assert response.status_code == 200
+        return len(statements)
+
+    event.listen(test_engine.sync_engine, "before_cursor_execute", count_statement)
+    try:
+        five_slots = await count_queries_for("2026-10-01")
+        one_slot = await count_queries_for("2026-10-02")
+    finally:
+        event.remove(test_engine.sync_engine, "before_cursor_execute", count_statement)
+
+    assert five_slots == one_slot

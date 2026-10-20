@@ -1,0 +1,438 @@
+/* ---------- Design tokens (one place for every colour) ---------- */
+:root {
+  --color-bg: #eef5f2;
+  --color-surface: #ffffff;
+  --color-text: #3d3d3d;
+  --color-muted: #8aada0;
+  --color-subtle: #6a9088;
+  --color-nav: #4a6e65;
+  --color-sidebar: #cdddd6;
+  --color-sidebar-hover: #b8cfc7;
+  --color-border: #f0f5f3;
+  --color-input: #f5faf8;
+  --color-table-head: #f5f9f7;
+  --color-row-hover: #fafcfb;
+  --color-accent: #e8c96a;
+  --color-accent-hover: #deba55;
+  --color-link: #4a90c4;
+
+  --phase-menstrual-bg: #fde8e8;
+  --phase-menstrual: #c0504d;
+  --phase-follicular-bg: #e8f4fd;
+  --phase-follicular: #4a90c4;
+  --phase-ovulatory-bg: #e8fde8;
+  --phase-ovulatory: #4caf50;
+  --phase-luteal-bg: #fdf4e8;
+  --phase-luteal: #e8a030;
+}
+
+/* ---------- Reset ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+/* ---------- App shell: sidebar + main ---------- */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 220px;
+  background-color: var(--color-sidebar);
+  display: flex;
+  flex-direction: column;
+  padding: 36px 20px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: 36px;
+  padding-left: 8px;
+}
+
+.logo span {
+  color: var(--color-accent);
+}
+
+.nav-item {
+  display: block;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--color-nav);
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  background-color: var(--color-sidebar-hover);
+}
+
+.nav-item.active {
+  background-color: var(--color-text);
+  color: white;
+  font-weight: 600;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  color: var(--color-subtle);
+}
+
+.sidebar-bottom strong {
+  display: block;
+  color: var(--color-text);
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+
+.btn-logout {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  background: none;
+  border: 1.5px solid var(--color-sidebar-hover);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-subtle);
+  text-align: left;
+  cursor: pointer;
+}
+
+.btn-logout:hover {
+  background: var(--color-sidebar-hover);
+  color: var(--color-text);
+}
+
+.main {
+  flex: 1;
+  padding: 40px 48px;
+  overflow-y: auto;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.top-bar h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.date-tag {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin-bottom: 28px;
+}
+
+/* ---------- Cards and grids ---------- */
+.card {
+  background: var(--color-surface);
+  border-radius: 16px;
+  padding: 24px 28px;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-muted);
+}
+
+.card-link {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-link);
+  text-transform: none;
+  letter-spacing: 0;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.stat-card {
+  flex: 1;
+  background: var(--color-surface);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+
+.stat-label {
+  margin-bottom: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-muted);
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.stat-sub {
+  margin-top: 5px;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+/* ---------- Tables ---------- */
+.table-wrap {
+  background: var(--color-surface);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead tr {
+  background-color: var(--color-table-head);
+}
+
+th {
+  padding: 14px 20px;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-muted);
+}
+
+td {
+  padding: 14px 20px;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+
+tr:hover td {
+  background-color: var(--color-row-hover);
+}
+
+/* ---------- Forms ---------- */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-muted);
+}
+
+.form-input {
+  width: 100%;
+  background: var(--color-input);
+  border: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.92rem;
+  color: var(--color-text);
+  outline: none;
+}
+
+.form-input:focus {
+  background: var(--color-bg);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-error {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--phase-menstrual);
+}
+
+/* ---------- Buttons ---------- */
+.btn-primary,
+.btn-save {
+  background-color: var(--color-accent);
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-primary:hover,
+.btn-save:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.btn-primary:disabled,
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-cancel {
+  background: none;
+  border: 1.5px solid var(--color-sidebar);
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--color-nav);
+  cursor: pointer;
+}
+
+/* ---------- Modal ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 100;
+}
+
+.modal {
+  width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border-radius: 20px;
+  padding: 40px;
+}
+
+.modal-title {
+  margin-bottom: 8px;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.modal-underline {
+  width: 120px;
+  height: 4px;
+  margin-bottom: 28px;
+  background-color: var(--color-accent);
+  border-radius: 2px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.modal-actions .btn-cancel {
+  flex: 1;
+}
+
+.modal-actions .btn-save {
+  flex: 2;
+}
+
+/* ---------- Badges ---------- */
+.phase-badge,
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.phase-menstrual {
+  background: var(--phase-menstrual-bg);
+  color: var(--phase-menstrual);
+}
+
+.phase-follicular {
+  background: var(--phase-follicular-bg);
+  color: var(--phase-follicular);
+}
+
+.phase-ovulatory {
+  background: var(--phase-ovulatory-bg);
+  color: var(--phase-ovulatory);
+}
+
+.phase-luteal {
+  background: var(--phase-luteal-bg);
+  color: var(--phase-luteal);
+}
+
+.phase-none {
+  background: #f0f0f0;
+  color: #999;
+}
+
+.badge-pending {
+  background: var(--phase-luteal-bg);
+  color: var(--phase-luteal);
+}
+
+.badge-confirmed,
+.badge-completed {
+  background: var(--phase-ovulatory-bg);
+  color: var(--phase-ovulatory);
+}
+
+.badge-cancelled {
+  background: #f0f0f0;
+  color: #999;
+}

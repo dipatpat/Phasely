@@ -1,18 +1,33 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-
-const API_URL = import.meta.env.VITE_API_URL;
-
-type ApiStatus = "checking" | "ok" | "unreachable";
+import { api } from "../api/client";
+import type { User } from "../api/types";
+import { getToken } from "../auth/tokenStorage";
 
 export function DevHomePage() {
-  const [status, setStatus] = useState<ApiStatus>("checking");
+  const health = useQuery({
+    queryKey: ["health"],
+    queryFn: () => api.get<{ status: string }>("/health"),
+  });
 
-  useEffect(() => {
-    fetch(`${API_URL}/health`)
-      .then((response) => setStatus(response.ok ? "ok" : "unreachable"))
-      .catch(() => setStatus("unreachable"));
-  }, []);
+  const me = useQuery({
+    queryKey: ["me"],
+    queryFn: () => api.get<User>("/auth/me"),
+    enabled: getToken() !== null,
+  });
+
+  const apiStatus = health.isPending
+    ? "checking"
+    : health.isSuccess
+      ? "ok"
+      : "unreachable";
+
+  let session = "Not logged in";
+  if (me.data) {
+    session = `Logged in as ${me.data.first_name} ${me.data.last_name} (${me.data.role})`;
+  } else if (me.error) {
+    session = `Token rejected: ${me.error.message}`;
+  }
 
   return (
     <main className="main">
@@ -21,7 +36,8 @@ export function DevHomePage() {
           Phase<span style={{ color: "var(--color-accent)" }}>ly</span>
         </h1>
       </div>
-      <p className="date-tag">API status: {status}</p>
+      <p className="date-tag">API status: {apiStatus}</p>
+      <p className="date-tag">{session}</p>
       <div className="grid-2">
         <Link className="card card-link" to="/client">
           Open client layout →

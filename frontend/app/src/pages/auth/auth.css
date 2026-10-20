@@ -1,0 +1,133 @@
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  background-color: var(--color-sidebar);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-title {
+  margin-bottom: 10px;
+  font-size: 2.2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.auth-underline {
+  width: 160px;
+  height: 4px;
+  margin-bottom: 40px;
+  background-color: var(--color-accent);
+  border-radius: 2px;
+}
+
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.auth-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.auth-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--color-muted);
+  padding: 10px 0;
+  font-size: 1.05rem;
+  color: var(--color-text);
+  text-align: center;
+  outline: none;
+}
+
+.auth-input::placeholder {
+  color: #9ab5ad;
+}
+
+.auth-input:focus {
+  border-bottom-color: var(--color-text);
+}
+
+textarea.auth-input {
+  resize: vertical;
+}
+
+.role-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.role-switch button {
+  padding: 14px;
+  background: transparent;
+  border: 1.5px solid var(--color-muted);
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-nav);
+  cursor: pointer;
+}
+
+.role-switch button.active {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: white;
+}
+
+.btn-auth {
+  width: 100%;
+  margin-top: 8px;
+  padding: 18px;
+  background-color: var(--color-accent);
+  border: none;
+  border-radius: 14px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+}
+
+.btn-auth:hover {
+  background-color: var(--color-accent-hover);
+}
+
+.btn-auth:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-error {
+  text-align: center;
+}
+
+.auth-toggle {
+  margin-top: 28px;
+  font-size: 0.9rem;
+  color: var(--color-subtle);
+}
+
+.auth-toggle a {
+  color: var(--color-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-toggle a:hover {
+  text-decoration: underline;
+}

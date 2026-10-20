@@ -10,9 +10,15 @@ type SidebarProps = {
   items: NavItem[];
   userName: string;
   roleLabel: string;
+  onLogout: () => void;
 };
 
-export function Sidebar({ items, userName, roleLabel }: SidebarProps) {
+export function Sidebar({
+  items,
+  userName,
+  roleLabel,
+  onLogout,
+}: SidebarProps) {
   return (
     <nav className="sidebar">
       <div className="logo">
@@ -35,7 +41,7 @@ export function Sidebar({ items, userName, roleLabel }: SidebarProps) {
       <div className="sidebar-bottom">
         <strong>{userName}</strong>
         {roleLabel}
-        <button type="button" className="btn-logout">
+        <button type="button" className="btn-logout" onClick={onLogout}>
           ← Log out
         </button>
       </div>

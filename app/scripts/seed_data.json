@@ -1,0 +1,65 @@
+{
+  "recipes": [
+    {"name": "Warm Cinnamon Porridge", "meal": "breakfast", "phase": "menstrual", "macros": [12, 55, 8, 340], "tags": ["vegetarian"], "ingredients": [["oats", 60, "g"], ["milk", 250, "ml"], ["cinnamon", 1, "tsp"]]},
+    {"name": "Lentil & Spinach Soup", "meal": "lunch", "phase": "menstrual", "macros": [18, 40, 6, 290], "tags": ["vegan", "gluten-free"], "ingredients": [["red lentils", 80, "g"], ["spinach", 60, "g"], ["vegetable stock", 400, "ml"]]},
+    {"name": "Beef Stir-Fry with Broccoli", "meal": "dinner", "phase": "menstrual", "macros": [35, 30, 14, 410], "tags": ["dairy-free", "high-protein"], "ingredients": [["beef strips", 150, "g"], ["broccoli", 120, "g"], ["rice", 70, "g"]]},
+    {"name": "Dark Chocolate Oat Bites", "meal": "snack", "phase": "menstrual", "macros": [5, 22, 9, 190], "tags": ["vegetarian"], "ingredients": [["oats", 30, "g"], ["dark chocolate", 20, "g"], ["honey", 1, "tbsp"]]},
+    {"name": "Greek Yogurt Berry Bowl", "meal": "breakfast", "phase": "follicular", "macros": [20, 30, 6, 260], "tags": ["vegetarian", "gluten-free"], "ingredients": [["greek yogurt", 200, "g"], ["berries", 100, "g"], ["granola", 30, "g"]]},
+    {"name": "Avocado Toast with Egg", "meal": "breakfast", "phase": "follicular", "macros": [16, 28, 18, 340], "tags": ["vegetarian"], "ingredients": [["sourdough bread", 2, "slices"], ["avocado", 0.5, "pcs"], ["egg", 1, "pcs"]]},
+    {"name": "Quinoa Chicken Salad", "meal": "lunch", "phase": "follicular", "macros": [32, 35, 10, 380], "tags": ["gluten-free", "high-protein"], "ingredients": [["quinoa", 60, "g"], ["chicken breast", 120, "g"], ["cucumber", 80, "g"]]},
+    {"name": "Salmon with Asparagus", "meal": "dinner", "phase": "follicular", "macros": [34, 12, 20, 390], "tags": ["gluten-free", "dairy-free", "high-protein"], "ingredients": [["salmon fillet", 150, "g"], ["asparagus", 150, "g"], ["lemon", 0.5, "pcs"]]},
+    {"name": "Hummus & Veggie Sticks", "meal": "snack", "phase": "follicular", "macros": [7, 18, 9, 180], "tags": ["vegan", "gluten-free"], "ingredients": [["hummus", 60, "g"], ["carrot", 80, "g"], ["bell pepper", 80, "g"]]},
+    {"name": "Veggie Egg Scramble", "meal": "breakfast", "phase": "ovulatory", "macros": [22, 10, 16, 280], "tags": ["vegetarian", "gluten-free", "high-protein"], "ingredients": [["egg", 3, "pcs"], ["spinach", 40, "g"], ["tomato", 80, "g"]]},
+    {"name": "Turkey Wholegrain Wrap", "meal": "lunch", "phase": "ovulatory", "macros": [30, 38, 10, 370], "tags": ["dairy-free", "high-protein"], "ingredients": [["turkey breast", 100, "g"], ["wholegrain tortilla", 1, "pcs"], ["lettuce", 40, "g"]]},
+    {"name": "Tofu Buddha Bowl", "meal": "dinner", "phase": "ovulatory", "macros": [24, 48, 14, 420], "tags": ["vegan", "high-protein"], "ingredients": [["tofu", 150, "g"], ["brown rice", 70, "g"], ["edamame", 60, "g"]]},
+    {"name": "Berry Protein Smoothie", "meal": "snack", "phase": "ovulatory", "macros": [25, 20, 4, 210], "tags": ["vegetarian", "gluten-free", "high-protein"], "ingredients": [["protein powder", 30, "g"], ["berries", 100, "g"], ["milk", 250, "ml"]]},
+    {"name": "Banana Peanut Oats", "meal": "breakfast", "phase": "luteal", "macros": [14, 60, 14, 410], "tags": ["vegetarian"], "ingredients": [["oats", 60, "g"], ["banana", 1, "pcs"], ["peanut butter", 15, "g"]]},
+    {"name": "Overnight Chia Oats", "meal": "breakfast", "phase": "luteal", "macros": [13, 45, 12, 340], "tags": ["vegetarian"], "ingredients": [["oats", 50, "g"], ["chia seeds", 15, "g"], ["milk", 200, "ml"]]},
+    {"name": "Sweet Potato & Black Bean Bowl", "meal": "lunch", "phase": "luteal", "macros": [16, 70, 9, 430], "tags": ["vegan", "gluten-free"], "ingredients": [["sweet potato", 200, "g"], ["black beans", 120, "g"], ["corn", 60, "g"]]},
+    {"name": "Chicken & Brown Rice", "meal": "dinner", "phase": "luteal", "macros": [36, 55, 9, 450], "tags": ["gluten-free", "dairy-free", "high-protein"], "ingredients": [["chicken breast", 150, "g"], ["brown rice", 80, "g"], ["zucchini", 100, "g"]]},
+    {"name": "Pumpkin Seed Trail Mix", "meal": "snack", "phase": "luteal", "macros": [9, 16, 14, 220], "tags": ["vegan", "gluten-free"], "ingredients": [["pumpkin seeds", 25, "g"], ["almonds", 15, "g"], ["dried cranberries", 15, "g"]]}
+  ],
+  "exercises": [
+    ["Brisk Walk", "Low-intensity steady walking"],
+    ["Yoga Flow", "Gentle full-body yoga sequence"],
+    ["Mobility Stretching", "Hip, spine and shoulder mobility routine"],
+    ["Pilates Core", "Mat pilates focusing on the deep core"],
+    ["Plank", "Isometric core hold"],
+    ["Goblet Squat", "Squat holding a kettlebell at the chest"],
+    ["Walking Lunges", "Alternating forward lunges"],
+    ["Romanian Deadlift", "Hip hinge with dumbbells or a barbell"],
+    ["Bench Press", "Horizontal press with a barbell"],
+    ["Kettlebell Swing", "Explosive hip hinge with a kettlebell"],
+    ["HIIT Intervals", "Short high-intensity intervals with rest"],
+    ["Easy Run", "Conversational-pace run"]
+  ],
+  "training": {
+    "menstrual": [
+      ["Brisk Walk", "easy", null, null, 1800],
+      ["Yoga Flow", "easy", null, null, 1200],
+      ["Mobility Stretching", "easy", null, null, 900],
+      ["Pilates Core", "medium", 3, 12, null]
+    ],
+    "follicular": [
+      ["Goblet Squat", "medium", 4, 10, null],
+      ["Romanian Deadlift", "hard", 4, 8, null],
+      ["Walking Lunges", "medium", 3, 12, null],
+      ["Easy Run", "medium", null, null, 1800],
+      ["Plank", "easy", 3, null, 45]
+    ],
+    "ovulatory": [
+      ["HIIT Intervals", "hard", null, null, 1200],
+      ["Bench Press", "hard", 4, 6, null],
+      ["Kettlebell Swing", "hard", 4, 15, null],
+      ["Goblet Squat", "medium", 4, 10, null],
+      ["Mobility Stretching", "easy", null, null, 600]
+    ],
+    "luteal": [
+      ["Pilates Core", "medium", 3, 12, null],
+      ["Brisk Walk", "easy", null, null, 2400],
+      ["Walking Lunges", "medium", 3, 10, null],
+      ["Yoga Flow", "easy", null, null, 1200],
+      ["Plank", "easy", 3, null, 30]
+    ]
+  }
+}

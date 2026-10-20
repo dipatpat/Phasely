@@ -20,18 +20,18 @@
     {"name": "Pumpkin Seed Trail Mix", "meal": "snack", "phase": "luteal", "macros": [9, 16, 14, 220], "tags": ["vegan", "gluten-free"], "ingredients": [["pumpkin seeds", 25, "g"], ["almonds", 15, "g"], ["dried cranberries", 15, "g"]]}
   ],
   "exercises": [
-    ["Brisk Walk", "Low-intensity steady walking"],
-    ["Yoga Flow", "Gentle full-body yoga sequence"],
-    ["Mobility Stretching", "Hip, spine and shoulder mobility routine"],
-    ["Pilates Core", "Mat pilates focusing on the deep core"],
-    ["Plank", "Isometric core hold"],
-    ["Goblet Squat", "Squat holding a kettlebell at the chest"],
-    ["Walking Lunges", "Alternating forward lunges"],
-    ["Romanian Deadlift", "Hip hinge with dumbbells or a barbell"],
-    ["Bench Press", "Horizontal press with a barbell"],
-    ["Kettlebell Swing", "Explosive hip hinge with a kettlebell"],
-    ["HIIT Intervals", "Short high-intensity intervals with rest"],
-    ["Easy Run", "Conversational-pace run"]
+    ["Brisk Walk", "Low-intensity cardio that supports recovery and circulation.\n1. Walk at a pace where you can still talk but feel slightly warm.\n2. Keep your posture tall and let your arms swing naturally.\n3. Land on your heel and roll through to your toes.\n4. Breathe steadily through your nose where possible."],
+    ["Yoga Flow", "A gentle full-body sequence for mobility and relaxation.\n1. Start in child's pose and take five slow breaths.\n2. Move through cat-cow on all fours for ten rounds.\n3. Step into downward dog, then a low lunge on each side.\n4. Finish lying on your back with knees hugged to your chest."],
+    ["Mobility Stretching", "Joint mobility routine for hips, spine and shoulders.\n1. Do ten slow hip circles in each direction while standing.\n2. Kneel in a hip flexor stretch for 30 seconds per side.\n3. Rotate your upper back on all fours, ten times per side.\n4. Make slow, large arm circles, ten forwards and ten backwards."],
+    ["Pilates Core", "Mat exercises that strengthen the deep abdominal muscles.\n1. Lie on your back with knees bent and feet flat.\n2. Draw your belly button gently towards your spine.\n3. Lift your head and shoulders, reaching your arms past your hips.\n4. Pulse your arms for ten breaths, then lower slowly."],
+    ["Plank", "Isometric hold that trains core stability.\n1. Rest on your forearms with elbows under your shoulders.\n2. Step your feet back so your body forms a straight line.\n3. Squeeze your glutes and brace your stomach.\n4. Hold without letting your hips sag or rise; keep breathing."],
+    ["Goblet Squat", "Squat holding a weight at the chest; works legs and glutes.\n1. Hold a kettlebell or dumbbell vertically against your chest.\n2. Stand with feet slightly wider than hip-width, toes turned out a little.\n3. Push your hips back and bend your knees, keeping your chest up.\n4. Lower until thighs are parallel to the floor, then drive up through your heels."],
+    ["Walking Lunges", "Alternating forward lunges for legs, glutes and balance.\n1. Stand tall with hands on hips or holding light dumbbells.\n2. Take a long step forward and lower your back knee towards the floor.\n3. Keep your front knee over your ankle, not past your toes.\n4. Push through the front heel and step straight into the next lunge."],
+    ["Romanian Deadlift", "Hip hinge that targets hamstrings and glutes.\n1. Hold the weight in front of your thighs, feet hip-width apart.\n2. Soften your knees and push your hips back.\n3. Lower the weight along your legs, keeping your back flat.\n4. Stop when you feel a stretch in your hamstrings, then squeeze your glutes to stand up."],
+    ["Bench Press", "Horizontal press for chest, shoulders and triceps.\n1. Lie on the bench with eyes under the bar and feet flat on the floor.\n2. Grip the bar slightly wider than shoulder-width.\n3. Lower the bar with control to the middle of your chest.\n4. Press back up until your arms are straight, without locking your elbows hard."],
+    ["Kettlebell Swing", "Explosive hip hinge for power and conditioning.\n1. Stand with feet shoulder-width apart, kettlebell slightly in front of you.\n2. Hinge at the hips and hike the kettlebell back between your legs.\n3. Snap your hips forward to swing it to chest height; arms stay relaxed.\n4. Let it fall back and hinge again; the power comes from the hips, not the arms."],
+    ["HIIT Intervals", "Short bursts of maximum effort followed by rest.\n1. Warm up for five minutes with light movement.\n2. Work as hard as you can for 30 seconds (e.g. high knees or burpees).\n3. Rest or walk slowly for 30 to 60 seconds.\n4. Repeat eight to ten rounds, then cool down for five minutes."],
+    ["Easy Run", "Steady, conversational-pace run for aerobic fitness.\n1. Start with five minutes of brisk walking.\n2. Run at a pace where you could still hold a conversation.\n3. Keep your steps short and land under your hips.\n4. Finish with five minutes of walking and light stretching."]
   ],
   "training": {
     "menstrual": [

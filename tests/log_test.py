@@ -459,8 +459,12 @@ async def test_daily_log_recommendations_filtered_by_phase_and_day(client, db):
     recipe_names = {r["name"] for r in data["recommended_recipes"]}
     assert recipe_names == {"Luteal Recipe"}
 
-    exercise_names = {e["name"] for e in data["recommended_exercises"]}
+    exercise_names = {e["exercise"]["name"] for e in data["recommended_exercises"]}
     assert exercise_names == {"Match Exercise"}
+    recommendation = data["recommended_exercises"][0]
+    assert recommendation["difficulty_level"] == "easy"
+    assert recommendation["cycle_phase"] == "luteal"
+    assert recommendation["day_of_week"] == 1
 
 
 async def test_daily_log_recommendations_respect_energy_intensity(client, db):
@@ -510,7 +514,10 @@ async def test_daily_log_recommendations_respect_energy_intensity(client, db):
         headers=headers,
     )
     assert response.status_code == 201
-    exercise_names = {e["name"] for e in response.json()["recommended_exercises"]}
+    exercise_names = {
+        e["exercise"]["name"] for e in response.json()["recommended_exercises"]
+    }
+
     assert exercise_names == {"Easy Exercise"}
 
 

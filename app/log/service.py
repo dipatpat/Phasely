@@ -11,9 +11,9 @@ from sqlalchemy.orm import selectinload
 
 from app.core.config import APP_TZ
 from app.core.enums import CyclePhase, MealType
-from app.exercise.schemas import ExercisePublic
 from app.exercise.service import ExerciseNotFound, get_exercise_by_id
 from app.log.models import DailyLog, ExerciseLog, MealLog
+from app.plan.schemas import TrainingPlanExercisePublic
 from app.recipe.models import Recipe, RecipeIngredient
 from app.recipe.schemas import RecipePublic
 from app.recipe.service import RecipeNotFoundError, get_recipe_by_id
@@ -42,7 +42,7 @@ async def create_daily_log(
     hours_of_sleep: Decimal | None,
     energy_level: int | None,
     redis: aioredis.Redis,
-) -> tuple[DailyLog, list[RecipePublic], list[ExercisePublic]]:
+) -> tuple[DailyLog, list[RecipePublic], list[TrainingPlanExercisePublic]]:
     if period_started_today:
         await create_period_log(db, client_id, log_date)
 
@@ -81,7 +81,7 @@ async def trigger_recommendation(
     log_date: datetime.date,
     cycle_phase: CyclePhase,
     energy_level: int | None,
-) -> tuple[list[RecipePublic], list[ExercisePublic]]:
+) -> tuple[list[RecipePublic], list[TrainingPlanExercisePublic]]:
     cache_key = f"recommendations:{client_id}:{log_date}"
     cached_data = await redis.get(cache_key)
     if cached_data:
@@ -90,7 +90,7 @@ async def trigger_recommendation(
             RecipePublic.model_validate(recipe) for recipe in cached_data["recipes"]
         ]
         exercises = [
-            ExercisePublic.model_validate(exercise)
+            TrainingPlanExercisePublic.model_validate(exercise)
             for exercise in cached_data["exercises"]
         ]
         return recipes, exercises
@@ -101,7 +101,8 @@ async def trigger_recommendation(
     )
     recipes = [RecipePublic.model_validate(recipe) for recipe in recipes_from_db]
     exercises = [
-        ExercisePublic.model_validate(exercise) for exercise in exercises_from_db
+        TrainingPlanExercisePublic.model_validate(exercise)
+        for exercise in exercises_from_db
     ]
     cache_payload = json.dumps(
         {

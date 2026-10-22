@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.enums import CyclePhase, MealType
 from app.exercise.schemas import ExercisePublic
+from app.plan.schemas import TrainingPlanExercisePublic
 from app.recipe.schemas import RecipePublic
 
 
@@ -64,5 +65,5 @@ class ExerciseLogPublic(BaseModel):
 
 class DailyLogWithRecommendations(BaseModel):
     daily_log: DailyLogPublic
+    recommended_exercises: list[TrainingPlanExercisePublic]
     recommended_recipes: list[RecipePublic]
-    recommended_exercises: list[ExercisePublic]

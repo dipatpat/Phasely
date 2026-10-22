@@ -8,7 +8,6 @@ from sqlalchemy.orm import selectinload
 
 from app.client.service import get_client_profile_by_profile_id
 from app.core.enums import CyclePhase, DifficultyLevel
-from app.exercise.models import Exercise
 from app.log.models import PeriodLog
 from app.plan.models import (
     NutritionPlan,
@@ -169,10 +168,10 @@ async def get_exercise_recommendations(
     cycle_phase: CyclePhase,
     day_of_week: int,
     energy_level: int | None,
-) -> list[Exercise]:
+) -> list[TrainingPlanExercise]:
     query = (
-        select(Exercise)
-        .join(TrainingPlanExercise, TrainingPlanExercise.exercise_id == Exercise.id)
+        select(TrainingPlanExercise)
+        .options(selectinload(TrainingPlanExercise.exercise))
         .join(TrainingPlan, TrainingPlanExercise.training_plan_id == TrainingPlan.id)
         .where(
             TrainingPlan.client_id == client_id,

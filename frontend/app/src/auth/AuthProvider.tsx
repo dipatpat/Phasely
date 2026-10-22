@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-    async function logout(): Promise<void> {
+  async function logout(): Promise<void> {
     try {
       await logoutRequest();
     } catch {
@@ -47,7 +47,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setHasToken(false);
     queryClient.clear();
   }
-
 
   const value = {
     user: hasToken ? (me.data ?? null) : null,

@@ -7,6 +7,8 @@ import { CLIENT_NAV, TRAINER_NAV } from "./components/layout/navigation";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { RequireClientProfile } from "./auth/RequireClientProfile";
+import { OnboardingPage } from "./pages/client/OnboardingPage";
 
 function App() {
   return (
@@ -21,9 +23,7 @@ function App() {
             path="/onboarding"
             element={
               <RequireAuth role="client">
-                <main className="main">
-                  <PlaceholderPage title="Onboarding" />
-                </main>
+                <OnboardingPage />
               </RequireAuth>
             }
           />
@@ -32,7 +32,9 @@ function App() {
             path="/client"
             element={
               <RequireAuth role="client">
-                <AppShell navItems={CLIENT_NAV} roleLabel="Client" />
+                <RequireClientProfile>
+                  <AppShell navItems={CLIENT_NAV} roleLabel="Client" />
+                </RequireClientProfile>
               </RequireAuth>
             }
           >

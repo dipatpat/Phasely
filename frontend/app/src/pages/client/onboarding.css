@@ -1,0 +1,85 @@
+.onboarding-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 48px 16px;
+  background-color: var(--color-bg);
+}
+
+.onboarding-card {
+  width: 100%;
+  max-width: 720px;
+  height: fit-content;
+  background: var(--color-surface);
+  border-radius: 20px;
+  padding: 40px;
+}
+
+.onboarding-card .logo {
+  margin-bottom: 24px;
+  padding-left: 0;
+}
+
+.onboarding-section {
+  margin-bottom: 28px;
+}
+
+.onboarding-hint {
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--color-subtle);
+}
+
+.trainer-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.trainer-option {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  text-align: left;
+  background: var(--color-input);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.trainer-option span {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+}
+
+.trainer-option p {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: var(--color-subtle);
+}
+
+.trainer-option.selected {
+  border-color: var(--color-accent);
+  background: #fdf8e8;
+}
+
+.onboarding-submit {
+  width: 100%;
+  padding: 16px;
+  font-size: 1rem;
+}
+
+.onboarding-logout {
+  display: block;
+  margin: 16px auto 0;
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  color: var(--color-subtle);
+  text-decoration: underline;
+  cursor: pointer;
+}

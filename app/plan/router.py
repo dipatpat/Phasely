@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_client, require_trainer
+from app.client.dependencies import resolve_target_client_id
 from app.client.service import get_client_profile_by_id, get_client_profile_by_user_id
 from app.core.database import get_db
 from app.core.enums import UserRole
@@ -38,6 +39,36 @@ from app.trainer.service import get_trainer_profile_by_user_id
 from app.user.models import User
 
 router = APIRouter(prefix="/plan", tags=["Plan"])
+
+
+@router.get("/nutrition/client/{client_id}", response_model=NutritionPlanPublic)
+async def handle_get_client_nutrition_plan(
+    client_id: uuid.UUID,
+    user: User = Depends(require_trainer),
+    db: AsyncSession = Depends(get_db),
+):
+    target_client_id = await resolve_target_client_id(db, user, client_id)
+    plan = await get_active_nutrition_plan_by_client_id(db, target_client_id)
+    if plan is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No active nutrition plan"
+        )
+    return plan
+
+
+@router.get("/training/client/{client_id}", response_model=TrainingPlanPublic)
+async def handle_get_client_training_plan(
+    client_id: uuid.UUID,
+    user: User = Depends(require_trainer),
+    db: AsyncSession = Depends(get_db),
+):
+    target_client_id = await resolve_target_client_id(db, user, client_id)
+    plan = await get_active_training_plan_by_client_id(db, target_client_id)
+    if plan is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No active training plan"
+        )
+    return plan
 
 
 @router.post(

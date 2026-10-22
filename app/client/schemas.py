@@ -5,6 +5,8 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.log.schemas import DailyLogPublic
+
 CycleLengthDays = Annotated[int, Field(ge=21, le=45)]
 PeriodLengthDays = Annotated[int, Field(ge=1, le=10)]
 
@@ -40,3 +42,12 @@ class ClientProfilePublic(BaseModel):
     last_period_start: date | None
     created_at: datetime
     updated_at: datetime
+
+
+class ClientOverview(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    client: ClientProfilePublic
+    today_log: DailyLogPublic | None
+    last_log_date: date | None
+    has_nutrition_plan: bool
+    has_training_plan: bool

@@ -1,11 +1,13 @@
 import uuid
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_trainer
-from app.client.schemas import ClientProfilePublic
-from app.client.service import list_clients_by_trainer_id
+from app.client.schemas import ClientOverview, ClientProfilePublic
+from app.client.service import list_client_overviews, list_clients_by_trainer_id
+from app.core.config import APP_TZ
 from app.core.database import get_db
 from app.trainer.schemas import (
     TrainerAvailabilityCreate,
@@ -185,6 +187,19 @@ async def handle_get_clients(
         )
     results = await list_clients_by_trainer_id(db, trainer_profile.id)
     return results
+
+
+@router.get("/my_clients/overview", response_model=list[ClientOverview])
+async def handle_get_clients_overview(
+    user: User = Depends(require_trainer), db: AsyncSession = Depends(get_db)
+):
+    trainer_profile = await get_trainer_profile_by_user_id(db, user.id)
+    if not trainer_profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Trainer profile not found"
+        )
+    today = datetime.now(APP_TZ).date()
+    return await list_client_overviews(db, trainer_profile.id, today)
 
 
 @router.get("/{trainer_id}", response_model=TrainerProfilePublic)

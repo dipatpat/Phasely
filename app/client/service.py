@@ -2,12 +2,14 @@ import uuid
 from datetime import UTC, date, datetime
 from decimal import Decimal
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.client.models import ClientProfile
+from app.log.models import DailyLog
+from app.plan.models import NutritionPlan, TrainingPlan
 from app.trainer.service import get_trainer_profile_by_id
 from app.user.models import User
 
@@ -133,3 +135,51 @@ async def get_client_profile_by_profile_id(
         .where(ClientProfile.id == client_profile_id)
     )
     return result.scalar_one_or_none()
+
+
+async def list_client_overviews(
+    db: AsyncSession, trainer_id: uuid.UUID, today: date
+) -> list[dict]:
+    clients = await list_clients_by_trainer_id(db, trainer_id)
+    client_ids = [client.id for client in clients]
+    if not client_ids:
+        return []
+
+    today_result = await db.execute(
+        select(DailyLog).where(
+            DailyLog.client_id.in_(client_ids), DailyLog.log_date == today
+        )
+    )
+    today_by_client = {log.client_id: log for log in today_result.scalars()}
+
+    last_result = await db.execute(
+        select(DailyLog.client_id, func.max(DailyLog.log_date))
+        .where(DailyLog.client_id.in_(client_ids))
+        .group_by(DailyLog.client_id)
+    )
+    last_by_client = dict(last_result.all())
+
+    nutrition_result = await db.execute(
+        select(NutritionPlan.client_id).where(
+            NutritionPlan.client_id.in_(client_ids), NutritionPlan.is_active.is_(True)
+        )
+    )
+    with_nutrition = set(nutrition_result.scalars())
+
+    training_result = await db.execute(
+        select(TrainingPlan.client_id).where(
+            TrainingPlan.client_id.in_(client_ids), TrainingPlan.is_active.is_(True)
+        )
+    )
+    with_training = set(training_result.scalars())
+
+    return [
+        {
+            "client": client,
+            "today_log": today_by_client.get(client.id),
+            "last_log_date": last_by_client.get(client.id),
+            "has_nutrition_plan": client.id in with_nutrition,
+            "has_training_plan": client.id in with_training,
+        }
+        for client in clients
+    ]

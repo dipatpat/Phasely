@@ -15,6 +15,7 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from pathlib import Path
 
+import redis.asyncio as aioredis
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,7 +24,7 @@ from app.auth.security import hash_password
 from app.auth.service import create_user
 from app.client.service import create_client_profile
 from app.core.base import Base
-from app.core.config import APP_TZ
+from app.core.config import APP_TZ, settings
 from app.core.database import AsyncSessionLocal
 from app.core.enums import CyclePhase, DifficultyLevel, MealType, UserRole
 from app.exercise.service import create_exercise
@@ -34,7 +35,14 @@ from app.plan.service import create_nutrition_plan, create_training_plan
 from app.recipe.schemas import IngredientCreate
 from app.recipe.service import create_recipe
 from app.recommendation.service import CycleParameters
-from app.session.service import book_session, complete_session, confirm_session
+from app.report.service import generate_weekly_report_data
+from app.report.tasks import previous_week_start
+from app.session.service import (
+    book_session,
+    cancel_session,
+    complete_session,
+    confirm_session,
+)
 from app.trainer.service import create_availability_slot, create_trainer_profile
 from app.user.models import User
 
@@ -90,7 +98,7 @@ async def create_library(db: AsyncSession) -> tuple[list, dict]:
             fat=Decimal(fat),
             calories=calories,
             serving_size="1 serving",
-            preparation_notes=None,
+            preparation_notes=item.get("notes"),
             ingredients=[
                 IngredientCreate(name=name, quantity=Decimal(str(qty)), unit=unit)
                 for name, qty, unit in item["ingredients"]
@@ -216,10 +224,35 @@ async def create_history(
     await db.commit()
 
 
+async def clear_cached_results() -> None:
+    """Cached recommendations and reports belong to the wiped users."""
+    redis = aioredis.from_url(settings.REDIS_URL)
+    try:
+        for pattern in ("recommendations:*", "weekly_report:*"):
+            async for key in redis.scan_iter(match=pattern):
+                await redis.delete(key)
+    finally:
+        await redis.aclose()
+
+
+async def cache_last_weeks_reports(db: AsyncSession, client_ids: list) -> None:
+    """What Celery Beat would have produced last Monday at 06:00."""
+    week_start = previous_week_start(today())
+    redis = aioredis.from_url(settings.REDIS_URL)
+    try:
+        for client_id in client_ids:
+            report = await generate_weekly_report_data(db, client_id, week_start)
+            key = f"weekly_report:{client_id}:{week_start.isoformat()}"
+            await redis.set(key, json.dumps(report), ex=604800)
+    finally:
+        await redis.aclose()
+
+
 async def seed(reset: bool) -> None:
     async with AsyncSessionLocal() as db:
         if reset:
             await reset_database(db)
+            await clear_cached_results()
         elif await db.scalar(select(func.count()).select_from(User)):
             print("The database already has data. Run with --reset to wipe it.")
             return
@@ -245,10 +278,10 @@ async def seed(reset: bool) -> None:
         maria_cycle = CycleParameters(today() - timedelta(days=8), 28, 5)
         kasia_cycle = CycleParameters(today() - timedelta(days=20), 30, 4)
         clients = {}
-        for first, last, goal, cycle in [
-            ("Maria", "Nowak", "Build strength", maria_cycle),
-            ("Kasia", "Zielińska", "Improve energy", kasia_cycle),
-            ("Ola", "Wójcik", "Lose weight", None),
+        for first, last, goal, body_fat, cycle in [
+            ("Maria", "Nowak", "Build strength", "24.5", maria_cycle),
+            ("Kasia", "Zielińska", "Improve energy", "27.0", kasia_cycle),
+            ("Ola", "Wójcik", "Lose weight", None, None),
         ]:
             email = f"{first.lower()}@phasely.app"
             user = await create_account(db, first, last, email, UserRole.client)
@@ -256,6 +289,7 @@ async def seed(reset: bool) -> None:
                 db,
                 user.id,
                 trainer.id,
+                body_fat_percentage=Decimal(body_fat) if body_fat else None,
                 fitness_goal=goal,
                 cycle_length_days=cycle.cycle_length_days if cycle else 28,
                 period_length_days=cycle.period_length_days if cycle else 5,
@@ -284,8 +318,8 @@ async def seed(reset: bool) -> None:
         past_day = today() - timedelta(days=3)
         await create_availability_slot(db, trainer.id, past_day, time(10), time(11))
 
-        # Sessions: one completed, one confirmed, one pending
-        upcoming = next_weekdays(2)
+        # Sessions: completed, confirmed, pending and cancelled
+        upcoming = next_weekdays(3)
         past = await book_session(
             db, clients["Maria"].id, trainer.id, past_day, time(10), "Deadlift form"
         )
@@ -297,11 +331,18 @@ async def seed(reset: bool) -> None:
         await book_session(
             db, clients["Kasia"].id, trainer.id, upcoming[1], time(11), "First session"
         )
+        dropped = await book_session(
+            db, clients["Maria"].id, trainer.id, upcoming[2], time(15), "Mobility"
+        )
+        await cancel_session(db, dropped, reason="Feeling unwell, need to rest")
+
+        await cache_last_weeks_reports(db, [clients["Maria"].id, clients["Kasia"].id])
 
     print(f"Demo data created. Password for every account: {DEMO_PASSWORD}")
-    print("  Trainer  anna@phasely.app    3 clients, sessions, availability")
+    print("  Trainer  anna@phasely.app    3 clients, 4 sessions, availability")
     print("  Trainer  tomasz@phasely.app  no clients")
-    print("  Client   maria@phasely.app   14 days of history, today not logged yet")
+    print("  Client   maria@phasely.app   14 days of history, today not logged yet,")
+    print("                               last week's report ready in Progress")
     print("  Client   kasia@phasely.app   3 days of history")
     print("  Client   ola@phasely.app     no plan, no cycle data")
 

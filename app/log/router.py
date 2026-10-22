@@ -1,5 +1,5 @@
-import uuid  # new
-from datetime import date
+import uuid
+from datetime import date, datetime
 
 import redis.asyncio as aioredis
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user, require_client
 from app.client.dependencies import resolve_target_client_id
 from app.client.service import get_client_profile_by_user_id
+from app.core.config import APP_TZ
 from app.core.database import get_db
 from app.core.redis import get_redis
 from app.exercise.service import ExerciseNotFound
@@ -170,7 +171,7 @@ async def handle_get_today_recommendations(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="No client profile found"
         )
-    today = date.today()
+    today = datetime.now(APP_TZ).date()
     daily_log = await get_daily_log_by_client_and_date(db, client_profile.id, today)
     if daily_log is None:
         raise HTTPException(

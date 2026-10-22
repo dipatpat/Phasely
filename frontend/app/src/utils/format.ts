@@ -19,3 +19,31 @@ export function formatPrescription(item: TrainingPlanExercise): string {
   if (item.rest_seconds) parts.push(`rest ${item.rest_seconds} s`);
   return parts.join(" · ");
 }
+
+export type Macros = {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+};
+
+export function macrosFor(recipe: Recipe, servings: number): Macros {
+  return {
+    calories: Math.round(recipe.calories * servings),
+    protein: Math.round(Number(recipe.protein) * servings),
+    carbs: Math.round(Number(recipe.carbs) * servings),
+    fat: Math.round(Number(recipe.fat) * servings),
+  };
+}
+
+export function sumMacros(items: Macros[]): Macros {
+  return items.reduce(
+    (total, item) => ({
+      calories: total.calories + item.calories,
+      protein: total.protein + item.protein,
+      carbs: total.carbs + item.carbs,
+      fat: total.fat + item.fat,
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0 },
+  );
+}

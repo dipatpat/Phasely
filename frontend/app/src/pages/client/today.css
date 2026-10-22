@@ -416,3 +416,12 @@
   line-height: 1.6;
   white-space: pre-line;
 }
+
+.intensity-note {
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fef9ec;
+  font-size: 0.82rem;
+  color: #8a6d1f;
+}

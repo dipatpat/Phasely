@@ -10,7 +10,7 @@ import type {
 } from "../../api/types";
 import { useAuth } from "../../auth/useAuth";
 import { LoadingScreen } from "../../components/LoadingScreen";
-import { energyOptionFor } from "../../content/energy";
+import { energyOptionFor, intensityNote } from "../../content/energy";
 import { PHASE_INFO } from "../../content/phases";
 import { formatLongDate, greeting, todayIso } from "../../utils/dates";
 import { formatMacros, formatPrescription } from "../../utils/format";
@@ -72,7 +72,10 @@ export function TodayPage() {
 
       <div className="grid-2">
         <MealsCard recipes={log ? log.recommended_recipes : null} />
-        <WorkoutCard exercises={log ? log.recommended_exercises : null} />
+        <WorkoutCard
+          exercises={log ? log.recommended_exercises : null}
+          energyLevel={log ? log.daily_log.energy_level : null}
+        />
       </div>
 
       {isLogOpen && <DailyLogModal onClose={() => setIsLogOpen(false)} />}
@@ -180,12 +183,17 @@ function MealsCard({ recipes }: { recipes: Recipe[] | null }) {
 
 function WorkoutCard({
   exercises,
+  energyLevel,
 }: {
   exercises: TrainingPlanExercise[] | null;
+  energyLevel: number | null;
 }) {
+  const note = intensityNote(energyLevel);
   return (
     <div className="card">
       <div className="card-title">Today's workout</div>
+      {note && <p className="intensity-note">💡 {note}</p>}
+
       {exercises === null && (
         <p className="empty-text">Log today to see your workout.</p>
       )}

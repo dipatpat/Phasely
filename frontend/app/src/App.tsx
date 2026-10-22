@@ -10,6 +10,8 @@ import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { RequireClientProfile } from "./auth/RequireClientProfile";
 import { OnboardingPage } from "./pages/client/OnboardingPage";
 import { TodayPage } from "./pages/client/TodayPage";
+import { MealsPage } from "./pages/client/MealsPage";
+import { WorkoutsPage } from "./pages/client/WorkoutsPage";
 
 function App() {
   return (
@@ -40,11 +42,8 @@ function App() {
             }
           >
             <Route index element={<TodayPage />} />
-            <Route path="meals" element={<PlaceholderPage title="Meals" />} />
-            <Route
-              path="workouts"
-              element={<PlaceholderPage title="Workouts" />}
-            />
+            <Route path="meals" element={<MealsPage />} />
+            <Route path="workouts" element={<WorkoutsPage />} />
             <Route
               path="progress"
               element={<PlaceholderPage title="Progress" />}

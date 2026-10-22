@@ -111,3 +111,21 @@ export type DailyLogWithRecommendations = {
   recommended_recipes: Recipe[];
   recommended_exercises: TrainingPlanExercise[];
 };
+
+export type MealLog = {
+  id: string;
+  client_id: string;
+  recipe: Recipe;
+  meal_type: MealType;
+  consumed_at: IsoDateTime;
+  portion_quantity: DecimalString;
+  portion_unit: string;
+};
+
+export type ExerciseLog = {
+  id: string;
+  client_id: string;
+  exercise: Exercise;
+  completed_at: IsoDateTime;
+  notes: string | null;
+};

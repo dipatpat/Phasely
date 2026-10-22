@@ -1,0 +1,84 @@
+.log-section {
+  margin-bottom: 20px;
+}
+
+.log-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+  padding: 12px 14px;
+  background: var(--color-input);
+  border-radius: 10px;
+}
+
+.log-row:last-child {
+  margin-bottom: 0;
+}
+
+.log-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.log-row .btn-primary,
+.log-row .btn-cancel {
+  padding: 8px 18px;
+  font-size: 0.85rem;
+}
+
+.logged-note {
+  margin-top: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--phase-ovulatory);
+}
+
+.stat-unit {
+  margin-left: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.macro-preview {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-nav);
+}
+
+.progress-card {
+  margin-bottom: 20px;
+}
+
+.progress-text {
+  margin-bottom: 10px;
+  font-size: 0.92rem;
+  color: var(--color-nav);
+}
+
+.progress-bar {
+  height: 10px;
+  overflow: hidden;
+  background: var(--color-border);
+  border-radius: 5px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 5px;
+  transition: width 0.3s;
+}
+
+.done-badge {
+  padding: 6px 14px;
+  border-radius: 10px;
+  background: var(--phase-ovulatory-bg);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--phase-ovulatory);
+}

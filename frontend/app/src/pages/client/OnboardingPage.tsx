@@ -32,7 +32,10 @@ export function OnboardingPage() {
   const queryClient = useQueryClient();
   const { logout } = useAuth();
   const profile = useClientProfile();
-  const trainers = useQuery({ queryKey: ["trainers"], queryFn: browseTrainers });
+  const trainers = useQuery({
+    queryKey: ["trainers"],
+    queryFn: browseTrainers,
+  });
   const [form, setForm] = useState<OnboardingForm>(INITIAL_FORM);
 
   const onboarding = useMutation({
@@ -120,8 +123,8 @@ export function OnboardingPage() {
           <h2 className="card-title">3. Your cycle</h2>
           <p className="onboarding-hint">
             Phasely adapts your meals and workouts to the phase of your cycle.
-            If you leave the date empty, you can choose your phase yourself
-            each time you log your day.
+            If you leave the date empty, you can choose your phase yourself each
+            time you log your day.
           </p>
           <div className="form-group">
             <label htmlFor="last_period_start">

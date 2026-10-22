@@ -9,6 +9,7 @@ import { RegisterPage } from "./pages/auth/RegisterPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { RequireClientProfile } from "./auth/RequireClientProfile";
 import { OnboardingPage } from "./pages/client/OnboardingPage";
+import { TodayPage } from "./pages/client/TodayPage";
 
 function App() {
   return (
@@ -38,7 +39,7 @@ function App() {
               </RequireAuth>
             }
           >
-            <Route index element={<PlaceholderPage title="Today" />} />
+            <Route index element={<TodayPage />} />
             <Route path="meals" element={<PlaceholderPage title="Meals" />} />
             <Route
               path="workouts"

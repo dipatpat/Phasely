@@ -84,6 +84,18 @@ export type Exercise = {
   updated_at: IsoDateTime;
 };
 
+export type TrainingPlanExercise = {
+  exercise: Exercise;
+  cycle_phase: CyclePhase;
+  day_of_week: number;
+  sets: number | null;
+  reps: number | null;
+  duration_seconds: number | null;
+  weight_kg: DecimalString | null;
+  rest_seconds: number | null;
+  difficulty_level: DifficultyLevel | null;
+};
+
 export type DailyLog = {
   id: string;
   client_id: string;
@@ -97,5 +109,5 @@ export type DailyLog = {
 export type DailyLogWithRecommendations = {
   daily_log: DailyLog;
   recommended_recipes: Recipe[];
-  recommended_exercises: Exercise[];
+  recommended_exercises: TrainingPlanExercise[];
 };

@@ -1,0 +1,418 @@
+/* ---------- Phase hero ---------- */
+.phase-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding: 28px 32px;
+  border-radius: 20px;
+}
+
+.hero-menstrual {
+  --hero-accent: var(--phase-menstrual);
+  background: linear-gradient(135deg, #fdeeee 0%, #f9d9d9 100%);
+}
+
+.hero-follicular {
+  --hero-accent: var(--phase-follicular);
+  background: linear-gradient(135deg, #ddeeff 0%, #c8e6ff 100%);
+}
+
+.hero-ovulatory {
+  --hero-accent: var(--phase-ovulatory);
+  background: linear-gradient(135deg, #e6f9e6 0%, #cff0cf 100%);
+}
+
+.hero-luteal {
+  --hero-accent: var(--phase-luteal);
+  background: linear-gradient(135deg, #fdf3e3 0%, #fae5c4 100%);
+}
+
+.hero-empty {
+  --hero-accent: var(--color-muted);
+  background: var(--color-surface);
+}
+
+.phase-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.phase-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 1.8rem;
+}
+
+.phase-label {
+  margin-bottom: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--hero-accent);
+}
+
+.phase-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.phase-sub {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: var(--color-subtle);
+}
+
+.phase-traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.trait-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--hero-accent);
+}
+
+/* ---------- Log banner ---------- */
+.log-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 18px 24px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 14px;
+}
+
+.log-banner-text {
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--color-nav);
+}
+
+.log-banner-text strong {
+  color: var(--color-text);
+}
+
+.btn-log {
+  padding: 10px 24px;
+  background-color: var(--color-accent);
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn-log:hover {
+  background-color: var(--color-accent-hover);
+}
+
+/* ---------- Meals and workout ---------- */
+.empty-text {
+  font-size: 0.88rem;
+  color: var(--color-muted);
+}
+
+.meal-section {
+  margin-bottom: 20px;
+}
+
+.meal-section:last-child {
+  margin-bottom: 0;
+}
+
+.meal-type-label {
+  margin-bottom: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-muted);
+}
+
+.recipe-item summary,
+.exercise-item summary {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.recipe-item,
+.exercise-item {
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  background: var(--color-input);
+  border-radius: 10px;
+}
+
+.recipe-name,
+.exercise-name {
+  margin-bottom: 2px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.recipe-macros,
+.exercise-params {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.macro-pill {
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.macro-kcal {
+  background: #fef9ec;
+  color: #b89030;
+}
+
+.recipe-item summary,
+.exercise-item summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.recipe-item summary::-webkit-details-marker,
+.exercise-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.exercise-description {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--color-nav);
+  white-space: pre-line;
+}
+
+.difficulty-chip {
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.diff-easy {
+  background: var(--phase-ovulatory-bg);
+  color: var(--phase-ovulatory);
+}
+
+.diff-medium {
+  background: var(--phase-luteal-bg);
+  color: var(--phase-luteal);
+}
+
+.diff-hard {
+  background: var(--phase-menstrual-bg);
+  color: var(--phase-menstrual);
+}
+
+/* ---------- Daily log form ---------- */
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-muted);
+}
+
+.phase-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.phase-option {
+  --option-accent: var(--color-accent);
+  --option-bg: #fef9ec;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: none;
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--color-nav);
+  cursor: pointer;
+}
+
+.phase-option.auto {
+  grid-column: 1 / -1;
+  justify-content: center;
+}
+
+.phase-option.menstrual {
+  --option-accent: var(--phase-menstrual);
+  --option-bg: var(--phase-menstrual-bg);
+}
+
+.phase-option.follicular {
+  --option-accent: var(--phase-follicular);
+  --option-bg: var(--phase-follicular-bg);
+}
+
+.phase-option.ovulatory {
+  --option-accent: var(--phase-ovulatory);
+  --option-bg: var(--phase-ovulatory-bg);
+}
+
+.phase-option.luteal {
+  --option-accent: var(--phase-luteal);
+  --option-bg: var(--phase-luteal-bg);
+}
+
+.phase-option:hover {
+  border-color: var(--color-sidebar);
+}
+
+.phase-option.selected {
+  border-color: var(--option-accent);
+  background: var(--option-bg);
+  color: var(--color-text);
+}
+
+.phase-dot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.dot-menstrual {
+  background: var(--phase-menstrual);
+}
+
+.dot-follicular {
+  background: var(--phase-follicular);
+}
+
+.dot-ovulatory {
+  background: var(--phase-ovulatory);
+}
+
+.dot-luteal {
+  background: var(--phase-luteal);
+}
+
+.hint {
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+  color: var(--color-nav);
+  cursor: pointer;
+}
+
+.sleep-slider {
+  width: 100%;
+  accent-color: var(--color-accent);
+}
+
+.energy-selector {
+  display: flex;
+  gap: 10px;
+}
+
+.energy-btn {
+  flex: 1;
+  padding: 10px 4px;
+  background: none;
+  border: 2px solid var(--color-border);
+  border-radius: 10px;
+  font-size: 1.2rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.energy-btn:hover {
+  border-color: var(--color-sidebar);
+}
+
+.energy-btn.selected {
+  border-color: var(--color-accent);
+  background: #fef9ec;
+}
+
+.energy-label {
+  margin-top: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+/* ---------- Recipe details ---------- */
+.recipe-details {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: var(--color-nav);
+}
+
+.recipe-serving {
+  margin-bottom: 8px;
+  color: var(--color-muted);
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tag-chip {
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: var(--color-sidebar);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-nav);
+}
+
+.ingredient-list {
+  padding-left: 18px;
+  line-height: 1.7;
+}
+
+.recipe-notes {
+  margin-top: 8px;
+  line-height: 1.6;
+  white-space: pre-line;
+}

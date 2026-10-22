@@ -45,12 +45,10 @@ services:
     env_file:
       - .env.docker
 
-  # Only started with `docker compose --profile demo up`; day to day the API runs
-  # locally (uv run uvicorn) so it can be debugged in VS Code
   api:
     profiles: ["demo"]
     build: .
-    command: sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    command: sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     environment:
       UV_PROJECT_ENVIRONMENT: /venv
     ports:

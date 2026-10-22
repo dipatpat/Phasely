@@ -65,3 +65,14 @@ export const api = {
     apiFetch<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
   delete: <T>(path: string) => apiFetch<T>(path, { method: "DELETE" }),
 };
+
+export async function orNull<T>(request: Promise<T>): Promise<T | null> {
+  try {
+    return await request;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
+}

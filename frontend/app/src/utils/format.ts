@@ -1,4 +1,5 @@
-import type { Recipe, TrainingPlanExercise } from "../api/types";
+import type { DailyLog, Recipe, TrainingPlanExercise } from "../api/types";
+import { energyOptionFor } from "../content/energy";
 
 export function formatMacros(recipe: Recipe): string {
   return `P ${Number(recipe.protein)}g · C ${Number(recipe.carbs)}g · F ${Number(recipe.fat)}g`;
@@ -46,4 +47,23 @@ export function sumMacros(items: Macros[]): Macros {
     }),
     { calories: 0, protein: 0, carbs: 0, fat: 0 },
   );
+}
+
+export function fullName(person: {
+  first_name: string | null;
+  last_name: string | null;
+}): string {
+  return `${person.first_name ?? ""} ${person.last_name ?? ""}`.trim();
+}
+
+export function describeDay(log: DailyLog): string {
+  const parts: string[] = [];
+  if (log.energy_level !== null) {
+    const energy = energyOptionFor(log.energy_level);
+    parts.push(`${energy.emoji} ${energy.label} energy`);
+  }
+  if (log.hours_of_sleep !== null) {
+    parts.push(`${Number(log.hours_of_sleep)} h sleep`);
+  }
+  return parts.join(" · ") || "No details logged";
 }

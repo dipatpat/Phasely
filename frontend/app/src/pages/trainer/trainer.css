@@ -1,0 +1,231 @@
+/* ---------- Rows: sessions and log status ---------- */
+.session-item,
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.session-item:last-child,
+.status-row:last-child {
+  border-bottom: none;
+}
+
+.session-date-block {
+  flex-shrink: 0;
+  min-width: 48px;
+  padding: 6px 10px;
+  background: var(--color-border);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.session-day-num {
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.session-month {
+  margin-top: 1px;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--color-muted);
+}
+
+.session-info,
+.row-main {
+  flex: 1;
+}
+
+.row-title {
+  margin-bottom: 2px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.row-sub {
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+
+.status-badge {
+  text-transform: capitalize;
+}
+
+.not-logged {
+  margin-top: 12px;
+}
+
+/* ---------- Avatar ---------- */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-sidebar);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-nav);
+}
+
+.avatar-large {
+  width: 56px;
+  height: 56px;
+  font-size: 1.1rem;
+}
+
+/* ---------- Client list ---------- */
+.client-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 12px;
+}
+
+.client-search {
+  flex: 1;
+  min-width: 220px;
+  background: var(--color-surface);
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-chip {
+  padding: 8px 14px;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-nav);
+  cursor: pointer;
+}
+
+.filter-chip.active {
+  background: var(--color-text);
+  border-color: var(--color-text);
+  color: white;
+}
+
+.client-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.client-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.client-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.client-card-name {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  font-size: 0.95rem;
+}
+
+.client-card-name span {
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+
+.plan-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.plan-flag {
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: var(--phase-ovulatory-bg);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--phase-ovulatory);
+}
+
+.plan-flag.missing {
+  background: #f0f0f0;
+  color: #999;
+}
+
+.client-card-link {
+  margin-top: auto;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* ---------- Client detail ---------- */
+.back-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-link);
+  text-decoration: none;
+}
+
+.client-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.client-header h1 {
+  font-size: 1.6rem;
+}
+
+.profile-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 24px;
+  font-size: 0.88rem;
+}
+
+.profile-list dt {
+  color: var(--color-muted);
+}
+
+.profile-list dd {
+  font-weight: 600;
+}
+
+.plan-title {
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.phase-count-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.85rem;
+}
+
+.timeline-when {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}

@@ -12,6 +12,9 @@ import { OnboardingPage } from "./pages/client/OnboardingPage";
 import { TodayPage } from "./pages/client/TodayPage";
 import { MealsPage } from "./pages/client/MealsPage";
 import { WorkoutsPage } from "./pages/client/WorkoutsPage";
+import { ClientDetailPage } from "./pages/trainer/ClientDetailPage";
+import { ClientsPage } from "./pages/trainer/ClientsPage";
+import { TrainerDashboardPage } from "./pages/trainer/TrainerDashboardPage";
 
 function App() {
   return (
@@ -66,11 +69,10 @@ function App() {
               </RequireAuth>
             }
           >
-            <Route index element={<PlaceholderPage title="Dashboard" />} />
-            <Route
-              path="clients"
-              element={<PlaceholderPage title="Clients" />}
-            />
+            <Route index element={<TrainerDashboardPage />} />
+            <Route path="clients" element={<ClientsPage />} />
+            <Route path="clients/:clientId" element={<ClientDetailPage />} />
+
             <Route
               path="recipes"
               element={<PlaceholderPage title="Recipes" />}

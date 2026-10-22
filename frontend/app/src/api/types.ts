@@ -129,3 +129,52 @@ export type ExerciseLog = {
   completed_at: IsoDateTime;
   notes: string | null;
 };
+
+export type ClientOverview = {
+  client: ClientProfile;
+  today_log: DailyLog | null;
+  last_log_date: IsoDate | null;
+  has_nutrition_plan: boolean;
+  has_training_plan: boolean;
+};
+
+export type SessionStatus = "pending" | "confirmed" | "completed" | "cancelled";
+
+export type Session = {
+  id: string;
+  client: ClientProfile;
+  trainer: TrainerProfile;
+  scheduled_at: IsoDateTime;
+  status: SessionStatus;
+  notes: string | null;
+  duration_minutes: number;
+  cancellation_reason: string | null;
+};
+
+export type NutritionPlanRecipe = {
+  recipe: Recipe;
+  meal_type: MealType;
+  cycle_phase: CyclePhase;
+};
+
+export type NutritionPlan = {
+  id: string;
+  client_id: string;
+  trainer_id: string;
+  title: string;
+  is_active: boolean;
+  recipes: NutritionPlanRecipe[];
+  created_at: IsoDateTime;
+  updated_at: IsoDateTime;
+};
+
+export type TrainingPlan = {
+  id: string;
+  client_id: string;
+  trainer_id: string;
+  title: string;
+  is_active: boolean;
+  exercises: TrainingPlanExercise[];
+  created_at: IsoDateTime;
+  updated_at: IsoDateTime;
+};

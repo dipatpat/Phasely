@@ -156,6 +156,7 @@ export function ClientDetailPage() {
           isPending={nutrition.isPending}
           title={nutrition.data?.title ?? null}
           items={nutrition.data?.recipes ?? []}
+          editTo={`/trainer/clients/${clientId}/nutrition`}
         />
         <PlanCard
           heading="Active training plan"
@@ -163,6 +164,7 @@ export function ClientDetailPage() {
           isPending={training.isPending}
           title={training.data?.title ?? null}
           items={training.data?.exercises ?? []}
+          editTo={`/trainer/clients/${clientId}/training`}
         />
       </div>
 
@@ -192,12 +194,27 @@ type PlanCardProps = {
   isPending: boolean;
   title: string | null;
   items: { cycle_phase: CyclePhase }[];
+  editTo: string;
 };
 
-function PlanCard({ heading, unit, isPending, title, items }: PlanCardProps) {
+function PlanCard({
+  heading,
+  unit,
+  isPending,
+  title,
+  items,
+  editTo,
+}: PlanCardProps) {
   return (
     <div className="card">
-      <div className="card-title">{heading}</div>
+      <div className="card-title">
+        {heading}
+        {!isPending && (
+          <Link className="card-link" to={editTo}>
+            {title === null ? "Create plan →" : "Edit plan →"}
+          </Link>
+        )}
+      </div>
       {isPending && <p className="empty-text">Loading…</p>}
       {!isPending && title === null && (
         <p className="empty-text">No active plan yet.</p>

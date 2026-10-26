@@ -40,3 +40,18 @@ export const PHASES: CyclePhase[] = [
   "ovulatory",
   "luteal",
 ];
+
+export function countByPhase(
+  items: { cycle_phase: CyclePhase }[],
+): Record<CyclePhase, number> {
+  const counts: Record<CyclePhase, number> = {
+    menstrual: 0,
+    follicular: 0,
+    ovulatory: 0,
+    luteal: 0,
+  };
+  for (const item of items) {
+    counts[item.cycle_phase] += 1;
+  }
+  return counts;
+}

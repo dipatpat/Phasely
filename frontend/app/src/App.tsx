@@ -14,6 +14,8 @@ import { MealsPage } from "./pages/client/MealsPage";
 import { WorkoutsPage } from "./pages/client/WorkoutsPage";
 import { ClientDetailPage } from "./pages/trainer/ClientDetailPage";
 import { ClientsPage } from "./pages/trainer/ClientsPage";
+import { NutritionPlanPage } from "./pages/trainer/NutritionPlanPage";
+import { TrainingPlanPage } from "./pages/trainer/TrainingPlanPage";
 import { TrainerDashboardPage } from "./pages/trainer/TrainerDashboardPage";
 import { ExerciseLibraryPage } from "./pages/trainer/ExerciseLibraryPage";
 import { RecipeLibraryPage } from "./pages/trainer/RecipeLibraryPage";
@@ -74,6 +76,14 @@ function App() {
             <Route index element={<TrainerDashboardPage />} />
             <Route path="clients" element={<ClientsPage />} />
             <Route path="clients/:clientId" element={<ClientDetailPage />} />
+            <Route
+              path="clients/:clientId/nutrition"
+              element={<NutritionPlanPage />}
+            />
+            <Route
+              path="clients/:clientId/training"
+              element={<TrainingPlanPage />}
+            />
 
             <Route path="recipes" element={<RecipeLibraryPage />} />
             <Route path="exercises" element={<ExerciseLibraryPage />} />

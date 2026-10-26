@@ -1,0 +1,63 @@
+.phase-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.phase-tab {
+  padding: 10px 16px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.phase-tab.selected {
+  border-color: currentColor;
+}
+
+.tab-count {
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: white;
+  font-size: 0.75rem;
+}
+
+.add-card {
+  margin-bottom: 20px;
+}
+
+.add-fields {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 10px;
+}
+
+.training-fields {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.training-fields label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.day-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.create-plan {
+  max-width: 520px;
+}

@@ -15,6 +15,8 @@ import { WorkoutsPage } from "./pages/client/WorkoutsPage";
 import { ClientDetailPage } from "./pages/trainer/ClientDetailPage";
 import { ClientsPage } from "./pages/trainer/ClientsPage";
 import { TrainerDashboardPage } from "./pages/trainer/TrainerDashboardPage";
+import { ExerciseLibraryPage } from "./pages/trainer/ExerciseLibraryPage";
+import { RecipeLibraryPage } from "./pages/trainer/RecipeLibraryPage";
 
 function App() {
   return (
@@ -73,14 +75,9 @@ function App() {
             <Route path="clients" element={<ClientsPage />} />
             <Route path="clients/:clientId" element={<ClientDetailPage />} />
 
-            <Route
-              path="recipes"
-              element={<PlaceholderPage title="Recipes" />}
-            />
-            <Route
-              path="exercises"
-              element={<PlaceholderPage title="Exercises" />}
-            />
+            <Route path="recipes" element={<RecipeLibraryPage />} />
+            <Route path="exercises" element={<ExerciseLibraryPage />} />
+
             <Route
               path="sessions"
               element={<PlaceholderPage title="Sessions" />}

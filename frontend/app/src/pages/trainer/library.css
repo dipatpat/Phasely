@@ -1,0 +1,60 @@
+.form-row-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.ingredient-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.btn-small {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+}
+
+.btn-danger {
+  background: none;
+  border: 1.5px solid var(--phase-menstrual-bg);
+  border-radius: 10px;
+  font-weight: 600;
+  color: var(--phase-menstrual);
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  background: var(--phase-menstrual-bg);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-link);
+  cursor: pointer;
+}
+
+.table-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.table-actions button + button {
+  margin-left: 8px;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.library-description {
+  max-width: 520px;
+  font-size: 0.82rem;
+  color: var(--color-subtle);
+  white-space: pre-line;
+}

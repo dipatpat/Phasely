@@ -56,3 +56,24 @@ export function updateExercise(
 export function deleteExercise(id: string): Promise<void> {
   return api.delete<void>(`/exercise/remove?exercise_id=${id}`);
 }
+
+export type RecipeSearch = {
+  query: string;
+  mealType: MealType | null;
+  maxCalories: number | null;
+  minProtein: number | null;
+  dietaryTag: string | null;
+};
+
+export function searchRecipes(search: RecipeSearch): Promise<Recipe[]> {
+  const params = new URLSearchParams({ query: search.query, limit: "50" });
+  if (search.mealType) params.set("meal_type", search.mealType);
+  if (search.maxCalories !== null) {
+    params.set("max_calories", String(search.maxCalories));
+  }
+  if (search.minProtein !== null) {
+    params.set("min_protein", String(search.minProtein));
+  }
+  if (search.dietaryTag) params.set("dietary_tag", search.dietaryTag);
+  return api.get<Recipe[]>(`/recipe/search?${params}`);
+}

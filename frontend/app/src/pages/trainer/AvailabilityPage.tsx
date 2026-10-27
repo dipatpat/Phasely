@@ -157,14 +157,18 @@ export function AvailabilityPage() {
         </div>
       )}
 
-            <div className="availability-days">
+      <div className="availability-days">
         {Object.entries(byDate).map(([slotDate, daySlots]) => (
           <div key={slotDate} className="card availability-day">
             <div className="card-title">{formatDayLabel(slotDate)}</div>
             <div className="slot-list">
               {daySlots.map((slot) => {
                 const session = bookedBy.get(slotKey(slot));
-                const state = session ? "booked" : slot.is_active ? "free" : "inactive";
+                const state = session
+                  ? "booked"
+                  : slot.is_active
+                    ? "free"
+                    : "inactive";
                 return (
                   <div key={slot.id} className={`slot-chip ${state}`}>
                     <div>
@@ -184,8 +188,14 @@ export function AvailabilityPage() {
                         <button
                           type="button"
                           className="icon-btn"
-                          title={slot.is_active ? "Hide from clients" : "Show to clients"}
-                          aria-label={slot.is_active ? "Deactivate slot" : "Activate slot"}
+                          title={
+                            slot.is_active
+                              ? "Hide from clients"
+                              : "Show to clients"
+                          }
+                          aria-label={
+                            slot.is_active ? "Deactivate slot" : "Activate slot"
+                          }
                           disabled={toggle.isPending}
                           onClick={() => toggle.mutate(slot)}
                         >
@@ -210,7 +220,6 @@ export function AvailabilityPage() {
           </div>
         ))}
       </div>
-
     </>
   );
 }

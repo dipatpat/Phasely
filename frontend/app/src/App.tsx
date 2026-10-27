@@ -22,6 +22,7 @@ import { RecipeLibraryPage } from "./pages/trainer/RecipeLibraryPage";
 import { BookSessionPage } from "./pages/client/BookSessionPage";
 import { AvailabilityPage } from "./pages/trainer/AvailabilityPage";
 import { SessionsPage } from "./pages/trainer/SessionsPage";
+import { RecipeBrowserPage } from "./pages/client/RecipeBrowserPage";
 
 function App() {
   return (
@@ -54,6 +55,8 @@ function App() {
             <Route index element={<TodayPage />} />
             <Route path="meals" element={<MealsPage />} />
             <Route path="workouts" element={<WorkoutsPage />} />
+            <Route path="recipes" element={<RecipeBrowserPage />} />
+
             <Route
               path="progress"
               element={<PlaceholderPage title="Progress" />}

@@ -1,0 +1,64 @@
+.search-input {
+  width: 100%;
+  margin-bottom: 14px;
+  padding: 14px 18px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: 14px;
+  font-size: 1rem;
+  color: var(--color-text);
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: var(--color-accent);
+}
+
+.recipe-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.recipe-filters .form-input {
+  width: 150px;
+  padding: 8px 12px;
+  background: var(--color-surface);
+}
+
+.recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.recipe-card summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  cursor: pointer;
+}
+
+.recipe-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.recipe-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.plan-badge {
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: var(--phase-ovulatory-bg);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--phase-ovulatory);
+}

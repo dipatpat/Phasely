@@ -7,6 +7,7 @@ export const CLIENT_NAV: NavItem[] = [
   { to: "/client/progress", label: "Progress" },
   { to: "/client/shopping-list", label: "Shopping list" },
   { to: "/client/sessions", label: "Book session" },
+  { to: "/client/recipes", label: "Recipes" },
 ];
 
 export const TRAINER_NAV: NavItem[] = [

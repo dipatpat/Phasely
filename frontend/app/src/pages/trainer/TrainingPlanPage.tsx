@@ -8,6 +8,7 @@ import {
   createTrainingPlan,
   getClientTrainingPlan,
   removeTrainingAssignment,
+  archiveTrainingPlan,
 } from "../../api/plans";
 import { CLIENT_OVERVIEW_QUERY_KEY, getClient } from "../../api/trainer";
 import type {
@@ -116,6 +117,14 @@ export function TrainingPlanPage() {
     onSuccess: showPlan,
   });
 
+  const archive = useMutation({
+    mutationFn: (planId: string) => archiveTrainingPlan(planId),
+    onSuccess: () => {
+      queryClient.setQueryData(planKey, null);
+      queryClient.invalidateQueries({ queryKey: CLIENT_OVERVIEW_QUERY_KEY });
+    },
+  });
+
   if (client.isPending || plan.isPending || exercises.isPending) {
     return <LoadingScreen />;
   }
@@ -132,7 +141,27 @@ export function TrainingPlanPage() {
       </Link>
       <div className="top-bar">
         <h1>Training plan</h1>
+        {current && (
+          <button
+            type="button"
+            className="btn-danger btn-small"
+            disabled={archive.isPending}
+            onClick={() => {
+              if (
+                window.confirm(
+                  `Archive "${current.title}"? ${name} will have no training plan until you create a new one. The old plan is kept as history.`,
+                )
+              ) {
+                archive.mutate(current.id);
+              }
+            }}
+          >
+            Archive plan
+          </button>
+        )}
       </div>
+      {archive.error && <p className="form-error">{archive.error.message}</p>}
+
       <p className="date-tag">
         {name}
         {current && ` · ${current.title}`}

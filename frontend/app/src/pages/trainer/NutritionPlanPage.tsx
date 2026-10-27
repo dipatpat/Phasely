@@ -4,11 +4,13 @@ import { Link, useParams } from "react-router";
 import { listRecipes, RECIPES_QUERY_KEY } from "../../api/library";
 import {
   addNutritionAssignment,
+  archiveNutritionPlan,
   clientPlanQueryKey,
   createNutritionPlan,
   getClientNutritionPlan,
   removeNutritionAssignment,
 } from "../../api/plans";
+
 import { CLIENT_OVERVIEW_QUERY_KEY, getClient } from "../../api/trainer";
 import type {
   CyclePhase,
@@ -89,6 +91,14 @@ export function NutritionPlanPage() {
     onSuccess: showPlan,
   });
 
+  const archive = useMutation({
+    mutationFn: (planId: string) => archiveNutritionPlan(planId),
+    onSuccess: () => {
+      queryClient.setQueryData(planKey, null);
+      queryClient.invalidateQueries({ queryKey: CLIENT_OVERVIEW_QUERY_KEY });
+    },
+  });
+
   if (client.isPending || plan.isPending || recipes.isPending) {
     return <LoadingScreen />;
   }
@@ -105,7 +115,27 @@ export function NutritionPlanPage() {
       </Link>
       <div className="top-bar">
         <h1>Nutrition plan</h1>
+        {current && (
+          <button
+            type="button"
+            className="btn-danger btn-small"
+            disabled={archive.isPending}
+            onClick={() => {
+              if (
+                window.confirm(
+                  `Archive "${current.title}"? ${name} will have no nutrition plan until you create a new one. The old plan is kept as history.`,
+                )
+              ) {
+                archive.mutate(current.id);
+              }
+            }}
+          >
+            Archive plan
+          </button>
+        )}
       </div>
+      {archive.error && <p className="form-error">{archive.error.message}</p>}
+
       <p className="date-tag">
         {name}
         {current && ` · ${current.title}`}

@@ -104,3 +104,15 @@ export function removeTrainingAssignment(
     [assignment],
   );
 }
+
+export function archiveNutritionPlan(planId: string): Promise<NutritionPlan> {
+  return api.patch<NutritionPlan>(`/plan/nutrition/update?plan_id=${planId}`, {
+    is_active: false,
+  });
+}
+
+export function archiveTrainingPlan(planId: string): Promise<TrainingPlan> {
+  return api.patch<TrainingPlan>(`/plan/training/update?plan_id=${planId}`, {
+    is_active: false,
+  });
+}

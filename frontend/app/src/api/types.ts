@@ -178,3 +178,13 @@ export type TrainingPlan = {
   created_at: IsoDateTime;
   updated_at: IsoDateTime;
 };
+
+export type AvailabilitySlot = {
+  id: string;
+  trainer_id: string;
+  slot_date: IsoDate;
+  slot_start: string;
+  slot_end: string;
+  timezone: string;
+  is_active: boolean;
+};

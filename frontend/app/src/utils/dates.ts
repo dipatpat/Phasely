@@ -60,3 +60,24 @@ export function greeting(date: Date): string {
   if (hour < 18) return "Good afternoon";
   return "Good evening";
 }
+
+export function daysFromNowIso(days: number): string {
+  return daysAgoIso(-days);
+}
+
+export function formatDayLabel(isoDate: string): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(new Date(`${isoDate}T00:00:00`));
+}
+
+export function formatDateTime(value: string): string {
+  const date = new Date(value);
+  return `${formatDayLabel(toIsoDate(date))}, ${formatTime(date)}`;
+}
+
+export function shortTime(time: string): string {
+  return time.slice(0, 5);
+}

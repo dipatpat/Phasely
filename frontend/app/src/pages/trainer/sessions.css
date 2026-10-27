@@ -1,0 +1,121 @@
+.session-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.session-actions .btn-primary,
+.session-actions .btn-cancel {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+}
+
+.view-tabs {
+  margin-bottom: 16px;
+}
+
+.slot-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.slot-form label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.availability-days {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.availability-day {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: start;
+  gap: 16px;
+}
+
+.availability-day .card-title {
+  margin: 10px 0 0;
+}
+
+.slot-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.slot-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 8px 8px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-input);
+}
+
+.slot-chip.booked {
+  border-color: transparent;
+  background: var(--phase-follicular-bg);
+}
+
+.slot-chip.inactive {
+  opacity: 0.55;
+}
+
+.slot-time {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.slot-chip.inactive .slot-time {
+  text-decoration: line-through;
+}
+
+.slot-state {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.icon-btn {
+  padding: 4px 6px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+
+.day-chips,
+.time-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.time-chips {
+  margin-top: 4px;
+}
+
+.booking-card {
+  margin-bottom: 20px;
+}
+
+.booking-step {
+  margin-bottom: 18px;
+}

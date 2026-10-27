@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Session } from "../../api/types";
 import { formatTime } from "../../utils/dates";
 import { fullName } from "../../utils/format";
@@ -5,9 +6,10 @@ import { fullName } from "../../utils/format";
 type SessionRowProps = {
   session: Session;
   showClient: boolean;
+  children?: ReactNode;
 };
 
-export function SessionRow({ session, showClient }: SessionRowProps) {
+export function SessionRow({ session, showClient, children }: SessionRowProps) {
   const start = new Date(session.scheduled_at);
   return (
     <div className="session-item">
@@ -25,10 +27,14 @@ export function SessionRow({ session, showClient }: SessionRowProps) {
           {formatTime(start)} · {session.duration_minutes} min
           {session.notes && ` · ${session.notes}`}
         </div>
+        {session.status === "cancelled" && session.cancellation_reason && (
+          <div className="row-sub">Reason: {session.cancellation_reason}</div>
+        )}
       </div>
       <span className={`status-badge badge-${session.status}`}>
         {session.status}
       </span>
+      {children && <div className="session-actions">{children}</div>}
     </div>
   );
 }

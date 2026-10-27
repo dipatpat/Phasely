@@ -19,6 +19,9 @@ import { TrainingPlanPage } from "./pages/trainer/TrainingPlanPage";
 import { TrainerDashboardPage } from "./pages/trainer/TrainerDashboardPage";
 import { ExerciseLibraryPage } from "./pages/trainer/ExerciseLibraryPage";
 import { RecipeLibraryPage } from "./pages/trainer/RecipeLibraryPage";
+import { BookSessionPage } from "./pages/client/BookSessionPage";
+import { AvailabilityPage } from "./pages/trainer/AvailabilityPage";
+import { SessionsPage } from "./pages/trainer/SessionsPage";
 
 function App() {
   return (
@@ -59,10 +62,7 @@ function App() {
               path="shopping-list"
               element={<PlaceholderPage title="Shopping list" />}
             />
-            <Route
-              path="sessions"
-              element={<PlaceholderPage title="Book session" />}
-            />
+            <Route path="sessions" element={<BookSessionPage />} />
           </Route>
 
           <Route
@@ -88,14 +88,8 @@ function App() {
             <Route path="recipes" element={<RecipeLibraryPage />} />
             <Route path="exercises" element={<ExerciseLibraryPage />} />
 
-            <Route
-              path="sessions"
-              element={<PlaceholderPage title="Sessions" />}
-            />
-            <Route
-              path="availability"
-              element={<PlaceholderPage title="Availability" />}
-            />
+            <Route path="sessions" element={<SessionsPage />} />
+            <Route path="availability" element={<AvailabilityPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />

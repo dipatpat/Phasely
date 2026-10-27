@@ -606,3 +606,25 @@ async def test_recommendations_cache_invalidated_after_plan_change(client, db):
         "First Recipe",
         "Second Recipe",
     }
+
+
+async def test_period_started_today_forces_menstrual_phase(client, db):
+    trainer_user, trainer_profile = await _create_test_trainer_profile(
+        db, "trainer1@trainer.com"
+    )
+    client_user = await _create_test_client(
+        client, trainer_profile.id, "client1@client.com", db
+    )
+
+    response = await client.post(
+        "/log/daily/create",
+        json={
+            "log_date": "2026-10-05",
+            "period_started_today": True,
+            "cycle_phase": "follicular",
+        },
+        headers=auth_headers(client_user),
+    )
+
+    assert response.status_code == 201
+    assert response.json()["daily_log"]["cycle_phase"] == "menstrual"

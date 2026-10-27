@@ -425,3 +425,12 @@
   font-size: 0.82rem;
   color: #8a6d1f;
 }
+
+.phase-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.phase-option.selected:disabled {
+  opacity: 1;
+}

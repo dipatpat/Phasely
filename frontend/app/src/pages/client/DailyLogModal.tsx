@@ -17,13 +17,16 @@ export function DailyLogModal({ onClose }: DailyLogModalProps) {
   const [periodStarted, setPeriodStarted] = useState(false);
   const [sleep, setSleep] = useState("7.5");
   const [energy, setEnergy] = useState<number | null>(null);
+  const effectivePhase: CyclePhase | "auto" = periodStarted
+    ? "menstrual"
+    : phase;
 
   const saveLog = useMutation({
     mutationFn: () =>
       createDailyLog({
         log_date: todayIso(),
         period_started_today: periodStarted,
-        cycle_phase: phase === "auto" ? null : phase,
+        cycle_phase: effectivePhase === "auto" ? null : effectivePhase,
         hours_of_sleep: Number(sleep),
         energy_level: energy,
       }),
@@ -44,38 +47,6 @@ export function DailyLogModal({ onClose }: DailyLogModalProps) {
   return (
     <Modal title="Today's log" onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <span className="field-label">Cycle phase</span>
-          <div className="phase-selector">
-            <button
-              type="button"
-              className={
-                phase === "auto"
-                  ? "phase-option auto selected"
-                  : "phase-option auto"
-              }
-              onClick={() => setPhase("auto")}
-            >
-              ✨ Calculate from my cycle
-            </button>
-            {PHASES.map((option) => (
-              <button
-                key={option}
-                type="button"
-                className={`phase-option ${option}${phase === option ? " selected" : ""}`}
-                onClick={() => setPhase(option)}
-              >
-                <span className={`phase-dot dot-${option}`} />
-                {PHASE_INFO[option].label}
-              </button>
-            ))}
-          </div>
-          <p className="hint">
-            Phasely calculates your phase from your period history. Choose one
-            yourself if it doesn't feel right.
-          </p>
-        </div>
-
         <label className="checkbox-row">
           <input
             type="checkbox"
@@ -84,6 +55,41 @@ export function DailyLogModal({ onClose }: DailyLogModalProps) {
           />
           My period started today
         </label>
+
+        <div className="form-group">
+          <span className="field-label">Cycle phase</span>
+          <div className="phase-selector">
+            <button
+              type="button"
+              className={
+                effectivePhase === "auto"
+                  ? "phase-option auto selected"
+                  : "phase-option auto"
+              }
+              disabled={periodStarted}
+              onClick={() => setPhase("auto")}
+            >
+              ✨ Calculate from my cycle
+            </button>
+            {PHASES.map((option) => (
+              <button
+                key={option}
+                type="button"
+                className={`phase-option ${option}${effectivePhase === option ? " selected" : ""}`}
+                disabled={periodStarted}
+                onClick={() => setPhase(option)}
+              >
+                <span className={`phase-dot dot-${option}`} />
+                {PHASE_INFO[option].label}
+              </button>
+            ))}
+          </div>
+          <p className="hint">
+            {periodStarted
+              ? "Your period started today, so today is day 1 of the menstrual phase."
+              : "Phasely calculates your phase from your period history. Choose one yourself if it doesn't feel right."}
+          </p>
+        </div>
 
         <div className="form-group">
           <label htmlFor="sleep">Hours of sleep: {Number(sleep)} h</label>

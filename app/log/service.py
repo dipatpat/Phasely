@@ -45,6 +45,9 @@ async def create_daily_log(
 ) -> tuple[DailyLog, list[RecipePublic], list[TrainingPlanExercisePublic]]:
     if period_started_today:
         await create_period_log(db, client_id, log_date)
+        # The first day of a period is day 1 of the menstrual phase,
+        # whatever phase was chosen
+        cycle_phase = CyclePhase.menstrual
 
     if cycle_phase is None:
         cycle_parameters = await get_cycle_parameters(db, client_id)

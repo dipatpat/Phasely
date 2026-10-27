@@ -1,0 +1,137 @@
+.week-chips {
+  margin-bottom: 20px;
+}
+
+/* ---------- Calories chart ---------- */
+.bar-chart {
+  --bar-color: #1baf7a;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  height: 220px;
+  margin-top: 8px;
+}
+
+.bar-column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+}
+
+.bar-track {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.bar {
+  width: 40%;
+  max-width: 34px;
+  min-height: 0;
+  background: var(--bar-color);
+  border-radius: 4px 4px 0 0;
+}
+
+.bar-column:hover .bar {
+  filter: brightness(0.92);
+}
+
+.bar-label {
+  font-size: 0.75rem;
+  color: var(--color-subtle);
+}
+
+.phase-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e0e0e0;
+}
+
+.bar-tooltip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 5;
+  width: max-content;
+  padding: 8px 10px;
+  transform: translate(-50%, -100%);
+  background: var(--color-text);
+  border-radius: 8px;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: white;
+  pointer-events: none;
+}
+
+/* ---------- Shopping list ---------- */
+.week-strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.week-day {
+  padding: 10px;
+  background: var(--color-surface);
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.week-day-name {
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.week-day .phase-badge {
+  margin-bottom: 6px;
+  font-size: 0.68rem;
+}
+
+.week-day-meal {
+  color: var(--color-subtle);
+  line-height: 1.4;
+}
+
+.shopping-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.shopping-item:last-child {
+  border-bottom: none;
+}
+
+.shopping-item input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent);
+}
+
+.shopping-item.done span {
+  color: var(--color-muted);
+  text-decoration: line-through;
+}
+
+.shopping-qty {
+  margin-left: auto;
+  font-weight: 600;
+}
+
+@media print {
+  .sidebar,
+  .no-print {
+    display: none;
+  }
+}

@@ -106,6 +106,12 @@ export function ClientDetailPage() {
           <p className="row-sub">{client.email}</p>
         </div>
         <PhaseBadge phase={todayLog ? todayLog.cycle_phase : null} />
+        <Link
+          className="btn-cancel btn-small"
+          to={`/trainer/clients/${clientId}/progress`}
+        >
+          Weekly summary
+        </Link>
       </div>
 
       <div className="grid-2">

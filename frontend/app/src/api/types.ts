@@ -188,3 +188,61 @@ export type AvailabilitySlot = {
   timezone: string;
   is_active: boolean;
 };
+
+export type WeeklySummary = {
+  days_logged: number;
+  average_hours_of_sleep: number | null;
+  average_energy_level: number | null;
+  total_calories: number;
+  total_protein: number;
+  total_carbs: number;
+  total_fat: number;
+  total_meals_logged: number;
+  total_exercises_completed: number;
+};
+
+export type DailyBreakdown = {
+  date: IsoDate;
+  cycle_phase: CyclePhase | null;
+  energy_level: number | null;
+  hours_of_sleep: number | null;
+  calories_consumed: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  meals_logged: number;
+  exercises_completed: number;
+};
+
+export type WeeklyReport = {
+  week_start: IsoDate;
+  week_end: IsoDate;
+  summary: WeeklySummary;
+  daily_breakdown: DailyBreakdown[];
+};
+
+export type PlannedMeal = {
+  meal_type: MealType;
+  recipe_id: string;
+  recipe_name: string;
+};
+
+export type ShoppingListDay = {
+  date: IsoDate;
+  cycle_phase: CyclePhase | null;
+  meals: PlannedMeal[];
+};
+
+export type ShoppingListItem = {
+  ingredient: string;
+  quantity: DecimalString;
+  unit: string;
+};
+
+export type ShoppingList = {
+  week_start: IsoDate;
+  week_end: IsoDate;
+  days: ShoppingListDay[];
+  unpredictable_dates: IsoDate[];
+  items: ShoppingListItem[];
+};

@@ -6,7 +6,6 @@ import { AppShell } from "./components/layout/AppShell";
 import { CLIENT_NAV, TRAINER_NAV } from "./components/layout/navigation";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
-import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { RequireClientProfile } from "./auth/RequireClientProfile";
 import { OnboardingPage } from "./pages/client/OnboardingPage";
 import { TodayPage } from "./pages/client/TodayPage";
@@ -23,6 +22,8 @@ import { BookSessionPage } from "./pages/client/BookSessionPage";
 import { AvailabilityPage } from "./pages/trainer/AvailabilityPage";
 import { SessionsPage } from "./pages/trainer/SessionsPage";
 import { RecipeBrowserPage } from "./pages/client/RecipeBrowserPage";
+import { ProgressPage } from "./pages/client/ProgressPage";
+import { ShoppingListPage } from "./pages/client/ShoppingListPage";
 
 function App() {
   return (
@@ -57,14 +58,9 @@ function App() {
             <Route path="workouts" element={<WorkoutsPage />} />
             <Route path="recipes" element={<RecipeBrowserPage />} />
 
-            <Route
-              path="progress"
-              element={<PlaceholderPage title="Progress" />}
-            />
-            <Route
-              path="shopping-list"
-              element={<PlaceholderPage title="Shopping list" />}
-            />
+            <Route path="progress" element={<ProgressPage />} />
+            <Route path="shopping-list" element={<ShoppingListPage />} />
+
             <Route path="sessions" element={<BookSessionPage />} />
           </Route>
 
@@ -86,6 +82,10 @@ function App() {
             <Route
               path="clients/:clientId/training"
               element={<TrainingPlanPage />}
+            />
+            <Route
+              path="clients/:clientId/progress"
+              element={<ProgressPage />}
             />
 
             <Route path="recipes" element={<RecipeLibraryPage />} />

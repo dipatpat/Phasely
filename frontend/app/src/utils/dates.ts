@@ -81,3 +81,16 @@ export function formatDateTime(value: string): string {
 export function shortTime(time: string): string {
   return time.slice(0, 5);
 }
+
+export function weekStartIso(weeksAgo: number): string {
+  const date = new Date();
+  const daysSinceMonday = (date.getDay() + 6) % 7;
+  date.setDate(date.getDate() - daysSinceMonday - 7 * weeksAgo);
+  return toIsoDate(date);
+}
+
+export function formatWeekday(isoDate: string): string {
+  return new Intl.DateTimeFormat("en-GB", { weekday: "short" }).format(
+    new Date(`${isoDate}T00:00:00`),
+  );
+}
